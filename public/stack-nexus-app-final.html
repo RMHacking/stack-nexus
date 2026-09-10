@@ -1079,11 +1079,11 @@
 
       <section class="view" id="v-profile">
         <div class="profile" id="profileRoot">
-          <div class="cover"><span class="covertxt">[ foto de capa ]</span><button class="edit-pencil own-only" title="editar capa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button></div>
+          <div class="cover"><span class="covertxt">[ foto de capa ]</span><button class="edit-pencil own-only" title="editar capa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button><input type="file" id="setcover" accept="image/*" style="display:none"></div>
           <div class="phead">
             <div class="pavatar-wrap">
               <div class="pavatar">RF</div>
-              <button class="pavatar-edit own-only" title="editar foto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+              <button class="pavatar-edit own-only" title="editar foto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button><input type="file" id="setavatar" accept="image/*" style="display:none">
             </div>
             <div class="pheadcol">
               <div class="pheadrow">
@@ -1275,7 +1275,7 @@
               <div class="setsec-sub">seus dados de acesso e como você se apresenta na rede.</div>
               <div class="photorow">
                 <div class="photobig">RF</div>
-                <label class="photoup">trocar foto<input type="file" id="setphoto"></label>
+                <label class="photoup">trocar foto<input type="file" id="setphoto" accept="image/*"></label>
               </div>
               <div class="setrow">
                 <div class="setfield"><label>nome</label><input value="Rafael Moreno"></div>
@@ -2606,6 +2606,24 @@
       lbl.textContent='✓ '+this.files[0].name;
     }
   });
+  // editar foto do perfil / capa pelos lápis: abre a galeria (accept=image/*) e mostra a prévia na hora
+  (function(){
+    function lerImagem(file,cb){ var r=new FileReader(); r.onload=function(){cb(r.result);}; r.readAsDataURL(file); }
+    var avInput=document.getElementById('setavatar'), avPencil=document.querySelector('#v-profile .pavatar-edit');
+    var pav=document.querySelector('#v-profile .pavatar');
+    if(avPencil&&avInput){
+      avPencil.addEventListener('click',function(){ avInput.click(); });
+      avInput.addEventListener('change',function(){ if(!avInput.files||!avInput.files[0])return; lerImagem(avInput.files[0],function(url){ if(pav){pav.style.backgroundImage='url('+url+')';pav.textContent='';} var pb=document.querySelector('.photobig'); if(pb){pb.style.backgroundImage='url('+url+')';pb.textContent='';} }); });
+    }
+    var cvInput=document.getElementById('setcover'), cvPencil=document.querySelector('#v-profile .cover .edit-pencil');
+    var cover=document.querySelector('#v-profile .cover');
+    if(cvPencil&&cvInput){
+      cvPencil.addEventListener('click',function(){ cvInput.click(); });
+      cvInput.addEventListener('change',function(){ if(!cvInput.files||!cvInput.files[0])return; lerImagem(cvInput.files[0],function(url){ if(cover){cover.style.backgroundImage='url('+url+')';cover.style.backgroundSize='cover';cover.style.backgroundPosition='center';var ct=cover.querySelector('.covertxt'); if(ct) ct.style.display='none';} }); });
+    }
+    var sp=document.getElementById('setphoto');
+    if(sp) sp.addEventListener('change',function(){ if(!sp.files||!sp.files[0])return; lerImagem(sp.files[0],function(url){ if(pav){pav.style.backgroundImage='url('+url+')';pav.textContent='';} }); });
+  })();
 
   // editar Sobre inline
   const aboutPanel=$('#aboutPanel'), aboutEdit=$('#aboutEdit');
