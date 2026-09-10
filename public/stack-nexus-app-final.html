@@ -112,6 +112,18 @@
     .col-right{display:none;}
   }
   @media(max-width:640px){.col-left{display:none;}}
+  .mobnav{display:none;}
+  @media(max-width:640px){
+    .mobnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:120;background:var(--bg);border-top:1px solid var(--border);padding:.28rem .15rem;padding-bottom:calc(.28rem + env(safe-area-inset-bottom));justify-content:space-around;box-shadow:0 -6px 20px rgba(0,0,0,.4);}
+    .mob-item{flex:1;background:transparent;border:0;color:var(--text-dim);display:flex;flex-direction:column;align-items:center;gap:.12rem;padding:.35rem .1rem;font-family:var(--font-mono);cursor:pointer;}
+    .mob-item .mi{font-size:1.2rem;line-height:1;}
+    .mob-item .ml{font-size:.56rem;letter-spacing:.02em;}
+    .mob-item.on{color:var(--accent);}
+    .mob-item.on .mi{transform:translateY(-1px);}
+    .mob-config{display:none;}
+    body.view-sud0 .mob-config{display:flex;}
+    .col-center{padding-bottom:74px !important;}
+  }
 
   .av{border-radius:50%;display:grid;place-items:center;font-family:var(--font-mono);font-weight:600;flex:none;background:var(--surface-2);color:var(--text-faint);border:1px solid var(--border);background-size:cover;background-position:center;overflow:hidden;}
   .av--crown{background:linear-gradient(135deg,var(--crown),var(--genesis));color:#1a1400;border:0;}
@@ -870,6 +882,16 @@
       <div class="nav-conv-count"><b id="navConvN">—</b> convites disponíveis</div>
       <button class="nav-conv-btn" data-convidar="1">📨 Convidar alguém</button>
     </div>
+  </nav>
+
+  <!-- ===== barra de navegação inferior (só mobile) ===== -->
+  <nav class="mobnav">
+    <button class="mob-item on" data-nav="feed"><span class="mi">🏠</span><span class="ml">Feed</span></button>
+    <button class="mob-item" data-nav="projects"><span class="mi">🧩</span><span class="ml">Projetos</span></button>
+    <button class="mob-item" data-nav="groups"><span class="mi">👥</span><span class="ml">Grupos</span></button>
+    <button class="mob-item" data-nav="events"><span class="mi">🎟️</span><span class="ml">Eventos</span></button>
+    <button class="mob-item mob-config" data-nav="config"><span class="mi">♛</span><span class="ml">Config</span></button>
+    <button class="mob-item" data-nav="profile"><span class="mi">👤</span><span class="ml">Perfil</span></button>
   </nav>
 
   <!-- ========== CENTRO ========== -->
@@ -2257,6 +2279,8 @@
     const el=$('#v-'+b.dataset.nav); if(el) el.classList.add('on');
     $('.col-center').scrollTo({top:0});
   });
+  // barra inferior (mobile): mantém o item aceso
+  $$('.mob-item').forEach(function(b){ b.addEventListener('click',function(){ $$('.mob-item').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); }); });
 
   // sair da conta → volta pro login
   const logoutBtn=$('#logoutBtn');
