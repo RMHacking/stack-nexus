@@ -139,6 +139,16 @@
 
 <script>
   const API=''; // troque quando hospedar o backend
+  // sessão ativa? verifica e entra direto (senão limpa e fica no login)
+  (function(){
+    try{
+      var tk=localStorage.getItem('sn_token'); if(!tk) return;
+      fetch(API+'/api/me/perfil',{headers:{'Authorization':'Bearer '+tk}})
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(b){ if(b&&b.handle){ location.replace('stack-nexus-app-final.html'); } else { try{localStorage.removeItem('sn_token');}catch(e){} } })
+        .catch(function(){});
+    }catch(e){}
+  })();
   const note=document.getElementById('note');
   function show(msg){note.textContent=msg;note.classList.add('show');}
 
