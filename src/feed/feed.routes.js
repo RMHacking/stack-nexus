@@ -1,0 +1,100 @@
+// StackFeed — publicar, listar, editar, apagar e fixar posts.
+const express = require('express');
+const { pool } = require('../db');
+const { requerLogin, requerSud0 } = require('../auth/middleware');
+
+const router = express.Router();
+
+// publicar um post (máx 500 caracteres)
+router.post('/posts', requerLogin, async (req, res, next) => {
+  try {
+    const corpo = ((req.body && req.body.corpo) || '').trim();
+    if (!corpo) return res.status(400).json({ erro: 'vazio' });
+    if (corpo.length > 500) return res.status(400).json({ erro: 'muito_longo' });
+    const { rows } = await pool.query(
+      `INSERT INTO posts (autor_id, corpo) VALUES ($1, $2)
+       RETURNING id, corpo, criado_em`,
+      [req.user.id, corpo]
+    );
+    res.json({ ok: true, post: rows[0] });
+  } catch (e) { next(e); }
+});
+
+// editar o próprio post
+router.patch('/posts/:id', requerLogin, async (req, res, next) => {
+  try {
+    const corpo = ((req.body && req.body.corpo) || '').trim();
+    if (!corpo) return res.status(400).json({ erro: 'vazio' });
+    if (corpo.length > 500) return res.status(400).json({ erro: 'muito_longo' });
+    const { rows } = await pool.query(
+      `UPDATE posts SET corpo = $1, editado_em = now()
+        WHERE id = $2 AND autor_id = $3
+        RETURNING id`,
+      [corpo, req.params.id, req.user.id]
+    );
+    if (!rows.length) return res.status(403).json({ ok: false, motivo: 'nao_e_seu' });
+    res.json({ ok: true });
+  } catch (e) { next(e); }
+});
+
+// apagar: o autor apaga o próprio; o sud0 apaga qualquer um (moderação)
+router.delete('/posts/:id', requerLogin, async (req, res, next) => {
+  try {
+    const sql = req.user.is_sud0
+      ? `DELETE FROM posts WHERE id = $1 RETURNING id`
+      : `DELETE FROM posts WHERE id = $1 AND autor_id = $2 RETURNING id`;
+    const params = req.user.is_sud0 ? [req.params.id] : [req.params.id, req.user.id];
+    const { rows } = await pool.query(sql, params);
+    if (!rows.length) return res.status(403).json({ ok: false, motivo: 'nao_permitido' });
+    res.json({ ok: true });
+  } catch (e) { next(e); }
+});
+
+// fixar/desafixar um comunicado (só sud0)
+router.post('/posts/:id/fixar', requerSud0, async (req, res, next) => {
+  try {
+    const fixar = !!(req.body && req.body.fixar);
+    const { rows } = await pool.query(
+      `UPDATE posts SET fixado = $1 WHERE id = $2 RETURNING id, fixado`,
+      [fixar, req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ ok: false });
+    res.json({ ok: true, fixado: rows[0].fixado });
+  } catch (e) { next(e); }
+});
+
+// feed: fixados no topo, depois por recência. Marca o que é seu e o que é editado.
+router.get('/feed', requerLogin, async (req, res, next) => {
+  try {
+    // evento que já passou do último dia: desafixa (o post continua no feed, com o chat)
+    try { await pool.query("UPDATE posts SET fixado=false WHERE tipo='evento_novo' AND fixado=true AND ref_id IN (SELECT id FROM eventos WHERE fim IS NOT NULL AND CURRENT_DATE > fim)"); } catch (_e) { /* best-effort */ }
+    const { rows } = await pool.query(
+      `SELECT p.id, p.corpo, p.criado_em, p.editado_em, p.fixado, p.tipo, p.ref_id, p.autor_id,
+              c.handle, c.nome, c.exposicao, c.trilha, c.is_sud0, c.membro_num,
+              rx.rocket, rx.brain, rx.bolt, rx.minha
+         FROM posts p JOIN contas c ON c.id = p.autor_id
+         LEFT JOIN LATERAL (
+           SELECT count(*) FILTER (WHERE tipo='rocket')::int AS rocket,
+                  count(*) FILTER (WHERE tipo='brain')::int  AS brain,
+                  count(*) FILTER (WHERE tipo='bolt')::int   AS bolt,
+                  max(tipo) FILTER (WHERE autor_id = $1)     AS minha
+             FROM reacoes r WHERE r.alvo_tipo='post' AND r.alvo_id = p.id
+         ) rx ON true
+        ORDER BY p.fixado DESC, p.criado_em DESC LIMIT 100`, [req.user.id]
+    );
+    const feed = rows.map((r) => ({
+      id: r.id, corpo: r.corpo, criado_em: r.criado_em,
+      fixado: r.fixado, editado: !!r.editado_em, tipo: r.tipo, ref_id: r.ref_id,
+      meu: r.autor_id === req.user.id,
+      rx: { rocket: r.rocket || 0, brain: r.brain || 0, bolt: r.bolt || 0, minha: r.minha || null },
+      autor: {
+        handle: r.handle,
+        nome: r.exposicao === 'aberto' ? r.nome : null,
+        trilha: r.trilha, is_sud0: r.is_sud0, membro_num: r.membro_num,
+      },
+    }));
+    res.json(feed);
+  } catch (e) { next(e); }
+});
+
+module.exports = router;

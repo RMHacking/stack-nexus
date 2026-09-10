@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stack_n3xus — meu perfil</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  :root{
+    --bg:#18191a;--surface:#242526;--surface-2:#3a3b3c;--hover:#303132;--border:#393a3b;
+    --text:#e4e6eb;--text-dim:#b0b3b8;--text-faint:#8a8d91;
+    --accent:#1877f2;--accent-soft:rgba(24,119,242,.14);--ok:#31a24c;--ok-soft:rgba(49,162,76,.14);
+    --crown:#f4c430;--crown-glow:rgba(244,196,48,.2);--crown-soft:rgba(244,196,48,.09);--genesis:#c7891f;
+    --cyber:#e0553f;--cyber-soft:rgba(224,85,63,.14);--danger:#e41e3f;
+    --font-mono:"JetBrains Mono",ui-monospace,monospace;--font-sans:"Inter",system-ui,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;min-height:100vh;}
+  .mono{font-family:var(--font-mono);}
+  button{font-family:inherit;cursor:pointer;border:0;}
+  .wrap{max-width:640px;margin:0 auto;min-height:100vh;background:var(--bg);border-left:1px solid var(--border);border-right:1px solid var(--border);}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:5;}
+  .brand{font-family:var(--font-mono);font-weight:700;font-size:1.05rem;}
+  .brand b{color:var(--accent);}
+  .topbar .r{display:flex;gap:.5rem;}
+  .tb{font-family:var(--font-mono);font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);border-radius:7px;padding:.4rem .7rem;}
+  .tb:hover{color:var(--text);border-color:var(--text-faint);}
+
+  .cover{height:150px;background:linear-gradient(135deg,#2a2b2d,#1a1b1c);border-bottom:1px solid var(--border);}
+  .phead{padding:0 1.2rem 1rem;display:flex;gap:1.1rem;align-items:flex-start;margin-top:-52px;position:relative;flex-wrap:wrap;}
+  .pavatar{width:120px;height:120px;border:4px solid var(--bg);border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-family:var(--font-mono);font-size:2rem;font-weight:600;color:var(--text-faint);flex:none;position:relative;z-index:2;}
+  .pavatar.crown{background:linear-gradient(135deg,var(--crown),var(--genesis));color:#1a1400;}
+  .pheadinfo{flex:1;min-width:200px;padding-top:60px;}
+  .pname{font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+  .crownbadge{font-family:var(--font-mono);font-size:.6rem;background:var(--crown);color:#1a1400;padding:.1rem .5rem;border-radius:20px;font-weight:700;}
+  .phandle{font-family:var(--font-mono);font-size:.82rem;color:var(--text-faint);margin-top:.15rem;}
+  .pbio{font-size:.9rem;color:var(--text-dim);margin-top:.6rem;line-height:1.5;}
+  .pmeta{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.7rem;}
+  .chip{font-family:var(--font-mono);font-size:.66rem;padding:.2rem .55rem;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);display:inline-flex;align-items:center;gap:.35rem;}
+  .chip .d{width:7px;height:7px;border-radius:50%;}
+  .chip.tech{color:var(--accent);} .chip.tech .d{background:var(--accent);}
+  .chip.cyber{color:var(--cyber);} .chip.cyber .d{background:var(--cyber);}
+  .chip.rep{color:var(--ok);border-color:rgba(49,162,76,.3);background:var(--ok-soft);}
+  .chip.exp{color:var(--crown);}
+
+  .stats{display:flex;gap:1.5rem;padding:.4rem 1.2rem 1.2rem;font-family:var(--font-mono);}
+  .stat .v{font-size:1.2rem;font-weight:700;}
+  .stat .v.crown{color:var(--crown);}
+  .stat .l{font-size:.64rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-top:.1rem;}
+
+  .sec{padding:1.1rem 1.2rem;border-top:1px solid var(--border);}
+  .sec-h{font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.8rem;}
+  .origem{display:flex;align-items:center;gap:.7rem;background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--crown);border-radius:10px;padding:.8rem 1rem;}
+  .origem .av{width:38px;height:38px;border-radius:50%;background:#2980b9;display:grid;place-items:center;font-family:var(--font-mono);font-weight:600;color:#fff;font-size:.72rem;flex:none;}
+  .origem .t{font-size:.86rem;} .origem .t b{color:var(--text);}
+  .origem .s{font-family:var(--font-mono);font-size:.66rem;color:var(--text-faint);}
+
+  /* cartão de convite */
+  .invcard{background:linear-gradient(145deg,#151517,#0d0d0e);border:1px solid var(--border);border-radius:14px;padding:1.2rem;}
+  .invcard.genesis{border-color:rgba(244,196,48,.4);background:linear-gradient(145deg,#0a0a0b,#141416);box-shadow:inset 0 0 0 1px rgba(244,196,48,.08);}
+  .invtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;}
+  .invtop .lbl{font-family:var(--font-mono);font-size:.66rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;}
+  .invtop .saldo{font-family:var(--font-mono);font-size:.72rem;color:var(--crown);}
+  .invcode{font-family:var(--font-mono);font-size:.82rem;background:var(--bg);border:1px dashed var(--crown);border-radius:8px;padding:.7rem;color:var(--crown);word-break:break-all;text-align:center;}
+  .invbtns{display:flex;gap:.5rem;margin-top:.7rem;}
+  .invbtns button{flex:1;font-family:var(--font-mono);font-size:.72rem;padding:.55rem;border-radius:8px;border:1px solid var(--border);color:var(--text-dim);background:transparent;}
+  .invbtns button:hover{color:var(--text);border-color:var(--text-faint);}
+  .invbtns button.pri{border-color:var(--crown);color:#1a1400;background:var(--crown);font-weight:600;}
+  .invhint{font-family:var(--font-mono);font-size:.62rem;color:var(--text-faint);margin-top:.7rem;line-height:1.5;}
+
+  .loading,.err{display:grid;place-items:center;min-height:60vh;text-align:center;padding:2rem;}
+  .spin{width:44px;height:44px;border-radius:50%;border:3px solid var(--surface-2);border-top-color:var(--accent);animation:sp .8s linear infinite;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+  .err .seal{width:70px;height:70px;border-radius:50%;background:rgba(228,30,63,.1);color:var(--danger);border:1px solid var(--danger);display:grid;place-items:center;font-size:1.6rem;margin-bottom:1rem;}
+  .btn{border-radius:9px;padding:.7rem 1.2rem;font-weight:600;font-size:.88rem;background:var(--accent);color:#fff;margin-top:1rem;}
+  .cfg{font-family:var(--font-mono);font-size:.6rem;color:var(--text-faint);text-align:center;padding:1rem;}
+  .cfg input{background:transparent;border:0;border-bottom:1px solid var(--border);color:var(--text-dim);font-family:inherit;font-size:.6rem;width:170px;text-align:center;}
+  .hidden{display:none;}
+  .appbtn{display:block;margin:1.2rem 1.2rem 0;text-align:center;font-family:var(--font-mono);font-size:.74rem;color:var(--text-dim);border:1px solid var(--border);border-radius:8px;padding:.6rem;}
+  .appbtn:hover{color:var(--text);border-color:var(--text-faint);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">Stack_<b>n3xus</b></div>
+    <div class="r">
+      <button class="tb" id="btnRede" style="display:none">a rede (sud0)</button>
+      <button class="tb" id="btnSair">sair</button>
+    </div>
+  </div>
+
+  <div id="loading" class="loading"><div><div class="spin"></div><p style="color:var(--text-dim);margin-top:1rem;font-size:.85rem">carregando seu perfil…</p></div></div>
+
+  <div id="erro" class="err hidden">
+    <div>
+      <div class="seal">⚠</div>
+      <h2 style="font-size:1.1rem" id="errT">Você não está conectado</h2>
+      <p style="color:var(--text-dim);font-size:.88rem;margin-top:.4rem" id="errS">Entre para ver seu perfil.</p>
+      <button class="btn" onclick="location.href='stack-nexus-login.html'">Ir para o login →</button>
+    </div>
+  </div>
+
+  <div id="perfil" class="hidden">
+    <div class="cover"></div>
+    <div class="phead">
+      <div class="pavatar" id="pav">··</div>
+      <div class="pheadinfo">
+        <div class="pname" id="pnome">—</div>
+        <div class="phandle" id="phandle">@—</div>
+        <div class="pbio" id="pbio"></div>
+        <div class="pmeta" id="pmeta"></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="v" id="stMembro">#—</div><div class="l">membro nº</div></div>
+      <div class="stat"><div class="v crown" id="stRep">—</div><div class="l">reputação</div></div>
+      <div class="stat"><div class="v" id="stTrouxe">—</div><div class="l">você trouxe</div></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h">Sua origem na rede</div>
+      <div class="origem" id="origem"><div class="av">?</div><div><div class="t" id="origemT">—</div><div class="s">quem te trouxe pra dentro</div></div></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h">Seu convite</div>
+      <div class="invcard" id="invcard">
+        <div class="invtop"><span class="lbl" id="invlbl">cartão de convite</span><span class="saldo" id="invsaldo">—</span></div>
+        <div class="invcode" id="invcode">—</div>
+        <div class="invbtns">
+          <button class="pri" id="copyCode">copiar código</button>
+          <button id="copyLink">copiar link</button>
+        </div>
+        <div class="invhint">quem abrir seu link cai no onboarding com você como origem. cada entrada gasta 1 convite.</div>
+      </div>
+    </div>
+
+    <a class="appbtn" href="stack-nexus-feed.html" style="border-color:var(--accent);color:var(--accent)">entrar no StackFeed →</a>
+    <a class="appbtn" href="stack-nexus-app-final.html">ver o app completo (protótipo) →</a>
+    <div style="height:1.5rem"></div>
+  </div>
+
+  <div class="cfg">servidor: <input id="apiInput" value=""></div>
+</div>
+
+<script>
+  const $ = (s) => document.querySelector(s);
+  let API = '';
+  $('#apiInput').value = API;
+  $('#apiInput').addEventListener('change', e => { API = e.target.value.trim().replace(/\/$/, ''); location.reload(); });
+
+  let token = null;
+  try { token = localStorage.getItem('sn_token'); } catch(e){}
+
+  const iniciais = (s) => (s||'?').replace(/[^A-Za-zÀ-ÿ0-9]/g,'').slice(0,2).toUpperCase() || '··';
+  function show(id){ ['loading','erro','perfil'].forEach(x=>$('#'+x).classList.toggle('hidden', x!==id)); }
+
+  $('#btnSair').onclick = () => { try{ localStorage.removeItem('sn_token'); localStorage.removeItem('sn_handle'); }catch(e){} location.href='stack-nexus-login.html'; };
+  $('#btnRede').onclick = () => location.href='stack-nexus-rede.html';
+
+  async function carregar(){
+    if(!token){ show('erro'); return; }
+    try{
+      const r = await fetch(API+'/api/me/perfil', { headers:{ Authorization:'Bearer '+token } });
+      if(r.status===401){ $('#errT').textContent='Sessão expirada'; $('#errS').textContent='Entre de novo para ver seu perfil.'; show('erro'); return; }
+      const p = await r.json();
+      if(!p || !p.handle){ show('erro'); return; }
+      render(p);
+      show('perfil');
+    }catch(e){
+      $('#errT').textContent='Sem conexão com o servidor';
+      $('#errS').innerHTML='O backend está rodando? ('+API+')';
+      show('erro');
+    }
+  }
+
+  function render(p){
+    const nomeExibe = p.nome || ('@'+p.handle);
+    $('#pav').textContent = iniciais(p.nome || p.handle);
+    if(p.is_sud0) $('#pav').classList.add('crown');
+    $('#pnome').innerHTML = nomeExibe + (p.is_sud0 ? ' <span class="crownbadge">♛ FUNDADOR</span>' : '');
+    $('#phandle').textContent = '@'+p.handle;
+    $('#pbio').textContent = p.bio || '';
+    // meta chips
+    const chips = [];
+    if(p.trilha){ const t = p.trilha==='both' ? 'tech+cyber' : p.trilha; const cls = p.trilha==='cyber'?'cyber':'tech'; chips.push('<span class="chip '+cls+'"><span class="d"></span>'+t+'</span>'); }
+    chips.push('<span class="chip exp">'+(p.exposicao==='aberto'?'◈ Aberto':'◈ Reservado')+'</span>');
+    if(p.criado_em){ chips.push('<span class="chip">entrou em '+new Date(p.criado_em).toLocaleDateString('pt-BR')+'</span>'); }
+    $('#pmeta').innerHTML = chips.join('');
+    // stats
+    $('#stMembro').textContent = '#'+(p.membro_num ?? '—');
+    $('#stRep').textContent = p.reputacao ?? 0;
+    $('#stTrouxe').textContent = p.trouxe ?? 0;
+    // origem
+    if(p.origem_handle){
+      $('#origem').querySelector('.av').textContent = iniciais(p.origem_nome || p.origem_handle);
+      $('#origemT').innerHTML = 'Trazido por <b>@'+p.origem_handle+'</b>';
+    } else {
+      $('#origem').querySelector('.av').textContent = '♛';
+      $('#origemT').innerHTML = '<b>Raiz da rede</b> — você não foi convidado por ninguém';
+    }
+    // convite
+    const c = p.convite;
+    if(c){
+      const genesis = c.tipo==='genesis';
+      if(genesis) $('#invcard').classList.add('genesis');
+      $('#invlbl').textContent = genesis ? '♛ cartão Genesis' : 'cartão de convite';
+      $('#invsaldo').textContent = c.ativo ? ('◆ '+c.slots_disponiveis+' convite(s) disponível(is)') : 'sem convites — inativo';
+      $('#invcode').textContent = c.codigo;
+      const link = 'stack-nexus-onboarding.html?c='+c.codigo;
+      $('#copyCode').onclick = () => copiar(c.codigo, $('#copyCode'), 'código copiado ✓', 'copiar código');
+      $('#copyLink').onclick = () => copiar(link, $('#copyLink'), 'link copiado ✓', 'copiar link');
+    }
+    // sud0 vê botão da rede
+    if(p.is_sud0) $('#btnRede').style.display='';
+  }
+
+  function copiar(txt, btn, ok, orig){
+    const done = () => { btn.textContent=ok; setTimeout(()=>btn.textContent=orig, 1600); };
+    if(navigator.clipboard) navigator.clipboard.writeText(txt).then(done).catch(done);
+    else done();
+  }
+
+  carregar();
+</script>
+</body>
+</html>

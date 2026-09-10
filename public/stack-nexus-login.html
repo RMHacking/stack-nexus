@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stack_n3xus — entrar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#18191a;--surface:#242526;--surface-2:#3a3b3c;--hover:#303132;--border:#393a3b;
+    --text:#e4e6eb;--text-dim:#b0b3b8;--text-faint:#8a8d91;
+    --accent:#1877f2;--accent-hover:#4293ff;--accent-soft:rgba(24,119,242,.14);
+    --ok:#31a24c;--ok-soft:rgba(49,162,76,.14);--danger:#e41e3f;
+    --crown:#f4c430;--crown-glow:rgba(244,196,48,.2);--crown-soft:rgba(244,196,48,.09);--genesis:#c7891f;
+    --cyber:#e0553f;--cyber-soft:rgba(224,85,63,.14);
+    --font-mono:"JetBrains Mono",ui-monospace,monospace;--font-sans:"Inter",system-ui,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;font-size:15px;
+    display:grid;place-items:center;padding:1.5rem;
+    background-image:radial-gradient(circle at 50% 0%,rgba(24,119,242,.06),transparent 60%);}
+  button{font-family:inherit;cursor:pointer;border:0;background:transparent;color:inherit;}
+  input{font-family:inherit;}
+
+  .card{width:100%;max-width:400px;}
+
+  /* marca */
+  .brand{text-align:center;margin-bottom:2rem;}
+  .logo{font-family:var(--font-mono);font-size:1.8rem;font-weight:700;letter-spacing:-.02em;display:inline-flex;align-items:center;gap:.1rem;}
+  .logo .nx{color:var(--accent);}
+  .tagline{font-family:var(--font-mono);font-size:.74rem;color:var(--text-faint);margin-top:.6rem;letter-spacing:.02em;}
+
+  /* caixa de entrada */
+  .box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem;}
+  .lead{font-size:.9rem;color:var(--text-dim);text-align:center;line-height:1.5;margin-bottom:1.3rem;}
+
+  /* botões sociais */
+  .social{display:flex;flex-direction:column;gap:.6rem;}
+  .sbtn{display:flex;align-items:center;justify-content:center;gap:.7rem;width:100%;padding:.75rem 1rem;border-radius:9px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.9rem;font-weight:500;transition:border-color .15s,background .15s;}
+  .sbtn:hover{background:var(--hover);border-color:var(--text-faint);}
+  .sbtn .ic{width:20px;height:20px;flex:none;}
+  .sbtn.primary{border-color:var(--accent);}
+  .sbtn .rec{font-family:var(--font-mono);font-size:.6rem;color:var(--accent);border:1px solid var(--accent);border-radius:20px;padding:.05rem .4rem;margin-left:.2rem;}
+
+  /* divisor */
+  .div{display:flex;align-items:center;gap:.8rem;margin:1.3rem 0;color:var(--text-faint);font-family:var(--font-mono);font-size:.68rem;}
+  .div::before,.div::after{content:"";flex:1;height:1px;background:var(--border);}
+
+  /* email/senha */
+  .field{margin-bottom:.8rem;}
+  .field label{display:block;font-family:var(--font-mono);font-size:.68rem;color:var(--text-dim);margin-bottom:.35rem;}
+  .field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:.7rem .9rem;color:var(--text);font-size:.9rem;outline:none;transition:border-color .15s;}
+  .field input:focus{border-color:var(--accent);}
+  /* senha com olhinho */
+  .pwrap{position:relative;}
+  .pwrap input{width:100%;padding-right:2.8rem;}
+  .eye{position:absolute;right:.3rem;top:50%;transform:translateY(-50%);width:34px;height:34px;display:grid;place-items:center;color:var(--text-faint);border-radius:7px;}
+  .eye:hover{color:var(--text-dim);background:var(--hover);}
+  .eye svg{width:19px;height:19px;}
+  /* linha: lembrar email + esqueci senha */
+  .rowopts{display:flex;align-items:center;justify-content:space-between;margin:-.1rem 0 .9rem;}
+  .remember{display:flex;align-items:center;gap:.45rem;font-family:var(--font-mono);font-size:.7rem;color:var(--text-dim);cursor:pointer;user-select:none;}
+  .remember input{accent-color:var(--accent);cursor:pointer;}
+  .forgot-link{font-family:var(--font-mono);font-size:.7rem;color:var(--text-faint);cursor:pointer;}
+  .forgot-link:hover{color:var(--text-dim);}
+  .enter{width:100%;padding:.75rem;border-radius:9px;background:var(--accent);color:#fff;font-size:.9rem;font-weight:600;transition:filter .15s;}
+  .enter:hover{filter:brightness(1.08);}
+
+  /* rodapé: fechada por convite */
+  .gate{margin-top:1.4rem;text-align:center;}
+  .gate-line{display:flex;align-items:center;justify-content:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;color:var(--text-faint);padding:.7rem .9rem;border:1px dashed var(--border);border-radius:9px;line-height:1.5;}
+  .gate-line .lock{color:var(--crown);}
+  .gate-sub{font-size:.8rem;color:var(--text-faint);margin-top:.9rem;line-height:1.5;}
+  .gate-sub b{color:var(--text-dim);}
+
+  .foot{text-align:center;margin-top:1.6rem;font-family:var(--font-mono);font-size:.64rem;color:var(--text-faint);opacity:.6;}
+
+  /* mensagem de erro/estado (simulação) */
+  .note{display:none;margin-top:1rem;font-family:var(--font-mono);font-size:.72rem;text-align:center;padding:.6rem;border-radius:8px;background:var(--accent-soft);color:var(--accent);}
+  .note.show{display:block;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <div class="logo">Stack_n3xus</div>
+      <div class="tagline">From code to kernel. Study, share, secure.</div>
+    </div>
+
+    <div class="box">
+      <p class="lead">Bem-vindo de volta. Entre para continuar a conversa.</p>
+
+      <div class="social">
+        <button class="sbtn primary" data-login="github">
+          <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.8c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 016 0C17.3 4.6 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+          Entrar com GitHub <span class="rec">recomendado</span>
+        </button>
+        <button class="sbtn" data-login="google">
+          <svg class="ic" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.6 12.2c0-.8-.1-1.5-.2-2.2H12v4.3h6c-.3 1.4-1 2.6-2.2 3.4v2.8h3.6c2.1-2 3.3-4.9 3.3-8.3z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.8c-1 .7-2.3 1.1-3.7 1.1-2.8 0-5.2-1.9-6.1-4.5H2.2v2.8C4 20.5 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.9 14.1c-.2-.7-.4-1.4-.4-2.1s.1-1.4.4-2.1V7.1H2.2C1.4 8.6 1 10.2 1 12s.4 3.4 1.2 4.9l3.7-2.8z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3 .5 4.1 1.6l3.1-3.1C17.5 2.1 15 1 12 1 7.7 1 4 3.5 2.2 7.1l3.7 2.8C6.8 7.3 9.2 5.4 12 5.4z"/></svg>
+          Entrar com Google
+        </button>
+      </div>
+
+      <div class="div">ou com email</div>
+
+      <div class="field">
+        <label>email</label>
+        <input type="email" placeholder="voce@email.com" id="email" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>senha</label>
+        <div class="pwrap">
+          <input type="password" placeholder="••••••••" id="senha" autocomplete="current-password">
+          <button type="button" class="eye" id="eye" aria-label="mostrar senha">
+            <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.9 17.9A10.7 10.7 0 0112 20c-7 0-11-8-11-8a19.5 19.5 0 015.1-5.9m3.2-1.6A10.7 10.7 0 0112 4c7 0 11 8 11 8a19.5 19.5 0 01-2.3 3.3M1 1l22 22"/><path d="M9.9 9.9a3 3 0 004.2 4.2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="rowopts">
+        <label class="remember"><input type="checkbox" id="remember"> lembrar meu email</label>
+        <a class="forgot-link">esqueci minha senha</a>
+      </div>
+      <button class="enter" data-login="email">Entrar</button>
+
+      <div class="note" id="note"></div>
+
+      <div class="gate">
+        <div class="gate-line"><span class="lock">◆</span> Entrada só por convite. Não existe cadastro, não existe fila.</div>
+        <div class="gate-sub">O Stack_n3xus é uma das comunidades técnicas mais fechadas que existem. <b>Só entra quem é trazido por alguém de dentro</b> — e cada membro tem pouquíssimos convites. Se você recebeu um, alguém apostou em você.<br><br><a href="stack-nexus-onboarding-preview.html" style="font-family:var(--font-mono);font-size:.72rem;color:var(--accent);cursor:pointer;">▸ ver como é entrar por um convite (demo)</a></div>
+      </div>
+    </div>
+
+    <div class="foot">// acesso restrito · membros verificados</div>
+  </div>
+
+<script>
+  const API=''; // troque quando hospedar o backend
+  const note=document.getElementById('note');
+  function show(msg){note.textContent=msg;note.classList.add('show');}
+
+  // olhinho: mostrar/esconder senha
+  const eye=document.getElementById('eye'), senha=document.getElementById('senha');
+  const eyeOn=eye.querySelector('.eye-on'), eyeOff=eye.querySelector('.eye-off');
+  eye.addEventListener('click',()=>{
+    const vis=senha.type==='text';
+    senha.type=vis?'password':'text';
+    eyeOn.style.display=vis?'block':'none';
+    eyeOff.style.display=vis?'none':'block';
+    eye.setAttribute('aria-label',vis?'mostrar senha':'ocultar senha');
+  });
+
+  // lembrar email (guarda localmente no navegador)
+  const email=document.getElementById('email'), remember=document.getElementById('remember');
+  try{
+    const saved=localStorage.getItem('sn_email');
+    if(saved){email.value=saved;remember.checked=true;}
+  }catch(e){}
+  remember.addEventListener('change',()=>{
+    try{ if(!remember.checked) localStorage.removeItem('sn_email'); }catch(e){}
+  });
+  function persistEmail(){
+    try{ if(remember.checked && email.value.trim()) localStorage.setItem('sn_email',email.value.trim()); }catch(e){}
+  }
+  email.addEventListener('blur',persistEmail);
+
+  // esqueci minha senha (simulação — o fluxo real envia um link por email)
+  const forgot=document.querySelector('.forgot-link');
+  if(forgot) forgot.addEventListener('click',()=>{
+    if(email.value.trim()) show('→ link de recuperação enviado para '+email.value.trim());
+    else show('digite seu email acima para receber o link de recuperação');
+  });
+
+  document.querySelectorAll('[data-login]').forEach(b=>{
+    b.addEventListener('click',async ()=>{
+      const m=b.dataset.login;
+      // login social (OAuth) ainda não implementado no backend
+      if(m==='github'||m==='google'){ show('login com '+(m==='github'?'GitHub':'Google')+' em breve — use email e senha por enquanto'); return; }
+      // login real por email + senha (chama o backend)
+      if(!email.value.trim()||!senha.value){ show('digite seu email e senha para entrar'); return; }
+      persistEmail();
+      show('→ verificando credenciais...');
+      try{
+        const r=await fetch(API+'/api/auth/login',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({email:email.value.trim(),senha:senha.value})
+        });
+        const data=await r.json().catch(()=>({}));
+        if(r.status!==200||!data.token){ show('email ou senha incorretos'); return; }
+        try{ localStorage.setItem('sn_token',data.token); localStorage.setItem('sn_handle',data.conta.handle); }catch(e){}
+        show('✓ conectado como @'+data.conta.handle+' — entrando...');
+        setTimeout(()=>{ window.location.href='stack-nexus-app-final.html'; }, 900);
+      }catch(e){ show('sem conexão com o servidor ('+API+') — o backend está rodando?'); }
+    });
+  });
+</script>
+</body>
+</html>

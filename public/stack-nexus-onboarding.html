@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stack_n3xus — entrar por convite</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root{
+    --bg:#18191a;--surface:#242526;--surface-2:#3a3b3c;--border:#393a3b;
+    --text:#e4e6eb;--text-dim:#b0b3b8;--text-faint:#8a8d91;
+    --accent:#1877f2;--accent-hover:#4293ff;--accent-dim:#1c5fbf;--accent-soft:rgba(24,119,242,.14);
+    --crown:#f4c430;--crown-glow:rgba(244,196,48,.22);--crown-soft:rgba(244,196,48,.10);--genesis:#c7891f;
+    --ok:#31a24c;--ok-soft:rgba(49,162,76,.14);--danger:#e41e3f;--danger-soft:rgba(228,30,63,.1);
+    --font-mono:"JetBrains Mono",ui-monospace,monospace;--font-sans:"Inter",system-ui,"Segoe UI",sans-serif;--radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#0d0e0f;color:var(--text);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;min-height:100vh;}
+  .mono{font-family:var(--font-mono);}
+  button{font-family:inherit;cursor:pointer;}
+
+  .stage{display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem 3rem;}
+  .phone{width:390px;max-width:100%;background:var(--bg);border:1px solid var(--border);border-radius:28px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative;min-height:720px;}
+  .notch{height:26px;background:var(--surface);display:flex;align-items:center;justify-content:center;}
+  .notch::after{content:"";width:90px;height:6px;background:#000;border-radius:6px;}
+
+  .screen{display:none;padding:1.6rem 1.4rem 2rem;min-height:694px;flex-direction:column;animation:fade .35s ease;}
+  .screen.is-on{display:flex;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .steps{display:flex;gap:.4rem;justify-content:center;margin:1rem 0 0;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--surface-2);}
+  .dot.on{background:var(--crown);box-shadow:0 0 8px var(--crown-glow);}
+
+  .brand{font-family:var(--font-mono);font-weight:700;font-size:1.05rem;text-align:center;}
+  .brand b{color:var(--accent);}
+  .av{border-radius:50%;display:grid;place-items:center;font-family:var(--font-mono);font-weight:600;color:#fff;}
+  .av--crown{background:linear-gradient(135deg,var(--crown),var(--genesis));color:#1a1400;}
+
+  h2.t{font-size:1.35rem;margin:.2rem 0;letter-spacing:-.02em;text-align:center;line-height:1.25;}
+  p.sub{color:var(--text-dim);font-size:.9rem;text-align:center;line-height:1.5;margin:.4rem 0 0;}
+  .mono-tag{font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);text-align:center;}
+
+  .btn{width:100%;border:0;border-radius:10px;padding:.85rem;font-size:.9rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:.6rem;margin-top:.7rem;color:#fff;}
+  .btn--gh{background:#e4e6eb;color:#161616;}
+  .btn--gg{background:var(--surface-2);color:var(--text);border:1px solid var(--border);}
+  .btn--pri{background:var(--accent);color:#fff;} .btn--pri:hover{background:var(--accent-hover);}
+  .btn--crown{background:var(--crown);color:#1a1400;} .btn--crown:hover{filter:brightness(1.06);}
+  .btn--crown:disabled{opacity:.55;cursor:default;filter:none;}
+  .btn--ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);}
+
+  .ordiv{display:flex;align-items:center;gap:.6rem;margin:1rem 0;color:var(--text-faint);font-family:var(--font-mono);font-size:.62rem;}
+  .ordiv::before,.ordiv::after{content:"";flex:1;height:1px;background:var(--border);}
+  .miniform{display:flex;flex-direction:column;gap:.5rem;}
+  .mini-in{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;color:var(--text);font-size:.85rem;font-family:inherit;outline:none;}
+  .mini-in:focus{border-color:var(--crown);}
+  .mini-pw{position:relative;}
+  .mini-pw .mini-in{padding-right:2.6rem;width:100%;}
+  .mini-eye{position:absolute;right:.25rem;top:50%;transform:translateY(-50%);width:32px;height:32px;display:grid;place-items:center;color:var(--text-faint);background:transparent;border:0;border-radius:6px;cursor:pointer;}
+  .mini-eye:hover{color:var(--text-dim);}
+  .mini-eye svg{width:18px;height:18px;}
+  .minilabel{font-family:var(--font-mono);font-size:.62rem;color:var(--text-faint);margin:.5rem 0 -.1rem;}
+  .picks{display:flex;gap:.4rem;}
+  .picks button{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.5rem;color:var(--text-dim);font-size:.74rem;font-family:var(--font-mono);}
+  .picks button.on{border-color:var(--crown);background:var(--crown-soft);color:var(--crown);}
+
+  .spacer{flex:1;}
+  .inviter{display:flex;flex-direction:column;align-items:center;gap:.7rem;margin-top:2rem;}
+  .inviter__av{width:88px;height:88px;font-size:1.6rem;background:#2980b9;box-shadow:0 0 0 4px var(--surface),0 0 0 5px var(--accent);}
+  .hardcard{margin-top:1.5rem;display:flex;flex-direction:column;gap:.7rem;}
+  .hardrow{display:flex;align-items:center;gap:.9rem;padding:.6rem .9rem;border:1px solid var(--border);border-radius:10px;background:var(--surface);}
+  .hardrow .hn{font-family:var(--font-mono);font-weight:700;font-size:1.3rem;color:var(--crown);min-width:60px;text-align:center;}
+  .hardrow .hl{font-size:.76rem;color:var(--text-dim);line-height:1.35;}
+  .scarcity{display:inline-flex;align-items:center;gap:.4ch;font-family:var(--font-mono);font-size:.66rem;color:var(--crown);background:var(--crown-soft);border:1px solid var(--crown);border-radius:20px;padding:.2rem .6rem;margin:1.4rem auto 0;}
+  /* tratamento Genesis (direto do Fundador) */
+  .gbadge{display:inline-flex;align-items:center;gap:.4ch;font-family:var(--font-mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--crown);background:var(--crown-soft);border:1px solid var(--crown);border-radius:20px;padding:.25rem .8rem;margin:.6rem auto 0;box-shadow:0 0 16px var(--crown-glow);}
+  .phone.genesis{border-color:rgba(244,196,48,.35);box-shadow:0 20px 60px rgba(0,0,0,.55),inset 0 0 0 1px rgba(244,196,48,.06);}
+  .inviter__av.crown{background:linear-gradient(135deg,var(--crown),var(--genesis));color:#1a1400;box-shadow:0 0 0 4px var(--surface),0 0 0 5px var(--crown),0 0 34px var(--crown-glow);}
+
+  .cerem{text-align:center;justify-content:center;align-items:center;background:radial-gradient(120% 80% at 50% 0%,rgba(244,196,48,.10),transparent 60%);}
+  .seal{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;font-size:2.6rem;background:radial-gradient(circle,var(--crown),var(--genesis));color:#1a1400;box-shadow:0 0 0 6px var(--crown-soft),0 0 40px var(--crown-glow);margin-bottom:.4rem;animation:pulse 2.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 6px var(--crown-soft),0 0 40px var(--crown-glow);}50%{box-shadow:0 0 0 10px var(--crown-soft),0 0 60px var(--crown-glow);}}
+  .admitted{font-family:var(--font-mono);font-size:.7rem;color:var(--crown);letter-spacing:.14em;text-transform:uppercase;margin-top:.6rem;}
+  .sud0quote{border:1px solid var(--crown);background:var(--crown-soft);border-radius:12px;padding:1rem 1.1rem;margin-top:1.4rem;text-align:left;}
+  .sud0quote__h{font-family:var(--font-mono);font-size:.7rem;color:var(--crown);font-weight:700;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem;}
+  .sud0quote__b{font-size:.92rem;line-height:1.5;color:#f0e6cf;}
+  .cerem .code{font-family:var(--font-mono);font-size:.74rem;background:rgba(0,0,0,.25);border:1px dashed var(--crown);border-radius:8px;padding:.5rem;color:var(--crown);word-break:break-all;margin-top:1rem;}
+
+  .arrived__friend{display:flex;align-items:center;gap:.8rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.9rem;}
+  .arrived__friend .av{width:48px;height:48px;font-size:.9rem;background:#2980b9;flex-shrink:0;}
+  .arrived__friend .fr-name{font-weight:600;font-size:.92rem;}
+  .arrived__friend .fr-sub{font-family:var(--font-mono);font-size:.72rem;color:var(--ok);}
+  .nudge{margin-top:1rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;}
+  .nudge__h{font-size:.82rem;color:var(--text-dim);margin-bottom:.7rem;}
+  .nudge__opt{display:flex;align-items:center;gap:.7rem;padding:.7rem;border-radius:10px;border:1px solid var(--border);background:var(--bg);margin-bottom:.5rem;}
+  .nudge__ic{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);flex-shrink:0;font-family:var(--font-mono);}
+  .nudge__txt{font-size:.85rem;} .nudge__txt small{display:block;color:var(--text-faint);font-size:.72rem;}
+
+  .note{font-family:var(--font-mono);font-size:.72rem;text-align:center;margin-top:.7rem;padding:.55rem;border-radius:8px;display:none;}
+  .note.err{display:block;background:var(--danger-soft);color:var(--danger);}
+  .note.info{display:block;background:var(--accent-soft);color:var(--accent);}
+  .spin{width:46px;height:46px;border-radius:50%;border:3px solid var(--surface-2);border-top-color:var(--crown);animation:sp .8s linear infinite;margin:0 auto;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+  .center{justify-content:center;align-items:center;text-align:center;}
+  .seal.block{background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger);box-shadow:none;animation:none;font-size:2rem;width:88px;height:88px;}
+  .cfg{font-family:var(--font-mono);font-size:.6rem;color:var(--text-faint);text-align:center;margin-top:1rem;}
+  .cfg input{background:transparent;border:0;border-bottom:1px solid var(--border);color:var(--text-dim);font-family:inherit;font-size:.6rem;width:170px;text-align:center;}
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="phone">
+      <div class="notch"></div>
+
+      <!-- LOADING -->
+      <section class="screen is-on center" id="s-load">
+        <div class="brand">Stack_<b>n3xus</b></div>
+        <div class="spacer"></div>
+        <div class="spin"></div>
+        <p class="sub" style="margin-top:1rem">validando convite…</p>
+        <div class="spacer"></div>
+      </section>
+
+      <!-- PEDIR CÓDIGO -->
+      <section class="screen center" id="s-code">
+        <div class="brand">Stack_<b>n3xus</b></div>
+        <div class="spacer"></div>
+        <h2 class="t">Tem um convite?</h2>
+        <p class="sub">Cole o código que você recebeu.</p>
+        <div class="miniform" style="margin-top:1.2rem;width:100%">
+          <input class="mini-in" id="codeInput" placeholder="ex: WPkcGK8n...">
+          <button class="btn btn--crown" id="codeGo">Continuar →</button>
+        </div>
+        <div class="spacer"></div>
+      </section>
+
+      <!-- BLOQUEIO -->
+      <section class="screen center" id="s-block">
+        <div class="brand">Stack_<b>n3xus</b></div>
+        <div class="spacer"></div>
+        <div class="seal block">✕</div>
+        <h2 class="t" style="margin-top:.6rem">Convite indisponível</h2>
+        <p class="sub" id="blockMsg">Esse convite não pode ser usado.</p>
+        <div class="spacer"></div>
+        <button class="btn btn--ghost" id="blockRetry">tentar outro código</button>
+      </section>
+
+      <!-- TELA 1: convidado -->
+      <section class="screen" id="s1">
+        <div class="brand">Stack_<b>n3xus</b></div>
+        <div class="steps"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        <div style="text-align:center"><span class="gbadge" id="s1-gbadge" style="display:none">♛ convite Genesis · direto do Fundador</span></div>
+        <div class="inviter">
+          <div class="av inviter__av" id="inv-av">··</div>
+          <div style="text-align:center">
+            <div style="font-weight:700;font-size:1.05rem;" id="inv-nome">—</div>
+            <div class="mono" id="inv-handle" style="font-size:.76rem;color:var(--text-dim);">@—</div>
+          </div>
+        </div>
+        <h2 class="t" style="margin-top:1.4rem;" id="s1-title">Você foi escolhido.</h2>
+        <p class="sub">O Stack_n3xus é fechado. Não existe cadastro, não existe fila. Só se entra se alguém de dentro te trouxer.</p>
+        <div class="hardcard">
+          <div class="hardrow"><span class="hn" id="hardhn">◆</span><span class="hl" id="hardhl">convite pessoal, único<br>e não transferível</span></div>
+        </div>
+        <div class="scarcity" id="scarcity">♛ isto não se compra. se merece.</div>
+        <div class="spacer"></div>
+        <button class="btn btn--crown" onclick="go('s2')">Aceitar meu lugar →</button>
+      </section>
+
+      <!-- TELA 2: criar acesso -->
+      <section class="screen" id="s2">
+        <div class="brand">Stack_<b>n3xus</b></div>
+        <div class="steps"><span class="dot"></span><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="spacer" style="flex:.25;"></div>
+        <h2 class="t">Crie seu acesso.</h2>
+        <p class="sub">É aqui que sua conta nasce. Escolha como quer entrar.</p>
+
+        <div style="margin-top:1.2rem;">
+          <button class="btn btn--gh" onclick="social('GitHub')"><span>⌥</span> Criar com GitHub</button>
+          <button class="btn btn--gg" onclick="social('Google')"><span>◉</span> Criar com Google</button>
+        </div>
+
+        <div class="ordiv">ou com email e senha</div>
+
+        <div class="miniform">
+          <div class="minilabel">seu @nick</div>
+          <input class="mini-in" id="ob-handle" placeholder="ex: k3rnel" autocomplete="off">
+          <div class="minilabel">email</div>
+          <input class="mini-in" id="ob-email" type="email" placeholder="seu@email.com">
+          <div class="minilabel">senha</div>
+          <div class="mini-pw">
+            <input class="mini-in" type="password" placeholder="crie uma senha" id="ob-pw">
+            <button type="button" class="mini-eye" onclick="obEye()" aria-label="mostrar senha">
+              <svg id="ob-eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg id="ob-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.9 17.9A10.7 10.7 0 0112 20c-7 0-11-8-11-8a19.5 19.5 0 015.1-5.9m3.2-1.6A10.7 10.7 0 0112 4c7 0 11 8 11 8a19.5 19.5 0 01-2.3 3.3M1 1l22 22"/><path d="M9.9 9.9a3 3 0 004.2 4.2"/></svg>
+            </button>
+          </div>
+          <div class="minilabel">como quer aparecer</div>
+          <div class="picks" id="pkExp">
+            <button data-v="aberto" class="on">Aberto (nome/foto)</button>
+            <button data-v="reservado">Reservado (só nick)</button>
+          </div>
+          <button class="btn btn--crown" style="margin-top:.6rem;" id="ob-criar">Criar acesso →</button>
+          <div class="note" id="ob-note"></div>
+        </div>
+        <p class="mono-tag" style="margin-top:.7rem;color:var(--text-faint);line-height:1.6;" id="ob-origem">// quem te trouxe fica registrado como sua origem</p>
+      </section>
+
+      <!-- TELA 3: cerimônia -->
+      <section class="screen cerem" id="s3">
+        <div class="steps" style="margin-top:0"><span class="dot"></span><span class="dot"></span><span class="dot on"></span><span class="dot"></span></div>
+        <div class="spacer"></div>
+        <div class="seal">♛</div>
+        <div class="admitted">você foi admitido</div>
+        <div style="text-align:center"><span class="gbadge" id="s3-gbadge" style="display:none">♛ entrada Genesis · pelo Fundador</span></div>
+        <h2 class="t" style="margin-top:.6rem;">Você está<br>dentro.</h2>
+        <p class="sub">Você é <b id="cer-num">membro</b>. Poucos chegam até aqui.</p>
+        <div class="sud0quote">
+          <div class="sud0quote__h">♛ sud0/n3xus <span style="color:var(--text-faint);font-weight:400;">· entidade fundadora</span></div>
+          <div class="sud0quote__b">Toda boa conversa começa num evento e morre no corredor. Aqui ela continua. A régua é uma só: mostre o que você constrói.</div>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn--crown" onclick="go('s4')">Entrar na rede →</button>
+      </section>
+
+      <!-- TELA 4: chegada -->
+      <section class="screen" id="s4">
+        <div class="brand">Stack_<b>n3xus</b></div>
+        <div class="steps"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot on"></span></div>
+        <div style="margin-top:1.2rem;">
+          <div class="arrived__friend">
+            <div class="av" id="arr-av">··</div>
+            <div style="flex:1">
+              <div class="fr-name" id="arr-nome">—</div>
+              <div class="fr-sub">✓ sua origem · conexão estabelecida</div>
+            </div>
+          </div>
+          <p class="mono-tag" style="text-align:left;margin-top:.5rem;color:var(--text-faint);" id="arr-origem">// registrado como sua origem na árvore da rede</p>
+        </div>
+        <div class="nudge">
+          <div class="nudge__h">Primeiros passos — quem produz na primeira semana, permanece:</div>
+          <div class="nudge__opt"><div class="nudge__ic">◆</div><div class="nudge__txt">Publicar seu primeiro projeto<small>o que você constrói é sua reputação aqui</small></div></div>
+          <div class="nudge__opt"><div class="nudge__ic">↔</div><div class="nudge__txt">Completar seu perfil técnico<small>stack, trilha e links — defina como o resto te vê</small></div></div>
+        </div>
+        <div class="mono-tag" style="margin-top:.8rem">seu cartão de convite (você também traz gente):</div>
+        <div class="cerem"><div class="code" id="arr-code" style="margin-top:.4rem">—</div></div>
+        <div class="spacer"></div>
+        <button class="btn btn--pri" onclick="window.location.href='stack-nexus-app-final.html'">Entrar no Stack_n3xus →</button>
+      </section>
+
+    </div>
+    <div class="cfg">servidor: <input id="apiInput" value=""></div>
+  </div>
+
+<script>
+  const $ = (s) => document.querySelector(s);
+  let API = '';
+  const _sp = new URLSearchParams(location.search);
+  let codigo = _sp.get('c') || '';
+  let eventoCodigo = _sp.get('e') || '';
+  let modoEvento = !!eventoCodigo && !codigo;
+  const esc = (x) => (x||'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  let convite = null;         // dados do gate
+  let exposicao = 'aberto';
+  let novo = null;            // resposta do concluir
+  let credencial = null;      // {email, senha} p/ auto-login
+
+  $('#apiInput').value = API;
+  $('#apiInput').addEventListener('change', e => { API = e.target.value.trim().replace(/\/$/, ''); });
+
+  async function api(path, opt = {}) {
+    const r = await fetch(API + path, {
+      ...opt,
+      headers: { 'Content-Type': 'application/json', ...(opt.headers || {}) },
+      body: opt.body ? JSON.stringify(opt.body) : undefined,
+    });
+    return { status: r.status, body: await r.json().catch(() => ({})) };
+  }
+
+  const screens = ['s-load','s-code','s-block','s1','s2','s3','s4'];
+  function go(id){ screens.forEach(s => document.getElementById(s).classList.toggle('is-on', s===id)); }
+
+  const iniciais = (s) => (s||'?').replace(/[^A-Za-zÀ-ÿ0-9]/g,'').slice(0,2).toUpperCase() || '··';
+
+  // exposição
+  document.querySelectorAll('#pkExp button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#pkExp button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); exposicao = b.dataset.v;
+  });
+  function obEye(){
+    const pw=$('#ob-pw'), on=$('#ob-eye-on'), off=$('#ob-eye-off'); const vis=pw.type==='text';
+    pw.type=vis?'password':'text'; on.style.display=vis?'block':'none'; off.style.display=vis?'none':'block';
+  }
+  function social(nome){ const n=$('#ob-note'); n.className='note info'; n.textContent='login com '+nome+' (OAuth) chega em breve — use email e senha por enquanto'; }
+
+  // pedir código
+  $('#codeGo').onclick = () => { codigo = $('#codeInput').value.trim(); if(codigo) gate(); };
+  $('#blockRetry').onclick = () => { go('s-code'); };
+
+  // tratamento premium quando a entrada é pelo cartão Genesis (Fundador)
+  function aplicarGenesis(){
+    document.querySelector('.phone').classList.add('genesis');
+    $('#s1-gbadge').style.display=''; $('#s3-gbadge').style.display='';
+    const av=$('#inv-av'); av.classList.add('crown'); av.textContent='♛';
+    $('#inv-nome').textContent='sud0'; $('#inv-handle').textContent='entidade fundadora'; $('#inv-handle').style.display='';
+    $('#s1-title').innerHTML='O Fundador<br>escolheu você.';
+    $('#hardhn').textContent='♛'; $('#hardhl').innerHTML='convite <b style="color:var(--crown)">Genesis</b> · direto do Fundador';
+    $('#scarcity').textContent='♛ Genesis — a forma mais rara de entrar.';
+    $('#ob-origem').innerHTML='// o Fundador (sud0) fica registrado como sua origem';
+    const aav=$('#arr-av'); aav.textContent='♛'; aav.style.background='linear-gradient(135deg,var(--crown),var(--genesis))'; aav.style.color='#1a1400';
+    $('#arr-nome').textContent='sud0';
+  }
+
+  function bloqueio(motivo){
+    const t = motivo==='sem_saldo' ? 'Quem te convidou está sem convites disponíveis no momento.'
+            : motivo==='invalido' ? 'Esse convite não existe ou não é mais válido.'
+            : 'Esse convite não pode ser usado agora.';
+    $('#blockMsg').textContent = t; go('s-block');
+  }
+
+  async function gate(){
+    go('s-load');
+    try{
+      const { status, body } = await api('/api/convite/' + encodeURIComponent(codigo));
+      if(status!==200 || !body.destino) return bloqueio('invalido');
+      if(body.destino==='login'){ location.href='stack-nexus-login.html'; return; }
+      if(body.destino==='bloqueio') return bloqueio(body.motivo);
+      convite = body;
+      const c = body.convidante || {};
+      const nome = c.nome || ('@'+ (c.handle||''));
+      $('#inv-av').textContent = iniciais(c.nome || c.handle);
+      if(c.nome){ $('#inv-nome').textContent=c.nome; $('#inv-handle').textContent='@'+c.handle; $('#inv-handle').style.display=''; }
+      else { $('#inv-nome').textContent='@'+c.handle; $('#inv-handle').style.display='none'; }
+      $('#s1-title').innerHTML = (c.nome ? c.nome.split(' ')[0] : '@'+c.handle) + ' escolheu<br>você.';
+      $('#ob-origem').innerHTML = '// @'+(c.handle||'')+' fica registrado como sua origem';
+      // tela 4 (origem)
+      $('#arr-av').textContent = iniciais(c.nome || c.handle);
+      $('#arr-nome').textContent = c.nome ? c.nome : ('@'+c.handle);
+      $('#arr-origem').innerHTML = '// @'+(c.handle||'')+' registrado como sua origem na árvore da rede';
+      if(body.tipo==='genesis') aplicarGenesis();
+      go('s1');
+    }catch(e){
+      $('#blockMsg').innerHTML = 'Não consegui falar com o servidor em <b>'+API+'</b>.<br>O backend está rodando? (npm start)';
+      go('s-block');
+    }
+  }
+
+  async function gateEvento(){
+    go('s-load');
+    try{
+      const { status, body } = await api('/api/evento/'+encodeURIComponent(eventoCodigo));
+      if(status!==200){ return bloqueio('invalido'); }
+      if(!body.ok){
+        const m=body.motivo;
+        $('#blockMsg').textContent = m==='esgotado' ? 'As vagas deste evento se esgotaram.'
+          : m==='ainda_nao' ? 'Este evento ainda não começou. Volte na data do evento.'
+          : m==='encerrado' ? 'Este evento já foi encerrado.'
+          : m==='fechado' ? 'Este evento não está aberto no momento.'
+          : 'Este convite de evento não é válido.';
+        return go('s-block');
+      }
+      convite = { evento:true, nome:body.nome };
+      $('#inv-av').textContent='🎟️';
+      $('#inv-nome').textContent=body.nome; $('#inv-handle').textContent='evento'; $('#inv-handle').style.display='';
+      $('#s1-title').innerHTML='Você foi chamado<br>para um evento.';
+      $('#hardhl').innerHTML='entrada pelo <b style="color:var(--accent)">evento</b><br>'+esc(body.nome);
+      $('#scarcity').textContent='🎟️ entrada especial de evento';
+      $('#ob-origem').innerHTML='// você fica registrado como entrada do evento — fora da árvore pessoal';
+      $('#arr-av').textContent='🎟️'; $('#arr-av').style.background='linear-gradient(135deg,var(--accent),#1b3a5c)'; $('#arr-av').style.color='#fff';
+      $('#arr-nome').textContent=body.nome;
+      $('#arr-origem').innerHTML='// registrado como entrada do evento '+esc(body.nome)+' (fora da árvore pessoal)';
+      go('s1');
+    }catch(e){
+      $('#blockMsg').innerHTML='Não consegui falar com o servidor em <b>'+API+'</b>.<br>O backend está rodando? (npm start)';
+      go('s-block');
+    }
+  }
+
+  // criar conta
+  $('#ob-criar').onclick = async () => {
+    const handle = $('#ob-handle').value.trim();
+    const email  = $('#ob-email').value.trim();
+    const senha  = $('#ob-pw').value;
+    const note = $('#ob-note');
+    if(!handle || !email || !senha){ note.className='note err'; note.textContent='preencha @nick, email e senha'; return; }
+    const btn = $('#ob-criar'); btn.disabled=true; btn.textContent='criando…';
+    if(modoEvento){
+      const btn2=$('#ob-criar'); btn2.disabled=true; btn2.textContent='criando…';
+      note.className='note info'; note.textContent='→ criando sua conta…';
+      try{
+        const concl = await api('/api/onboarding/evento', { method:'POST', body:{ codigo:eventoCodigo, handle, email, senha, exposicao } });
+        if(!concl.body.ok){
+          const m=concl.body.motivo;
+          const msg = m==='handle_em_uso' ? 'esse @nick já existe — escolha outro'
+                    : m==='email_em_uso'  ? 'esse email já tem conta — tente entrar pelo login'
+                    : m==='esgotado'      ? 'as vagas do evento acabaram de esgotar'
+                    : m==='ainda_nao'     ? 'o evento ainda não começou'
+                    : m==='encerrado'     ? 'o evento já foi encerrado'
+                    : m==='fechado'       ? 'o evento foi fechado'
+                    : ('não deu: '+(m||concl.body.erro||'erro'));
+          note.className='note err'; note.textContent=msg; btn2.disabled=false; btn2.textContent='Criar acesso →'; return;
+        }
+        novo = concl.body; credencial = { email, senha };
+        try{ const lg = await api('/api/auth/login', { method:'POST', body: credencial }); if(lg.body.token){ localStorage.setItem('sn_token', lg.body.token); localStorage.setItem('sn_handle', handle); } }catch(_e){}
+        $('#cer-num').textContent = 'membro #'+novo.membro_num;
+        $('#arr-code').textContent = novo.convite_codigo;
+        go('s3');
+      }catch(e){ note.className='note err'; note.textContent='erro de conexão com o servidor'; btn2.disabled=false; btn2.textContent='Criar acesso →'; }
+      return;
+    }
+    note.className='note info'; note.textContent='→ reservando seu lugar…';
+    try{
+      const rsv = await api('/api/convite/'+encodeURIComponent(codigo)+'/reservar', { method:'POST' });
+      if(!rsv.body.ok){ note.className='note err'; note.textContent='convite indisponível ('+(rsv.body.motivo||'')+')'; btn.disabled=false; btn.textContent='Criar acesso →'; return; }
+      note.textContent='→ criando sua conta…';
+      const concl = await api('/api/onboarding/concluir', { method:'POST', body:{ resgateId: rsv.body.resgate_id, conta:{ handle, email, senha, exposicao } } });
+      if(!concl.body.ok){
+        const m=concl.body.motivo;
+        const msg = m==='handle_em_uso' ? 'esse @nick já existe — escolha outro'
+                  : m==='email_em_uso'  ? 'esse email já tem conta — tente entrar pelo login'
+                  : m==='sem_saldo'     ? 'o convite acabou de esgotar'
+                  : ('não deu: '+(m||concl.body.erro||'erro'));
+        note.className='note err'; note.textContent=msg; btn.disabled=false; btn.textContent='Criar acesso →'; return;
+      }
+      novo = concl.body; credencial = { email, senha };
+      // auto-login (guarda o token pro app)
+      try{
+        const lg = await api('/api/auth/login', { method:'POST', body: credencial });
+        if(lg.body.token){ localStorage.setItem('sn_token', lg.body.token); localStorage.setItem('sn_handle', handle); }
+      }catch(_e){}
+      // preenche a cerimônia com o número real
+      $('#cer-num').textContent = 'membro #'+novo.membro_num;
+      $('#arr-code').textContent = novo.convite_codigo;
+      go('s3');
+    }catch(e){
+      note.className='note err'; note.textContent='erro de conexão com o servidor';
+      btn.disabled=false; btn.textContent='Criar acesso →';
+    }
+  };
+
+  // início
+  if(modoEvento) gateEvento(); else if(codigo) gate(); else go('s-code');
+</script>
+</body>
+</html>
