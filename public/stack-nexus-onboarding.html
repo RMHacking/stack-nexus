@@ -201,6 +201,7 @@
             <button data-v="reservado">Reservado (só nick)</button>
           </div>
           <button class="btn btn--crown" style="margin-top:.6rem;" id="ob-criar">Criar acesso →</button>
+          <button id="ob-entrar" onclick="location.href='stack-nexus-login.html'" style="margin-top:.8rem;width:100%;background:transparent;border:0;color:#8a94a6;font-family:var(--font-mono);font-size:.8rem;cursor:pointer;">já tenho conta? <b style="color:var(--text,#eee)">entrar</b></button>
           <div class="note" id="ob-note"></div>
         </div>
         <p class="mono-tag" style="margin-top:.7rem;color:var(--text-faint);line-height:1.6;" id="ob-origem">// quem te trouxe fica registrado como sua origem</p>
@@ -439,6 +440,8 @@
   };
 
   // início
+  // já está logado (ex.: voltou pelo botão)? vai pro app, não pra criar acesso
+  try{ if(localStorage.getItem('sn_token')){ location.replace('stack-nexus-app-final.html'); } }catch(e){}
   if(modoEvento) gateEvento(); else if(codigo) gate(); else go('s-code');
 </script>
 </body>
