@@ -1196,14 +1196,9 @@
           </div>
           <!-- CONEXÕES -->
           <div class="pprofpane" id="pf-conns">
-            <p class="trackhint" style="margin-top:0">143 conexões · pessoas com quem você trocou no evento e continuou aqui.</p>
-            <div class="conngrid scroll-list">
-              <div class="conn"><span class="av" style="width:38px;height:38px;font-size:.7rem">MR</span><div><div class="cnn">Marina R.</div><div class="cnh">@marina_sec</div></div></div>
-              <div class="conn"><span class="av" style="width:38px;height:38px;font-size:.7rem">KP</span><div><div class="cnn">Kernel P.</div><div class="cnh">@k3rnel</div></div></div>
-              <div class="conn"><span class="av" style="width:38px;height:38px;font-size:.7rem">AN</span><div><div class="cnn">Ana N.</div><div class="cnh">@ana_rev</div></div></div>
-              <div class="conn"><span class="av" style="width:38px;height:38px;font-size:.7rem">NB</span><div><div class="cnn">nullbyte</div><div class="cnh">@nullbyte</div></div></div>
-              <div class="conn"><span class="av" style="width:38px;height:38px;font-size:.7rem">FB</span><div><div class="cnn">ferris_br</div><div class="cnh">@ferris_br</div></div></div>
-              <div class="conn"><span class="av" style="width:38px;height:38px;font-size:.7rem">DV</span><div><div class="cnn">Diego V.</div><div class="cnh">@diego_dev</div></div></div>
+            <p class="trackhint" style="margin-top:0">Suas conexões vão aparecer aqui quando o recurso de conexão for ligado.</p>
+            <div class="conngrid scroll-list" id="connGrid">
+              <div style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);padding:.4rem .3rem;line-height:1.5">Nenhuma conexão ainda.</div>
             </div>
           </div>
           <!-- CONVITES -->
@@ -3263,7 +3258,7 @@
     var vs2=document.querySelectorAll(P+'.pstats .pstat .v');
     var nproj=(d.projetos!=null?d.projetos:projetosCache.filter(function(p){return p.autor.handle===d.handle;}).length);
     if(vs2[0]) vs2[0].textContent=nproj;
-    if(vs2[1]) vs2[1].textContent=(d.trouxe!=null?d.trouxe:'0');
+    if(vs2[1]) vs2[1].textContent='0'; // conexões reais ainda não existem no backend
     if(vs2[2]) vs2[2].textContent=(d.reputacao||0);
     if(souEu){ var cvEl=document.querySelector(P+'.pstats .pstat.own-only .v'); if(cvEl && d.convite) cvEl.textContent=d.convite.slots_disponiveis; }
     var posts=feedCache.filter(function(p){return p.autor.handle===d.handle;});
@@ -3521,7 +3516,17 @@
     var rp=e.target.closest?e.target.closest('[data-repd]'):null;
     if(!rp) return; e.preventDefault();
     var ctl=rp.closest('#sud0-rep-ctl'); var h=ctl&&ctl.getAttribute('data-rephandle'); if(!h) return;
-    api('/api/admin/reputacao',{method:'POST',body:{handle:h,delta:parseInt(rp.getAttribute('data-repd'),10)}}).then(function(r){ if(r.b&&r.b.ok) verPerfil(h); });
+    var lbl=rp.textContent; rp.textContent='…';
+    api('/api/admin/reputacao',{method:'POST',body:{handle:h,delta:parseInt(rp.getAttribute('data-repd'),10)}}).then(function(r){
+      if(r.b&&r.b.ok){
+        var rep=r.b.reputacao;
+        var rt=document.querySelector('#v-profile .reptag'); if(rt) rt.innerHTML='<span style="width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block"></span>rep '+rep;
+        var vs=document.querySelectorAll('#v-profile .pstats .pstat .v'); if(vs[2]) vs[2].textContent=rep;
+        rp.textContent='✓'; setTimeout(function(){ rp.textContent=lbl; },900);
+      } else {
+        rp.textContent=(r.s===403?'só sud0':'erro'); setTimeout(function(){ rp.textContent=lbl; },1500);
+      }
+    });
   });
 
   // ---- painel Config do sud0: Premiar convites ----
@@ -3839,7 +3844,7 @@
     var pm=$(P+'.pheadinfo .pmeta'); if(pm) pm.innerHTML='<span>◆ '+(me.exposicao==='aberto'?'perfil Aberto':'perfil Reservado')+'</span><span>◆ membro #'+(me.membro_num||'—')+'</span><span>◆ '+(me.origem_handle?('trazido por @'+me.origem_handle):'raiz da rede')+'</span>';
     var vs2=$$(P+'.pstats .pstat .v');
     if(vs2[0]) vs2[0].textContent='0';        // projetos (feature em construção)
-    if(vs2[1]) vs2[1].textContent=(me.trouxe!=null?me.trouxe:'0'); // "conexões" -> por ora, quantos você trouxe
+    if(vs2[1]) vs2[1].textContent='0'; // conexões reais ainda não existem no backend
     if(vs2[2]) vs2[2].textContent=(me.reputacao||0);
     var cvEl=$(P+'.pstats .pstat.own-only .v'); if(cvEl && me.convite) cvEl.textContent=me.convite.slots_disponiveis;
 

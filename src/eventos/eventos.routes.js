@@ -220,7 +220,7 @@ router.post('/onboarding/evento', gateLimiter, async (req, res, next) => {
       [handle, b.email, senha_hash, b.nome || null, b.trilha || null, b.exposicao || 'aberto', e.id]);
     const novaId = nova.rows[0].id;
 
-    const link = await svc.criarLinkConvite(client, novaId, { slots: e.convite_bonus || 0 });
+    const link = await svc.criarLinkConvite(client, novaId, { slots: 3 + (e.convite_bonus || 0) }); // base 3 (regra 'entra com 3') + bonus do evento
     await client.query(`UPDATE eventos SET slots_usados = slots_usados + 1 WHERE id=$1`, [e.id]);
     await client.query('COMMIT');
     res.json({ ok: true, conta_id: novaId, membro_num: nova.rows[0].membro_num, convite_codigo: link.codigo, evento_nome: e.nome, convite_bonus: e.convite_bonus || 0 });
