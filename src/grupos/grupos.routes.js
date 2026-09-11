@@ -7,7 +7,7 @@ const { requerLogin } = require('../auth/middleware');
 const router = express.Router();
 const LIMITE = 3;
 
-function trilhaValida(t) { return (t === 'tech' || t === 'cyber' || t === 'both') ? t : null; }
+function trilhaValida(t) { return (t === 'tech' || t === 'cyber' || t === 'investig' || t === 'both') ? t : null; }
 async function papelDe(grupoId, contaId) {
   const r = await pool.query('SELECT papel FROM grupo_membros WHERE grupo_id = $1 AND conta_id = $2', [grupoId, contaId]);
   return r.rows.length ? r.rows[0].papel : null;

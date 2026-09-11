@@ -12,7 +12,7 @@ function limparStack(v) {
   return v.map((s) => String(s).trim()).filter(Boolean).slice(0, 6).map((s) => s.slice(0, 24));
 }
 function faseValida(f) { return f === 'em construção' ? 'em construção' : 'no ar'; }
-function trilhaValida(t) { return (t === 'tech' || t === 'cyber' || t === 'both') ? t : null; }
+function trilhaValida(t) { return (t === 'tech' || t === 'cyber' || t === 'investig' || t === 'both') ? t : null; }
 
 // criar projeto (limite verificado no servidor)
 router.post('/projetos', requerLogin, async (req, res, next) => {

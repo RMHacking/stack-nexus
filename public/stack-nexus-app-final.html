@@ -14,6 +14,7 @@
     --ok:#31a24c;--ok-soft:rgba(49,162,76,.14);--danger:#e41e3f;
     --crown:#f4c430;--crown-glow:rgba(244,196,48,.2);--crown-soft:rgba(244,196,48,.09);--genesis:#c7891f;
     --cyber:#e0553f;--cyber-soft:rgba(224,85,63,.14);
+    --investig:#8b6ff0;--investig-soft:rgba(139,111,240,.14);
     --font-mono:"JetBrains Mono",ui-monospace,monospace;--font-sans:"Inter",system-ui,"Segoe UI",sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -199,6 +200,7 @@
   .utag .ud{width:5px;height:5px;border-radius:50%;}
   .utag.tech{color:var(--accent);}.utag.tech .ud{background:var(--accent);}
   .utag.cyber{color:var(--cyber);}.utag.cyber .ud{background:var(--cyber);}
+  .utag.investig{color:var(--investig);}.utag.investig .ud{background:var(--investig);}
   .utags{display:inline-flex;gap:.25rem;margin-left:.15rem;}
 
   /* ===== ESQUERDA ===== */
@@ -220,7 +222,7 @@
   .sr-item .sr-name{font-size:.85rem;font-weight:600;}
   .sr-item .sr-sub{font-family:var(--font-mono);font-size:.64rem;color:var(--text-faint);}
   .sr-item .sr-tdot{width:7px;height:7px;border-radius:50%;margin-left:auto;flex:none;}
-  .sr-item .sr-tdot.tech{background:var(--accent);}.sr-item .sr-tdot.cyber{background:var(--cyber);}
+  .sr-item .sr-tdot.tech{background:var(--accent);}.sr-item .sr-tdot.cyber{background:var(--cyber);}.sr-item .sr-tdot.investig{background:var(--investig);}
   .sr-empty{padding:1.2rem;text-align:center;font-family:var(--font-mono);font-size:.72rem;color:var(--text-faint);}
   /* sugestões de conexão */
   .suggest{display:flex;align-items:center;gap:.6rem;padding:.55rem .3rem;border-radius:8px;}
@@ -228,7 +230,7 @@
   .suggest .sg-info{flex:1;min-width:0;}
   .suggest .sg-name{font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:.35rem;}
   .suggest .sg-tdot{width:7px;height:7px;border-radius:50%;flex:none;}
-  .suggest .sg-tdot.tech{background:var(--accent);}.suggest .sg-tdot.cyber{background:var(--cyber);}
+  .suggest .sg-tdot.tech{background:var(--accent);}.suggest .sg-tdot.cyber{background:var(--cyber);}.suggest .sg-tdot.investig{background:var(--investig);}
   .suggest .sg-why{font-family:var(--font-mono);font-size:.62rem;color:var(--text-faint);margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .sg-connect{font-family:var(--font-mono);font-size:.66rem;color:var(--btn-text);border:1px solid var(--btn-border);border-radius:7px;padding:.3rem .6rem;background:var(--btn);flex:none;}
   .sg-connect:hover{background:var(--ok-soft);}
@@ -353,6 +355,7 @@
   .tdot{width:8px;height:8px;border-radius:50%;background:var(--surface-2);flex:none;transition:background .18s,box-shadow .18s;}
   .tdot.tech{background:var(--accent);box-shadow:0 0 6px rgba(24,119,242,.5);}
   .tdot.cyber{background:var(--cyber);box-shadow:0 0 6px rgba(224,85,63,.5);}
+  .tdot.investig{background:var(--investig);box-shadow:0 0 6px rgba(139,111,240,.5);}
   .contact .adm{font-family:var(--font-mono);font-size:.58rem;color:var(--text-faint);}
   .contact:hover .adm{color:var(--ok);}
   .happening{display:flex;align-items:center;gap:.7rem;padding:.5rem .3rem;border-radius:8px;}
@@ -373,6 +376,7 @@
   .trk{font-family:var(--font-mono);font-size:.56rem;padding:.12rem .45rem;border-radius:4px;letter-spacing:.03em;border:1px solid transparent;}
   .trk.tech{background:var(--accent-soft);color:var(--accent);border-color:rgba(24,119,242,.3);}
   .trk.cyber{background:var(--cyber-soft);color:var(--cyber);border-color:rgba(224,85,63,.3);}
+  .trk.investig{background:var(--investig-soft);color:var(--investig);border-color:rgba(139,111,240,.3);}
 
   /* ===== NOTIFICAÇÕES ===== */
   .ntitle{font-size:1.3rem;font-weight:700;margin-bottom:1rem;}
@@ -479,8 +483,9 @@
   .pick .pk-t{font-weight:600;font-size:.86rem;display:flex;align-items:center;gap:.4rem;}
   .pick .pk-d{font-size:.74rem;color:var(--text-dim);margin-top:.25rem;line-height:1.4;}
   .pick[data-pick="cyber"].on{border-color:var(--cyber);background:var(--cyber-soft);}
+  .pick[data-pick="investig"].on{border-color:var(--investig);background:var(--investig-soft);}
   .pkdot{width:8px;height:8px;border-radius:50%;}
-  .pkdot.tech{background:var(--accent);}.pkdot.cyber{background:var(--cyber);}.pkdot.both{background:linear-gradient(90deg,var(--accent) 50%,var(--cyber) 50%);}
+  .pkdot.tech{background:var(--accent);}.pkdot.cyber{background:var(--cyber);}.pkdot.investig{background:var(--investig);}.pkdot.both{background:linear-gradient(90deg,var(--accent) 50%,var(--cyber) 50%);}
   .toggle{display:flex;align-items:center;gap:.6rem;font-size:.84rem;color:var(--text-dim);padding:.5rem 0;}
   .toggle input{accent-color:var(--accent);width:16px;height:16px;cursor:pointer;}
   .logoutbtn{font-family:var(--font-mono);font-size:.78rem;padding:.6rem 1.2rem;border-radius:8px;border:1px solid var(--danger);color:var(--danger);background:transparent;}
@@ -658,6 +663,8 @@
   .track[data-tk="tech"].on::after{background:var(--accent);}
   .track[data-tk="cyber"]:hover .tkdot,.track[data-tk="cyber"].on .tkdot{background:var(--cyber);box-shadow:0 0 7px var(--cyber);}
   .track[data-tk="cyber"].on::after{background:var(--cyber);}
+  .track[data-tk="investig"]:hover .tkdot,.track[data-tk="investig"].on .tkdot{background:var(--investig);box-shadow:0 0 7px var(--investig);}
+  .track[data-tk="investig"].on::after{background:var(--investig);}
   .track .tkcount{font-size:.66rem;color:var(--text-faint);}
   .hidden{display:none !important;}
   .trackhint{font-family:var(--font-mono);font-size:.7rem;color:var(--text-faint);margin:-.4rem 0 1rem;line-height:1.5;}
@@ -672,7 +679,7 @@
   .ptk{display:flex;align-items:center;gap:.35rem;font-family:var(--font-mono);font-size:.6rem;color:var(--text-faint);}
   .ptk .d{width:6px;height:6px;border-radius:50%;background:var(--surface-2);}
   .ptk.tech .d{background:var(--accent);}
-  .ptk.cyber .d{background:var(--cyber);}
+  .ptk.cyber .d{background:var(--cyber);}.ptk.investig .d{background:var(--investig);}
   .pcard .ptitle{font-size:.98rem;font-weight:700;margin:.1rem 0 .3rem;}
   .pcard .pdesc{font-size:.84rem;line-height:1.45;color:var(--text-dim);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .stackrow{display:flex;gap:.35rem;flex-wrap:wrap;margin:.5rem 0;}
@@ -1312,6 +1319,7 @@
               <div class="pickrow">
                 <button class="pick on" data-pick="tech"><div class="pk-t">Tech <span class="pkdot tech"></span></div><div class="pk-d">dev, IA, engenharia, dados.</div></button>
                 <button class="pick" data-pick="cyber"><div class="pk-t">Cyber <span class="pkdot cyber"></span></div><div class="pk-d">red team, blue team, SOC, pentest.</div></button>
+                <button class="pick" data-pick="investig"><div class="pk-t">Investigação Digital <span class="pkdot investig"></span></div><div class="pk-d">OSINT, forense, perícia, investigação.</div></button>
                 <button class="pick" data-pick="both"><div class="pk-t">Ambas <span class="pkdot both"></span></div><div class="pk-d">híbrido: aparece nas duas trilhas.</div></button>
               </div>
               <button class="setbtn" data-save data-save-kind="trilha" style="margin-top:.5rem;">Salvar trilha</button>
@@ -1345,6 +1353,7 @@
           <button class="track on" data-tk="all" data-scope="proj"><span class="tkdot"></span>Todos <span class="tkcount">· 4</span></button>
           <button class="track" data-tk="tech" data-scope="proj"><span class="tkdot"></span>Tech <span class="tkcount">· 3</span></button>
           <button class="track" data-tk="cyber" data-scope="proj"><span class="tkdot"></span>Cyber <span class="tkcount">· 2</span></button>
+          <button class="track" data-tk="investig" data-scope="proj"><span class="tkdot"></span>Investigação <span class="tkcount">· 0</span></button>
         </div>
         <p class="trackhint">Tech: desenvolvimento, IA, engenharia, dados · Cyber: red team, blue team, SOC, pentest. Um projeto híbrido aparece nos dois.</p>
         <div class="quota"><span>Seus projetos: <b>3 de 5</b></span><div class="qbar"><div class="qfill" style="width:60%"></div></div><span class="mono" style="font-size:.7rem;color:var(--text-faint)">limite: 5 por pessoa · para criar mais, apague um antigo</span></div>
@@ -1500,6 +1509,7 @@
           <button class="track on" data-tk="all" data-scope="grp"><span class="tkdot"></span>Todos <span class="tkcount">· 4</span></button>
           <button class="track" data-tk="tech" data-scope="grp"><span class="tkdot"></span>Tech <span class="tkcount">· 2</span></button>
           <button class="track" data-tk="cyber" data-scope="grp"><span class="tkdot"></span>Cyber <span class="tkcount">· 2</span></button>
+          <button class="track" data-tk="investig" data-scope="grp"><span class="tkdot"></span>Investigação <span class="tkcount">· 0</span></button>
         </div>
         <div class="quota"><span>Seus grupos: <b>2 de 3</b></span><div class="qbar"><div class="qfill" style="width:66%"></div></div><span class="mono" style="font-size:.7rem;color:var(--text-faint)">limite: 3 por pessoa</span></div>
         <div class="composer">
@@ -2734,6 +2744,7 @@
   var iniciais=function(s){return (s||'?').replace(/[^A-Za-zÀ-ÿ0-9]/g,'').slice(0,2).toUpperCase()||'··';};
   var esc=function(s){return (s||'').replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});};
   function tempo(iso){var d=(Date.now()-new Date(iso).getTime())/1000; if(d<60)return'agora'; if(d<3600)return'há '+Math.floor(d/60)+'min'; if(d<86400)return'há '+Math.floor(d/3600)+'h'; return'há '+Math.floor(d/86400)+'d';}
+  function trkCls(t){ return t==='cyber'?'cyber':(t==='investig'?'investig':'tech'); }
 
   var st=document.createElement('style');
   st.textContent='.wip-banner{margin:0 0 1rem;padding:.6rem .9rem;border:1px dashed var(--crown);background:var(--crown-soft);border-radius:10px;font-family:var(--font-mono);font-size:.72rem;color:var(--crown);display:flex;align-items:center;gap:.5rem;line-height:1.5;}.wip-banner b{color:var(--text);}'+
@@ -2880,7 +2891,7 @@
         '<div class="body">'+esc(p.corpo)+'</div>'+(p.imagem?'<div class="post-img"><img src="'+p.imagem+'" alt=""></div>':'')+'<div class="post-reac">'+reacBar('post',p.id,p.rx)+'</div>'+(!p.fixado&&window.comentBox?window.comentBox(p):'')+'</article>';
     }
     var nome=a.nome||('@'+a.handle);
-    var tt=''; if(a.trilha){var cls=a.trilha==='cyber'?'cyber':'tech';var lbl=a.trilha==='both'?'tech+cyber':a.trilha; tt=' <span class="utags"><span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span></span>';}
+    var tt=''; if(a.trilha){var cls=trkCls(a.trilha);var lbl=a.trilha==='both'?'tech+cyber':a.trilha; tt=' <span class="utags"><span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span></span>';}
     var sub=(a.nome?('@'+a.handle+' · '):'')+tempo(p.criado_em)+ed;
     return '<article class="post" data-id="'+p.id+'">'+pin+'<div class="head"><span class="av" style="width:42px;height:42px">'+iniciais(a.nome||a.handle)+'</span>'+
       '<div class="id"><div class="name"><span class="lnk-perfil" data-perfil="'+esc(a.handle)+'">'+esc(nome)+'</span>'+tt+'</div><div class="meta">'+esc(sub)+'</div></div>'+menu+'</div>'+
@@ -3026,8 +3037,8 @@
       '</article>';
   }
   function contarTrilhas(list){
-    var c={all:list.length,tech:0,cyber:0};
-    list.forEach(function(p){ if(p.trilha==='tech'||p.trilha==='both')c.tech++; if(p.trilha==='cyber'||p.trilha==='both')c.cyber++; });
+    var c={all:list.length,tech:0,cyber:0,investig:0};
+    list.forEach(function(p){ if(p.trilha==='tech'||p.trilha==='both')c.tech++; if(p.trilha==='cyber'||p.trilha==='both')c.cyber++; if(p.trilha==='investig')c.investig++; });
     return c;
   }
   function acaoProj(id,act,art){
@@ -3047,7 +3058,7 @@
       '<div style="display:flex;flex-wrap:wrap;gap:.5rem">'+
         '<input class="e-repo" placeholder="link do repo (opcional)" style="'+ei+'flex:1;min-width:150px">'+
         '<input class="e-stack" placeholder="stack (vírgulas)" style="'+ei+'flex:1;min-width:150px">'+
-        '<select class="e-trilha" style="'+ei+'width:auto;background:var(--surface-2)"><option value="tech">tech</option><option value="cyber">cyber</option><option value="both">tech+cyber</option></select>'+
+        '<select class="e-trilha" style="'+ei+'width:auto;background:var(--surface-2)"><option value="tech">tech</option><option value="cyber">cyber</option><option value="investig">investigação</option><option value="both">tech+cyber</option></select>'+
         '<select class="e-fase" style="'+ei+'width:auto;background:var(--surface-2)"><option value="no ar">no ar</option><option value="em construção">em construção</option></select>'+
       '</div>'+
       '<div style="display:flex;gap:.5rem;justify-content:flex-end"><button class="e-cancel" style="font-family:var(--font-mono);font-size:.72rem;color:var(--text-dim);border:1px solid var(--border);border-radius:7px;padding:.4rem .8rem;background:transparent;cursor:pointer">cancelar</button><button class="e-save" style="font-family:var(--font-mono);font-size:.72rem;color:var(--btn-text);background:var(--btn);border:1px solid var(--btn-border);border-radius:7px;padding:.4rem .9rem;cursor:pointer">salvar</button></div>';
@@ -3101,7 +3112,7 @@
         '<input class="proj-stack" placeholder="#  stack: Python, eBPF, Linux" style="'+fi+'">'+
       '</div>'+
       '<div style="display:flex;gap:1.3rem;align-items:center;flex-wrap:wrap;">'+
-        '<label style="display:flex;align-items:center;gap:.5rem;'+lbl+'">trilha <select class="proj-trilha" style="'+sels+'"><option value="tech">tech</option><option value="cyber">cyber</option><option value="both">tech+cyber</option></select></label>'+
+        '<label style="display:flex;align-items:center;gap:.5rem;'+lbl+'">trilha <select class="proj-trilha" style="'+sels+'"><option value="tech">tech</option><option value="cyber">cyber</option><option value="investig">investigação</option><option value="both">tech+cyber</option></select></label>'+
         '<label style="display:flex;align-items:center;gap:.5rem;'+lbl+'">fase <select class="proj-fase" style="'+sels+'"><option value="no ar">no ar</option><option value="em construção">em construção</option></select></label>'+
       '</div>';
     var col=(titulo&&titulo.parentElement)||comp;
@@ -3166,7 +3177,7 @@
   function discMsgHTML(k){
     var a=k.autor||{};
     var nome=a.is_sud0?'sud0/n3xus':(a.nome||('@'+(a.handle||'')));
-    var tt=''; if(a.trilha){var cls=a.trilha==='cyber'?'cyber':'tech';var lbl=a.trilha==='both'?'tech+cyber':a.trilha; tt='<span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
+    var tt=''; if(a.trilha){var cls=trkCls(a.trilha);var lbl=a.trilha==='both'?'tech+cyber':a.trilha; tt='<span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
     var crown=a.is_sud0?'<span style="font-family:var(--font-mono);font-size:.58rem;color:var(--crown)">♛ MASTER</span>':'';
     var del=(k.meu||souSud0)?'<span class="disc-del" data-cid="'+k.id+'" title="apagar">✕</span>':'';
     return '<div class="disc-msg" data-cid="'+k.id+'"><span class="av'+(a.is_sud0?' av--crown':'')+'" style="width:34px;height:34px;font-size:.66rem">'+(a.is_sud0?'♛':iniciais(a.nome||a.handle))+'</span>'+
@@ -3367,7 +3378,7 @@
     var pav=document.querySelector(P+'.pavatar'); if(pav){ if(d.foto_url){ pav.style.backgroundImage='url('+d.foto_url+')'; pav.textContent=''; } else { pav.style.backgroundImage=''; pav.textContent=sud0?'♛':iniciais(d.nome||d.handle); } }
     var cov=document.querySelector(P+'.cover'); if(cov){ if(d.capa_url){ cov.style.backgroundImage='url('+d.capa_url+')'; cov.style.backgroundSize='cover'; cov.style.backgroundPosition='center'; var ctx=cov.querySelector('.covertxt'); if(ctx) ctx.style.display='none'; } else { cov.style.backgroundImage=''; var ctx2=cov.querySelector('.covertxt'); if(ctx2) ctx2.style.display=''; } }
     var pname=document.querySelector(P+'.pheadinfo .pname');
-    if(pname){ var tt=''; if(d.trilha){var cls=d.trilha==='cyber'?'cyber':'tech';var lbl=d.trilha==='both'?'tech+cyber':d.trilha; tt=' <span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
+    if(pname){ var tt=''; if(d.trilha){var cls=trkCls(d.trilha);var lbl=d.trilha==='both'?'tech+cyber':d.trilha; tt=' <span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
       pname.innerHTML=esc(nomeExib)+tt+' <span class="reptag"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block"></span>rep '+(d.reputacao||0)+'</span>'; }
     var phl=document.querySelector(P+'.pheadline'); if(phl) phl.textContent=d.bio||'membro do Stack_n3xus';
     var sobreBio=document.querySelector('#aboutPanel .af-view'); if(sobreBio && sobreBio.tagName==='P') sobreBio.textContent=d.bio||'Sem bio ainda.';
@@ -3463,7 +3474,7 @@
     if(list){ list.innerHTML=gruposCache.length?gruposCache.map(grpHTML).join(''):'<div class="placeholder">Nenhum grupo ainda. Crie o primeiro.</div>'; }
     var meus=(data.meus!=null?data.meus:0), limite=data.limite||3;
     var q=v.querySelector('.quota'); if(q){ var b=q.querySelector('b'); if(b) b.textContent=meus+' de '+limite; var qf=q.querySelector('.qfill'); if(qf) qf.style.width=Math.round(meus/limite*100)+'%'; }
-    var cont={all:gruposCache.length,tech:0,cyber:0}; gruposCache.forEach(function(g){ if(g.trilha==='tech'||g.trilha==='both')cont.tech++; if(g.trilha==='cyber'||g.trilha==='both')cont.cyber++; });
+    var cont={all:gruposCache.length,tech:0,cyber:0,investig:0}; gruposCache.forEach(function(g){ if(g.trilha==='tech'||g.trilha==='both')cont.tech++; if(g.trilha==='cyber'||g.trilha==='both')cont.cyber++; if(g.trilha==='investig')cont.investig++; });
     $$('.track[data-scope="grp"]').forEach(function(t){var k=t.dataset.tk;var c=t.querySelector('.tkcount'); if(c) c.textContent='· '+(cont[k]!=null?cont[k]:0);});
     var ativo=$('.track[data-scope="grp"].on'); var tk=ativo?ativo.dataset.tk:'all';
     $$('#v-groups .gcard').forEach(function(c){var tr=(c.dataset.tracks||'').split(' '); c.classList.toggle('hidden', !(tk==='all'||tr.indexOf(tk)>=0));});
@@ -3482,7 +3493,7 @@
     var nome=comp.querySelector('input'); var btn=comp.querySelector('button');
     var row=document.createElement('div'); row.style.cssText='display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;';
     var fi='background:var(--surface-2);border:0;border-radius:8px;padding:.5rem .7rem;color:var(--text);outline:none;font-size:.82rem;';
-    row.innerHTML='<input class="grp-desc" placeholder="descrição curta (opcional)" style="flex:1;min-width:160px;'+fi+'"><select class="grp-trilha" style="'+fi+'font-family:var(--font-mono)"><option value="tech">tech</option><option value="cyber">cyber</option><option value="both">tech+cyber</option></select>';
+    row.innerHTML='<input class="grp-desc" placeholder="descrição curta (opcional)" style="flex:1;min-width:160px;'+fi+'"><select class="grp-trilha" style="'+fi+'font-family:var(--font-mono)"><option value="tech">tech</option><option value="cyber">cyber</option><option value="investig">investigação</option><option value="both">tech+cyber</option></select>';
     var note=comp.querySelector('.cfgnote'); if(note) comp.insertBefore(row,note); else comp.appendChild(row);
     var trSel=row.querySelector('.grp-trilha'); if(minhaTrilha&&trSel) trSel.value=minhaTrilha;
     var msg=document.createElement('div'); msg.className='grp-msg'; msg.style.cssText='font-size:.72rem;color:var(--danger);margin-top:.4rem;min-height:1em;font-family:var(--font-mono)'; comp.appendChild(msg);
@@ -3496,7 +3507,7 @@
     if(m.removida){ return '<div class="m del"><span class="av" style="width:32px;height:32px">—</span><div class="mb"><div class="mh"><span class="mhandle">mensagem removida</span></div><div class="mtext">removida por @'+esc(m.removida_por||'?')+' · '+esc(m.removida_motivo||'')+'</div></div></div>'; }
     var a=m.autor||{};
     var nome=a.is_sud0?'sud0/n3xus':(a.nome||('@'+(a.handle||'')));
-    var tt=''; if(a.trilha){var cls=a.trilha==='cyber'?'cyber':'tech';var lbl=a.trilha==='both'?'tech+cyber':a.trilha; tt=' <span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
+    var tt=''; if(a.trilha){var cls=trkCls(a.trilha);var lbl=a.trilha==='both'?'tech+cyber':a.trilha; tt=' <span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
     var adm=a.papel==='admin'?' <span class="badge-adm">ADMIN</span>':'';
     var crown=a.is_sud0?' <span class="crowntag">♛ MASTER</span>':'';
     var mod=(souAdmin && !a.is_sud0 && a.handle)?'<div class="mmod"><button class="mmodbtn" data-modapagar>apagar</button><button class="mmodbtn" data-modexpulsar>expulsar</button></div>':'';
@@ -3555,7 +3566,7 @@
   function convHTML(c){
     var nome=c.is_sud0?'sud0/n3xus':(c.nome||('@'+c.handle));
     var ini=c.is_sud0?'♛':iniciais(c.nome||c.handle);
-    var tt=c.trilha?('<span class="tdot '+(c.trilha==='cyber'?'cyber':'tech')+'"></span>'):'';
+    var tt=c.trilha?('<span class="tdot '+trkCls(c.trilha)+'"></span>'):'';
     return '<div class="contact'+(c.nao_lidas>0?' has-msg':'')+'" data-dm="'+esc(c.handle)+'" style="cursor:pointer"><span class="av'+(c.is_sud0?' av--crown':' cav')+'" style="width:34px;height:34px">'+esc(ini)+'</span><span class="msg-badge">'+(c.nao_lidas>0?c.nao_lidas:'')+'</span><span class="cn">'+esc(nome)+'</span>'+tt+'</div>';
   }
   function achaBlocoConversas(){ var alvo=null; $$('#colRight .rblock').forEach(function(b){ var h=b.querySelector('.h span'); if(h && /Contatos|Conversas/i.test(h.textContent)) alvo=b; }); return alvo; }
@@ -3571,7 +3582,7 @@
   function sugHTML(s){
     var nome=s.nome||('@'+s.handle);
     var ini=iniciais(s.nome||s.handle);
-    var tcls=(s.trilha==='cyber')?'cyber':'tech';
+    var tcls=trkCls(s.trilha);
     var av=s.foto_url?('<span class="av" style="width:38px;height:38px;font-size:.7rem;background-image:url('+s.foto_url+');background-size:cover;background-position:center"></span>'):('<span class="av" style="width:38px;height:38px;font-size:.7rem">'+esc(ini)+'</span>');
     return '<div class="suggest" data-perfil="'+esc(s.handle)+'" style="cursor:pointer">'+av+
       '<div class="sg-info"><div class="sg-name">'+esc(nome)+' <span class="sg-tdot '+tcls+'"></span></div><div class="sg-why">'+(s.membro_num?('membro #'+s.membro_num):('@'+esc(s.handle)))+'</div></div>'+
@@ -3972,7 +3983,7 @@
     var cav=$('.composer.user-only .top .av'); if(cav) cav.textContent=iniciais(me.nome||me.handle);
     var pav=$(P+'.pavatar'); if(pav) pav.textContent=sud0?'♛':iniciais(me.nome||me.handle);
     var pname=$(P+'.pheadinfo .pname');
-    if(pname){ var tt=''; if(me.trilha){var cls=me.trilha==='cyber'?'cyber':'tech';var lbl=me.trilha==='both'?'tech+cyber':me.trilha; tt=' <span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
+    if(pname){ var tt=''; if(me.trilha){var cls=trkCls(me.trilha);var lbl=me.trilha==='both'?'tech+cyber':me.trilha; tt=' <span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
       var cb=sud0?' <span class="crownbadge">♛ FUNDADOR</span>':'';
       pname.innerHTML=esc(nomeExib)+tt+cb+' <span class="reptag"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block"></span>rep '+(me.reputacao||0)+'</span>'; }
     var phl=$(P+'.pheadline'); if(phl) phl.textContent=me.bio||(sud0?'entidade fundadora':'membro do Stack_n3xus');
@@ -3995,7 +4006,7 @@
     window.snFlash=function(msg,ok){ var el=document.getElementById('sn-flash'); if(!el){ el=document.createElement('div'); el.id='sn-flash'; el.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;max-width:92%;padding:.65rem 1.05rem;border-radius:10px;font-family:var(--font-mono);font-size:.78rem;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.55);text-align:center;'; document.body.appendChild(el);} el.style.background=ok?'var(--ok)':'var(--danger)'; el.style.color='#fff'; el.textContent=msg; el.style.display='block'; clearTimeout(el.__t); el.__t=setTimeout(function(){el.style.display='none';},4500); };
     function toast(btn,txt){ if(!btn)return; var o=btn.getAttribute('data-orig')||btn.textContent; btn.setAttribute('data-orig',o); btn.textContent=txt||'✓ salvo'; btn.classList.add('saved'); setTimeout(function(){ btn.textContent=o; btn.classList.remove('saved'); },1600); }
     function pickExpo(){ var p=document.querySelector('.pick.on[data-pick="aberto"],.pick.on[data-pick="reservado"]'); return p?p.getAttribute('data-pick'):null; }
-    function pickTrilha(){ var p=document.querySelector('.pick.on[data-pick="tech"],.pick.on[data-pick="cyber"],.pick.on[data-pick="both"]'); return p?p.getAttribute('data-pick'):null; }
+    function pickTrilha(){ var p=document.querySelector('.pick.on[data-pick="tech"],.pick.on[data-pick="cyber"],.pick.on[data-pick="investig"],.pick.on[data-pick="both"]'); return p?p.getAttribute('data-pick'):null; }
     // redimensiona a imagem no cliente antes de salvar (nao estoura o banco)
     function resizeImg(file,max,cb){
       try{ var img=new Image(); var url=URL.createObjectURL(file);
@@ -4023,7 +4034,7 @@
       var bio=q('#set-bio'); if(bio) bio.value=me.bio||'';
       var bv=document.querySelector('#aboutPanel .af-view'); if(bv) bv.textContent=me.bio||'Sem bio ainda.';
       document.querySelectorAll('.pick[data-pick="aberto"],.pick[data-pick="reservado"]').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-pick')===(me.exposicao||'aberto')); });
-      if(me.trilha) document.querySelectorAll('.pick[data-pick="tech"],.pick[data-pick="cyber"],.pick[data-pick="both"]').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-pick')===me.trilha); });
+      if(me.trilha) document.querySelectorAll('.pick[data-pick="tech"],.pick[data-pick="cyber"],.pick[data-pick="investig"],.pick[data-pick="both"]').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-pick')===me.trilha); });
     };
     // botoes de salvar por secao
     document.querySelectorAll('[data-save-kind]').forEach(function(b){

@@ -117,7 +117,7 @@ router.patch('/me/perfil', requerLogin, async (req, res, next) => {
     if (b.exposicao !== undefined && ['aberto','reservado'].includes(b.exposicao)) { sets.push(`exposicao = $${i++}`); vals.push(b.exposicao); }
     if (b.trilha !== undefined) {
       if (b.trilha === null || b.trilha === '') { sets.push(`trilha = $${i++}`); vals.push(null); }
-      else if (['tech','cyber','both'].includes(b.trilha)) { sets.push(`trilha = $${i++}`); vals.push(b.trilha); }
+      else if (['tech','cyber','investig','both'].includes(b.trilha)) { sets.push(`trilha = $${i++}`); vals.push(b.trilha); }
     }
     for (const campo of ['foto_url','capa_url']) {
       if (b[campo] !== undefined) {

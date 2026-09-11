@@ -290,3 +290,6 @@ CREATE INDEX IF NOT EXISTS ix_notif_dest ON notificacoes (destinatario_id, lida,
 -- resposta a comentario (1 nivel, estilo Facebook)
 ALTER TABLE post_comentarios ADD COLUMN IF NOT EXISTS parent_id uuid REFERENCES post_comentarios(id) ON DELETE CASCADE;
 CREATE INDEX IF NOT EXISTS ix_post_coment_parent ON post_comentarios (parent_id);
+
+-- terceira trilha: Investigação Digital
+ALTER TYPE trilha_tipo ADD VALUE IF NOT EXISTS 'investig';
