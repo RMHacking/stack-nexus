@@ -3238,6 +3238,88 @@
     var pb=bar.querySelector('button[data-ptab="pf-posts"]'); if(pb) pb.classList.add('on');
     var pp=document.getElementById('pf-posts'); if(pp) pp.classList.add('on');
   }
+  // ===== CONEXÕES (pedido / aceitar / desfazer) =====
+  function pintarConectar(btn, handle, estado){
+    estado = estado || 'nenhum';
+    var mapa = {
+      nenhum:    {txt:'＋ Conectar',       bg:'transparent', col:'var(--btn-text)',  bd:'1px solid var(--btn-border)'},
+      enviado:   {txt:'⏳ pedido enviado', bg:'transparent', col:'var(--text-faint)',bd:'1px solid var(--border)'},
+      recebido:  {txt:'✓ aceitar pedido',  bg:'var(--btn)',  col:'var(--btn-text)',  bd:'1px solid var(--btn-border)'},
+      conectado: {txt:'✓ conectado',       bg:'var(--btn)',  col:'var(--btn-text)',  bd:'1px solid var(--btn-border)'}
+    };
+    var m = mapa[estado] || mapa.nenhum;
+    btn.textContent = m.txt; btn.style.background = m.bg; btn.style.color = m.col; btn.style.border = m.bd;
+    btn.setAttribute('data-estado', estado); btn.setAttribute('data-handle', handle);
+    btn.onclick = function(){
+      var st = btn.getAttribute('data-estado'), h = btn.getAttribute('data-handle');
+      if(st==='nenhum'){
+        btn.disabled=true;
+        api('/api/conexoes/'+encodeURIComponent(h),{method:'POST'}).then(function(r){ btn.disabled=false;
+          if(r.b&&r.b.ok){ pintarConectar(btn,h,r.b.estado); atualizarContagemConexoesPerfil(h); if(window.snFlash) snFlash(r.b.estado==='conectado'?('Conectado com @'+h+'! ✅'):('Pedido enviado para @'+h), true); }
+          else if(window.snFlash) snFlash('Não deu para conectar agora.', false);
+        });
+      } else if(st==='recebido'){
+        btn.disabled=true;
+        api('/api/conexoes/'+encodeURIComponent(h)+'/aceitar',{method:'POST'}).then(function(r){ btn.disabled=false;
+          if(r.b&&r.b.ok){ pintarConectar(btn,h,'conectado'); atualizarContagemConexoesPerfil(h); if(window.snFlash) snFlash('Conexão com @'+h+' aceita! ✅', true); carregarPedidos(); carregarMinhasConexoes(); }
+          else if(window.snFlash) snFlash('Não deu para aceitar.', false);
+        });
+      } else if(st==='enviado'){
+        if(!confirm('Cancelar o pedido de conexão com @'+h+'?')) return;
+        api('/api/conexoes/'+encodeURIComponent(h),{method:'DELETE'}).then(function(r){ if(r.b&&r.b.ok){ pintarConectar(btn,h,'nenhum'); } });
+      } else if(st==='conectado'){
+        if(!confirm('Desfazer a conexão com @'+h+'?')) return;
+        api('/api/conexoes/'+encodeURIComponent(h),{method:'DELETE'}).then(function(r){ if(r.b&&r.b.ok){ pintarConectar(btn,h,'nenhum'); atualizarContagemConexoesPerfil(h); carregarMinhasConexoes(); } });
+      }
+    };
+  }
+  function atualizarContagemConexoesPerfil(handle){
+    api('/api/conexoes/status/'+encodeURIComponent(handle)).then(function(r){
+      if(r.b&&r.b.ok){ var vs=document.querySelectorAll('#v-profile .pstats .pstat .v'); if(vs[1]) vs[1].textContent=r.b.conexoes; }
+    });
+  }
+  function pedidoHTML(p){
+    var nome=p.nome||('@'+p.handle); var ini=iniciais(p.nome||p.handle);
+    var av=p.foto_url?('<span class="av" style="width:34px;height:34px;font-size:.62rem;background-image:url('+p.foto_url+');background-size:cover;background-position:center"></span>'):('<span class="av" style="width:34px;height:34px;font-size:.62rem">'+esc(ini)+'</span>');
+    return '<div class="pedido" style="display:flex;align-items:center;gap:.5rem;padding:.45rem .25rem;border-bottom:1px solid var(--border)">'+
+      '<span data-perfil="'+esc(p.handle)+'" style="cursor:pointer;display:flex">'+av+'</span>'+
+      '<div style="flex:1;min-width:0"><div data-perfil="'+esc(p.handle)+'" style="cursor:pointer;font-size:.76rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(nome)+'</div>'+
+      '<div style="font-family:var(--font-mono);font-size:.6rem;color:var(--text-faint)">'+(p.membro_num?('membro #'+p.membro_num):('@'+esc(p.handle)))+'</div></div>'+
+      '<button data-aceitar="'+esc(p.handle)+'" style="flex:none;background:var(--btn);color:var(--btn-text);border:1px solid var(--btn-border);border-radius:7px;padding:.28rem .5rem;font-family:var(--font-mono);font-size:.64rem;font-weight:600;cursor:pointer">aceitar</button>'+
+      '<button data-ignorar="'+esc(p.handle)+'" title="ignorar" style="flex:none;background:transparent;color:var(--text-faint);border:1px solid var(--border);border-radius:7px;padding:.28rem .45rem;font-family:var(--font-mono);font-size:.64rem;cursor:pointer">✕</button>'+
+      '</div>';
+  }
+  function carregarPedidos(){
+    var body=document.getElementById('reqBody'); if(!body) return;
+    api('/api/conexoes/pedidos').then(function(r){
+      var lst=(r.b&&r.b.ok&&r.b.pedidos)?r.b.pedidos:[];
+      body.innerHTML=lst.length?lst.map(pedidoHTML).join(''):'<div style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);padding:.4rem .3rem;line-height:1.5">Nenhum pedido de conexão no momento.</div>';
+    });
+  }
+  function connHTML(c){
+    var nome=c.nome||('@'+c.handle); var ini=iniciais(c.nome||c.handle);
+    var av=c.foto_url?('<span class="av" style="width:40px;height:40px;font-size:.72rem;background-image:url('+c.foto_url+');background-size:cover;background-position:center"></span>'):('<span class="av" style="width:40px;height:40px;font-size:.72rem">'+esc(ini)+'</span>');
+    return '<div class="conn" data-perfil="'+esc(c.handle)+'" style="cursor:pointer">'+av+'<div style="min-width:0"><div class="cnn">'+esc(nome)+'</div><div class="cnh">'+(c.membro_num?('membro #'+c.membro_num):('@'+esc(c.handle)))+'</div></div></div>';
+  }
+  function carregarMinhasConexoes(){
+    var grid=document.getElementById('connGrid'); if(!grid) return;
+    api('/api/conexoes').then(function(r){
+      var lst=(r.b&&r.b.ok&&r.b.conexoes)?r.b.conexoes:[];
+      grid.innerHTML=lst.length?lst.map(connHTML).join(''):'<div style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);padding:.4rem .3rem;line-height:1.5">Nenhuma conexão ainda.</div>';
+    });
+  }
+  document.addEventListener('click',function(e){
+    var ac=e.target.closest?e.target.closest('[data-aceitar]'):null;
+    if(ac){ e.preventDefault(); var h=ac.getAttribute('data-aceitar'); ac.disabled=true;
+      api('/api/conexoes/'+encodeURIComponent(h)+'/aceitar',{method:'POST'}).then(function(r){
+        if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Conexão com @'+h+' aceita! ✅', true); carregarPedidos(); carregarMinhasConexoes(); }
+        else { ac.disabled=false; if(window.snFlash) snFlash('Não deu para aceitar.', false); } }); return; }
+    var ig=e.target.closest?e.target.closest('[data-ignorar]'):null;
+    if(ig){ e.preventDefault(); var h2=ig.getAttribute('data-ignorar'); ig.disabled=true;
+      api('/api/conexoes/'+encodeURIComponent(h2),{method:'DELETE'}).then(function(r){ carregarPedidos(); }); return; }
+    var ct=e.target.closest?e.target.closest('[data-ptab="pf-conns"]'):null;
+    if(ct){ carregarMinhasConexoes(); return; }
+  });
   function pintarPerfilNoView(d, souEu){
     var P='#v-profile ';
     var sud0=!!d.is_sud0;
@@ -3258,7 +3340,7 @@
     var cnb=document.getElementById('perfil-conectar');
     if(!souEu && !sud0 && d.handle){
       if(!dmb){ dmb=document.createElement('button'); dmb.id='dm-open-btn'; dmb.style.cssText='margin-top:.7rem;margin-right:.5rem;font-family:var(--font-mono);font-size:.82rem;font-weight:600;background:var(--btn);color:var(--btn-text);border:1px solid var(--btn-border);border-radius:10px;padding:.6rem 1.3rem;cursor:pointer'; dmb.textContent='\ud83d\udcac Mensagem'; if(dmHost) dmHost.appendChild(dmb); } dmb.setAttribute('data-dm',d.handle); dmb.style.display='';
-      if(!cnb){ cnb=document.createElement('button'); cnb.id='perfil-conectar'; cnb.style.cssText='margin-top:.7rem;font-family:var(--font-mono);font-size:.82rem;font-weight:600;background:transparent;color:var(--btn-text);border:1px solid var(--btn-border);border-radius:10px;padding:.6rem 1.3rem;cursor:pointer'; cnb.textContent='\uff0b Conectar'; cnb.addEventListener('click',function(){ if(window.snFlash) snFlash('Sistema de conexoes chega em breve \u2014 por enquanto, mande uma Mensagem.', true); }); if(dmHost) dmHost.appendChild(cnb); } cnb.style.display='';
+      if(!cnb){ cnb=document.createElement('button'); cnb.id='perfil-conectar'; cnb.style.cssText='margin-top:.7rem;font-family:var(--font-mono);font-size:.82rem;font-weight:600;background:transparent;color:var(--btn-text);border:1px solid var(--btn-border);border-radius:10px;padding:.6rem 1.3rem;cursor:pointer'; cnb.textContent='\uff0b Conectar'; if(dmHost) dmHost.appendChild(cnb); } cnb.style.display=''; pintarConectar(cnb, d.handle, d.estado);
     } else { if(dmb) dmb.style.display='none'; if(cnb) cnb.style.display='none'; }
     var cvBtn=document.getElementById('perfil-convidar');
     if(souEu && d.handle){ if(!cvBtn){ cvBtn=document.createElement('button'); cvBtn.id='perfil-convidar'; cvBtn.setAttribute('data-convidar','1'); cvBtn.style.cssText='margin-top:.7rem;font-family:var(--font-mono);font-size:.76rem;background:'+(souSud0?'var(--crown)':'var(--accent)')+';color:'+(souSud0?'#000':'#fff')+';border:0;border-radius:9px;padding:.5rem 1.1rem;cursor:pointer'; cvBtn.textContent=souSud0?'\u265b Meu Genesis':'\ud83d\udce8 Convidar'; if(dmHost) dmHost.appendChild(cvBtn); } cvBtn.style.display=''; } else if(cvBtn){ cvBtn.style.display='none'; }
@@ -3273,7 +3355,7 @@
     var vs2=document.querySelectorAll(P+'.pstats .pstat .v');
     var nproj=(d.projetos!=null?d.projetos:projetosCache.filter(function(p){return p.autor.handle===d.handle;}).length);
     if(vs2[0]) vs2[0].textContent=nproj;
-    if(vs2[1]) vs2[1].textContent='0'; // conexões reais ainda não existem no backend
+    if(vs2[1]) vs2[1].textContent=(d.conexoes!=null?d.conexoes:0);
     if(vs2[2]) vs2[2].textContent=(d.reputacao||0);
     if(souEu){ var cvEl=document.querySelector(P+'.pstats .pstat.own-only .v'); if(cvEl && d.convite) cvEl.textContent=d.convite.slots_disponiveis; }
     var posts=feedCache.filter(function(p){return p.autor.handle===d.handle;});
@@ -3859,14 +3941,14 @@
     var pm=$(P+'.pheadinfo .pmeta'); if(pm) pm.innerHTML='<span>◆ '+(me.exposicao==='aberto'?'perfil Aberto':'perfil Reservado')+'</span><span>◆ membro #'+(me.membro_num||'—')+'</span><span>◆ '+(me.origem_handle?('trazido por @'+me.origem_handle):'raiz da rede')+'</span>';
     var vs2=$$(P+'.pstats .pstat .v');
     if(vs2[0]) vs2[0].textContent='0';        // projetos (feature em construção)
-    if(vs2[1]) vs2[1].textContent='0'; // conexões reais ainda não existem no backend
+    if(vs2[1]) vs2[1].textContent=(me.conexoes!=null?me.conexoes:0);
     if(vs2[2]) vs2[2].textContent=(me.reputacao||0);
     var cvEl=$(P+'.pstats .pstat.own-only .v'); if(cvEl && me.convite) cvEl.textContent=me.convite.slots_disponiveis;
 
     carregarFeed();
     setupProjetosComposer(); carregarProjetos();
-    setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); carregarSugestoes();
-  }).catch(function(){ carregarFeed(); setupProjetosComposer(); carregarProjetos(); setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); carregarSugestoes(); });
+    setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); carregarSugestoes(); carregarPedidos(); carregarMinhasConexoes();
+  }).catch(function(){ carregarFeed(); setupProjetosComposer(); carregarProjetos(); setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); carregarSugestoes(); carregarPedidos(); carregarMinhasConexoes(); });
 
   /* ===== salvar perfil de verdade (nome, frase, bio, exposicao, trilha, foto, capa) ===== */
   (function(){

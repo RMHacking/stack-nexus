@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const { pool } = require('../db');
 const svc = require('./convites.service');
 const { requerLogin, requerSud0 } = require('../auth/middleware');
+const conexoesRoutes = require('../conexoes/conexoes.routes');
 
 const router = express.Router();
 const clientIp = (req) => (req.headers['x-forwarded-for'] || req.ip || '').split(',')[0].trim();
@@ -97,7 +98,8 @@ router.get('/me/perfil', requerLogin, async (req, res, next) => {
       `SELECT count(*)::int AS n FROM contas WHERE origem_conta_id = $1`, [req.user.id]
     );
     const rep = await calcularReputacao(req.user.id);
-    res.json({ ...p.rows[0], reputacao: rep, convite, trouxe: conv.rows[0].n });
+    const nConex = await conexoesRoutes.contarConexoes(req.user.id);
+    res.json({ ...p.rows[0], reputacao: rep, convite, trouxe: conv.rows[0].n, conexoes: nConex });
   } catch (e) { next(e); }
 });
 
@@ -194,6 +196,8 @@ router.get('/perfil/:handle', requerLogin, async (req, res, next) => {
       exposicao: r.exposicao, reputacao: await calcularReputacao(r.id), membro_num: r.membro_num,
       origem_handle: r.origem_handle,
       projetos: proj.rows[0].n, trouxe: trouxe.rows[0].n,
+      conexoes: await conexoesRoutes.contarConexoes(r.id),
+      estado: await conexoesRoutes.estadoEntre(req.user.id, r.id),
     });
   } catch (e) { next(e); }
 });

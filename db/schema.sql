@@ -260,3 +260,16 @@ CREATE TABLE IF NOT EXISTS post_comentarios (
   criado_em timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS ix_post_coment ON post_comentarios (post_id, criado_em);
+
+-- ---------- conexões (pedido/aceite bidirecional entre membros) ----------
+CREATE TABLE IF NOT EXISTS conexoes (
+  id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  de_id     uuid NOT NULL REFERENCES contas(id) ON DELETE CASCADE,
+  para_id   uuid NOT NULL REFERENCES contas(id) ON DELETE CASCADE,
+  status    text NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente','aceita')),
+  criado_em timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (de_id, para_id),
+  CHECK (de_id <> para_id)
+);
+CREATE INDEX IF NOT EXISTS ix_conexoes_para ON conexoes (para_id, status);
+CREATE INDEX IF NOT EXISTS ix_conexoes_de   ON conexoes (de_id, status);
