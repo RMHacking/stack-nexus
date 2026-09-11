@@ -18,7 +18,7 @@ function criarApp() {
   app.set('trust proxy', 1);
   app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
   app.use(cors({ origin: corsOrigin }));
-  app.use(express.json());
+  app.use(express.json({ limit: '8mb' }));
   app.use(autenticacao); // popula req.user se houver token
 
   app.get('/health', (_req, res) => res.json({ ok: true, servico: 'stack-nexus-backend' }));

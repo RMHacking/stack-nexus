@@ -2593,8 +2593,7 @@
       aboutPanel.classList.add('about-view');
       aboutEdit.textContent='editar';
       aboutEdit.classList.remove('editing');
-      aboutSave.textContent='✓ salvo';
-      setTimeout(()=>{aboutSave.textContent='Salvar Sobre';},100);
+      // (o salvamento real e o feedback ficam no handler de integracao)
     });
   }
   // gerar/usar convite → abre modal com QR
@@ -3873,8 +3872,8 @@
       api('/api/me/perfil',{method:'PATCH',body:campos}).then(function(r){
         if(r.s===401){ try{localStorage.removeItem('sn_token');}catch(e){} location.href='stack-nexus-login.html'; return; }
         if(r.b && r.b.ok){ if(typeof meuPerfil!=='undefined' && meuPerfil){ for(var k in campos) meuPerfil[k]=campos[k]; } toast(btn); if(okcb) okcb(); }
-        else if(r.b && r.b.erro==='imagem_grande'){ toast(btn,'imagem grande demais'); }
-        else { toast(btn,'erro ao salvar'); }
+        else if(r.b && r.b.erro==='imagem_grande'){ toast(btn,'imagem grande demais'); alert('A imagem ficou grande demais pra salvar. Tenta uma menor.'); }
+        else { toast(btn,'erro '+r.s); try{ alert('Nao salvou (status '+r.s+'). Me manda esse numero: '+r.s+' — '+(r.b&&r.b.erro?r.b.erro:'')); }catch(e){} }
       });
     }
     // preenche o formulario de Ajustes com os dados reais do perfil
@@ -4011,7 +4010,7 @@
       var vt=e.target.closest?e.target.closest('[data-cload]'):null;
       if(vt){ e.preventDefault(); var vbox=vt.closest('.post-coments'); if(vbox) carregarTudo(vt.getAttribute('data-cload'),vbox); return; }
       var snd=e.target.closest?e.target.closest('[data-csend]'):null;
-      if(snd){ var pid=snd.getAttribute('data-csend'); var sbox=snd.closest('.post-coments'); var inp=sbox&&sbox.querySelector('.cmt-input'); var v=(inp&&inp.value||'').trim(); if(!v)return; snd.disabled=true; api('/api/posts/'+pid+'/comentarios',{method:'POST',body:{corpo:v}}).then(function(r){ snd.disabled=false; if(r.b&&r.b.ok){ if(inp)inp.value=''; carregarTudo(pid,sbox); } else if(inp){ inp.focus(); } }); return; }
+      if(snd){ var pid=snd.getAttribute('data-csend'); var sbox=snd.closest('.post-coments'); var inp=sbox&&sbox.querySelector('.cmt-input'); var v=(inp&&inp.value||'').trim(); if(!v)return; snd.disabled=true; api('/api/posts/'+pid+'/comentarios',{method:'POST',body:{corpo:v}}).then(function(r){ snd.disabled=false; if(r.b&&r.b.ok){ if(inp)inp.value=''; carregarTudo(pid,sbox); } else { try{ alert('Comentario nao enviou (status '+r.s+'). Me manda: '+r.s+' — '+(r.b&&r.b.erro?r.b.erro:'')); }catch(e){} if(inp) inp.focus(); } }); return; }
       var dl=e.target.closest?e.target.closest('[data-cdel]'):null;
       if(dl){ var dbox=dl.closest('.post-coments'); var dpid=dbox&&dbox.getAttribute('data-cbox'); api('/api/posts/'+dpid+'/comentarios/'+dl.getAttribute('data-cdel'),{method:'DELETE'}).then(function(r){ if(r.b&&r.b.ok&&dbox) carregarTudo(dpid,dbox); }); return; }
     });
