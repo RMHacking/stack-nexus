@@ -136,7 +136,16 @@ router.post('/posts/:id/comentarios', requerLogin, async (req, res, next) => {
     const ins = await pool.query(
       `INSERT INTO post_comentarios (post_id, autor_id, corpo) VALUES ($1,$2,$3) RETURNING id`,
       [req.params.id, req.user.id, corpo]);
-    await notificar(pool, { destinatario_id: ex.rows[0].autor_id, ator_id: req.user.id, tipo: 'comentario', ref_id: req.params.id });
+    const donoId = ex.rows[0].autor_id;
+    // dono do post
+    await notificar(pool, { destinatario_id: donoId, ator_id: req.user.id, tipo: 'comentario', ref_id: req.params.id });
+    // demais participantes da conversa (quem já comentou), menos eu e menos o dono
+    const parts = await pool.query(
+      `SELECT DISTINCT autor_id FROM post_comentarios WHERE post_id=$1 AND autor_id<>$2 AND autor_id<>$3`,
+      [req.params.id, req.user.id, donoId]);
+    for (const row of parts.rows) {
+      await notificar(pool, { destinatario_id: row.autor_id, ator_id: req.user.id, tipo: 'comentario_thread', ref_id: req.params.id });
+    }
     res.json({ ok: true, id: ins.rows[0].id });
   } catch (e) { console.error('[coment]', e); res.status(500).json({ ok:false, erro:'srv', detalhe:String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
 });

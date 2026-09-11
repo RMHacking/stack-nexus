@@ -3236,6 +3236,7 @@
     if(n.tipo==='conexao_pedido'){ ic='<div class="nic ni-friend"><span class="ndot"></span></div>'; txt=nome+' quer se conectar com você.'; }
     else if(n.tipo==='conexao_aceita'){ ic='<div class="nic ni-friend"><span class="ndot"></span></div>'; txt=nome+' aceitou sua conexão.'; }
     else if(n.tipo==='comentario'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' comentou no seu post.'; }
+    else if(n.tipo==='comentario_thread'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' também comentou num post que você comentou.'; }
     else if(n.tipo==='premiacao'){ var q=(n.dados&&n.dados.quantidade)||1; ic='<div class="nic ni-crown">♛</div>'; txt='O <b>sud0</b> te premiou com <b>'+q+' convite'+(q>1?'s':'')+'</b>.'; }
     else { ic='<div class="nic"><span class="ndot"></span></div>'; txt='Nova atividade.'; }
     return '<div class="notif'+(n.lida?'':' unread')+'" data-notif="'+esc(n.id)+'" data-ntipo="'+esc(n.tipo)+'" data-nator="'+esc(n.ator_handle||'')+'" data-nref="'+esc(n.ref_id||'')+'" style="cursor:pointer">'+ic+'<div class="nb">'+txt+'<div class="nt">'+tempo(n.criado_em)+'</div></div></div>';
