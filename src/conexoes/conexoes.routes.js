@@ -39,6 +39,7 @@ async function acharAlvo(handle, meuId) {
 // ---- pedir conexão (auto-aceita se o outro já tinha pedido) ----
 router.post('/conexoes/:handle', requerLogin, async (req, res, next) => {
   try {
+    if (req.user.is_sud0) return res.status(403).json({ ok: false, erro: 'sud0_sem_conexoes' });
     const r = await acharAlvo(req.params.handle, req.user.id);
     if (r.erro) return res.status(400).json({ ok: false, erro: r.erro });
     const alvo = r.conta;
@@ -101,7 +102,7 @@ router.get('/conexoes/pedidos', requerLogin, async (req, res, next) => {
     const { rows } = await pool.query(
       `SELECT co.criado_em, c.handle, c.nome, c.exposicao, c.foto_url, c.trilha, c.membro_num
          FROM conexoes co JOIN contas c ON c.id = co.de_id
-        WHERE co.para_id=$1 AND co.status='pendente'
+        WHERE co.para_id=$1 AND co.status='pendente' AND c.is_sud0=false
         ORDER BY co.criado_em DESC LIMIT 20`, [req.user.id]);
     res.json({ ok: true, pedidos: rows.map((r) => ({
       handle: r.handle,
