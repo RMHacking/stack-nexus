@@ -37,7 +37,12 @@ function criarApp() {
   app.use('/api', notificacoesRoutes);
 
   // páginas do front servidas pelo mesmo host da API (uma URL só)
-  app.use(express.static(path.join(__dirname, '../public')));
+  app.use(express.static(path.join(__dirname, '../public'), {
+    setHeaders: (res, filePath) => {
+      // HTML sempre revalida (evita o navegador servir versao antiga apos deploy)
+      if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+    },
+  }));
   app.get('/', (_req, res) => res.redirect('/stack-nexus-login.html'));
 
   // 404
