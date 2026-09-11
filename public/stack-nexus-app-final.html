@@ -3278,11 +3278,9 @@
           else if(window.snFlash) snFlash('Não deu para aceitar.', false);
         });
       } else if(st==='enviado'){
-        if(!confirm('Cancelar o pedido de conexão com @'+h+'?')) return;
-        api('/api/conexoes/'+encodeURIComponent(h),{method:'DELETE'}).then(function(r){ if(r.b&&r.b.ok){ pintarConectar(btn,h,'nenhum'); } });
+        window.snConfirm('Cancelar o pedido de conexão com @'+h+'?', function(){ api('/api/conexoes/'+encodeURIComponent(h),{method:'DELETE'}).then(function(r){ if(r.b&&r.b.ok){ pintarConectar(btn,h,'nenhum'); } }); }, {okText:'cancelar pedido'});
       } else if(st==='conectado'){
-        if(!confirm('Desfazer a conexão com @'+h+'?')) return;
-        api('/api/conexoes/'+encodeURIComponent(h),{method:'DELETE'}).then(function(r){ if(r.b&&r.b.ok){ pintarConectar(btn,h,'nenhum'); atualizarContagemConexoesPerfil(h); carregarMinhasConexoes(); } });
+        window.snConfirm('Desfazer a conexão com @'+h+'?', function(){ api('/api/conexoes/'+encodeURIComponent(h),{method:'DELETE'}).then(function(r){ if(r.b&&r.b.ok){ pintarConectar(btn,h,'nenhum'); atualizarContagemConexoesPerfil(h); carregarMinhasConexoes(); } }); }, {okText:'desfazer'});
       }
     };
   }
@@ -3712,12 +3710,12 @@
     tb.addEventListener('click',function(e){
       var b=e.target.closest?e.target.closest('[data-del-grupo]'):null; if(!b) return;
       var id=b.getAttribute('data-del-grupo'); var nm=b.getAttribute('data-gnome')||'esse grupo';
-      if(!confirm('Apagar "'+nm+'"? Essa acao e definitiva e so o sud0 pode fazer.')) return;
+      window.snConfirm('Apagar "'+nm+'"? Essa ação é definitiva e só o sud0 pode fazer.', function(){
       b.disabled=true; var o=b.textContent; b.textContent='apagando…';
       api('/api/grupos/'+id,{method:'DELETE'}).then(function(rr){
         if(rr.b&&rr.b.ok){ var tr=b.closest('tr'); if(tr) tr.remove(); if(!tb.querySelector('tr')) tb.innerHTML='<tr><td colspan="5" class="cfgnote" style="padding:.8rem;opacity:.7">Nenhum grupo criado na rede ainda.</td></tr>'; }
-        else { b.disabled=false; b.textContent=o; alert('Nao deu pra apagar agora.'); }
-      });
+        else { b.disabled=false; b.textContent=o; if(window.snFlash) snFlash('Não deu pra apagar agora.', false); }
+      }); }, {okText:'apagar'});
     });
   }
 
@@ -3839,7 +3837,7 @@
       if(e.target.closest('[data-evcopy]')){ var b=e.target.closest('[data-evcopy]'); try{ navigator.clipboard.writeText(evLink(cod)); b.textContent='copiado ✓'; setTimeout(function(){b.textContent='copiar link';},1500);}catch(_e){} return; }
       if(e.target.closest('[data-evqr]')){ if(extra.getAttribute('data-mode')==='qr'&&!extra.hidden){ extra.hidden=true; extra.removeAttribute('data-mode'); return; } extra.setAttribute('data-mode','qr'); extra.hidden=false; extra.innerHTML='<div class="ev-qr" style="background:#fff;padding:.6rem;border-radius:10px;display:inline-block"></div><div class="cfgnote" style="margin-top:.4rem;word-break:break-all;">'+esc(evLink(cod))+'</div>'; gerarQR(extra.querySelector('.ev-qr'), evLink(cod), 150); return; }
       if(e.target.closest('[data-evwho]')){ if(extra.getAttribute('data-mode')==='who'&&!extra.hidden){ extra.hidden=true; extra.removeAttribute('data-mode'); return; } extra.setAttribute('data-mode','who'); extra.hidden=false; extra.innerHTML='<p class="cfgnote" style="opacity:.7">carregando…</p>'; api('/api/admin/eventos/'+id+'/entradas').then(function(r){ var arr=(r.b&&r.b.entradas)||[]; if(!arr.length){ extra.innerHTML='<p class="cfgnote" style="opacity:.7">Ninguém entrou por esse evento ainda.</p>'; return; } extra.innerHTML='<div class="table-scroll"><table><tbody>'+arr.map(function(x){ return '<tr><td><span class="av" style="width:24px;height:24px;font-size:.55rem">'+iniciais(x.nome||x.handle)+'</span> @'+esc(x.handle)+'</td><td class="mono">#'+x.membro_num+'</td><td class="mono">'+tempo(x.criado_em)+'</td></tr>'; }).join('')+'</tbody></table></div>'; }); return; }
-      if(e.target.closest('[data-evdel]')){ var db=e.target.closest('[data-evdel]'); if(!confirm('Apagar este evento? O aviso no feed e o bate-papo do evento tambem somem. Quem ja entrou continua na rede.')) return; db.disabled=true; db.textContent='apagando…'; api('/api/admin/eventos/'+id,{method:'DELETE'}).then(function(rr){ if(rr.b&&rr.b.ok){ carregar(); if(typeof carregarFeed==='function') carregarFeed(); } else { db.disabled=false; db.textContent='apagar evento'; alert('Nao deu pra apagar agora.'); } }); return; }
+      if(e.target.closest('[data-evdel]')){ var db=e.target.closest('[data-evdel]'); window.snConfirm('Apagar este evento? O aviso no feed e o bate-papo do evento também somem. Quem já entrou continua na rede.', function(){ db.disabled=true; db.textContent='apagando…'; api('/api/admin/eventos/'+id,{method:'DELETE'}).then(function(rr){ if(rr.b&&rr.b.ok){ carregar(); if(typeof carregarFeed==='function') carregarFeed(); } else { db.disabled=false; db.textContent='apagar evento'; if(window.snFlash) snFlash('Não deu pra apagar agora.', false); } }); }, {okText:'apagar evento'}); return; }
       if(e.target.closest('[data-evtoggle]')){ var bt=e.target.closest('[data-evtoggle]'); var ativar=(bt.textContent.indexOf('reativar')>=0); bt.disabled=true; api('/api/admin/eventos/'+id,{method:'PATCH',body:{ativo:ativar}}).then(function(){ carregar(); }); return; }
     });
   }
@@ -3967,6 +3965,15 @@
   (function(){
     function q(sel){ return document.querySelector(sel); }
     window.snFlash=function(msg,ok){ var el=document.getElementById('sn-flash'); if(!el){ el=document.createElement('div'); el.id='sn-flash'; el.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;max-width:92%;padding:.65rem 1.05rem;border-radius:10px;font-family:var(--font-mono);font-size:.78rem;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.55);text-align:center;'; document.body.appendChild(el);} el.style.background=ok?'var(--ok)':'var(--danger)'; el.style.color='#fff'; el.textContent=msg; el.style.display='block'; clearTimeout(el.__t); el.__t=setTimeout(function(){el.style.display='none';},4500); };
+    window.snConfirm=function(msg,onOk,opts){ opts=opts||{}; var ov=document.getElementById('sn-confirm');
+      if(!ov){ ov=document.createElement('div'); ov.id='sn-confirm'; ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:100000;display:none;align-items:center;justify-content:center;padding:1rem;';
+        ov.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;max-width:390px;width:100%;padding:1.3rem;box-shadow:0 20px 60px rgba(0,0,0,.6);"><div id="snc-msg" style="font-size:.9rem;line-height:1.5;color:var(--text);margin-bottom:1.1rem;"></div><div style="display:flex;gap:.6rem;justify-content:flex-end;"><button id="snc-no" type="button" style="font-family:var(--font-mono);font-size:.78rem;color:var(--text-dim);border:1px solid var(--border);border-radius:8px;padding:.5rem 1.1rem;background:transparent;cursor:pointer;">cancelar</button><button id="snc-yes" type="button" style="font-family:var(--font-mono);font-size:.78rem;font-weight:700;color:#fff;border:0;border-radius:8px;padding:.5rem 1.3rem;cursor:pointer;"></button></div></div>';
+        document.body.appendChild(ov); }
+      var m=ov.querySelector('#snc-msg'), yes=ov.querySelector('#snc-yes'), no=ov.querySelector('#snc-no');
+      m.textContent=msg; yes.textContent=opts.okText||'confirmar'; yes.style.background=(opts.danger===false)?'var(--btn)':'var(--danger)';
+      function close(){ ov.style.display='none'; }
+      yes.onclick=function(){ close(); if(onOk) onOk(); }; no.onclick=close; ov.onclick=function(e){ if(e.target===ov) close(); };
+      ov.style.display='flex'; };
     function toast(btn,txt){ if(!btn)return; var o=btn.getAttribute('data-orig')||btn.textContent; btn.setAttribute('data-orig',o); btn.textContent=txt||'✓ salvo'; btn.classList.add('saved'); setTimeout(function(){ btn.textContent=o; btn.classList.remove('saved'); },1600); }
     function pickExpo(){ var p=document.querySelector('.pick.on[data-pick="aberto"],.pick.on[data-pick="reservado"]'); return p?p.getAttribute('data-pick'):null; }
     function pickTrilha(){ var p=document.querySelector('.pick.on[data-pick="tech"],.pick.on[data-pick="cyber"],.pick.on[data-pick="investig"],.pick.on[data-pick="both"]'); return p?p.getAttribute('data-pick'):null; }
@@ -4470,7 +4477,7 @@
       var vpa=t.closest?t.closest('[data-dsf-provas-adm]'):null;
       if(vpa){ e.preventDefault(); var id=vpa.getAttribute('data-dsf-provas-adm'); var box2=document.querySelector('[data-provasbox-adm="'+id+'"]'); if(box2){ if(box2.hidden){ box2.hidden=false; carregarProvas(id,box2); } else { box2.hidden=true; } } return; }
       var enc=t.closest?t.closest('[data-dsf-encerrar]'):null;
-      if(enc){ e.preventDefault(); if(!confirm('Encerrar este desafio? Sai do topo do feed e para de receber provas.')) return; api('/api/admin/desafios/'+encodeURIComponent(enc.getAttribute('data-dsf-encerrar'))+'/encerrar',{method:'POST'}).then(function(r){ if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Desafio encerrado.', true); carregarFeed(); carregarDesafiosAdmin(); } }); return; }
+      if(enc){ e.preventDefault(); var eid=enc.getAttribute('data-dsf-encerrar'); window.snConfirm('Encerrar este desafio? Sai do topo do feed e para de receber provas.', function(){ api('/api/admin/desafios/'+encodeURIComponent(eid)+'/encerrar',{method:'POST'}).then(function(r){ if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Desafio encerrado.', true); carregarFeed(); carregarDesafiosAdmin(); } }); }, {okText:'encerrar'}); return; }
       var pm=t.closest?t.closest('[data-prova-premiar]'):null;
       if(pm){ e.preventDefault(); var prova=pm.closest('.prova'); var qi=prova&&prova.querySelector('.prova-qtd'); var q=parseInt(qi&&qi.value||'0',10); if(!(q>0)){ if(window.snFlash) snFlash('Quantos convites?', false); return; } pm.disabled=true; api('/api/admin/provas/'+encodeURIComponent(pm.getAttribute('data-prova-premiar'))+'/premiar',{method:'POST',body:{quantidade:q}}).then(function(r){ pm.disabled=false; if(r.b&&r.b.ok){ if(prova){ var pact=prova.querySelector('.pact'); if(pact) pact.innerHTML='<span class="prova-ok">✓ premiada</span>'; } if(window.snFlash) snFlash('Premiado com '+q+' convite'+(q>1?'s':'')+'! ✅', true); } else { if(window.snFlash) snFlash('Não deu pra premiar.', false); } }); return; }
       var rc=t.closest?t.closest('[data-prova-recusar]'):null;
