@@ -273,3 +273,16 @@ CREATE TABLE IF NOT EXISTS conexoes (
 );
 CREATE INDEX IF NOT EXISTS ix_conexoes_para ON conexoes (para_id, status);
 CREATE INDEX IF NOT EXISTS ix_conexoes_de   ON conexoes (de_id, status);
+
+-- ---------- notificações direcionadas (pra você) ----------
+CREATE TABLE IF NOT EXISTS notificacoes (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  destinatario_id uuid NOT NULL REFERENCES contas(id) ON DELETE CASCADE,
+  ator_id         uuid REFERENCES contas(id) ON DELETE SET NULL,
+  tipo            text NOT NULL,   -- conexao_pedido | conexao_aceita | comentario | premiacao
+  ref_id          uuid,            -- id do alvo (ex: post do comentário)
+  dados           jsonb,           -- extras (ex: {quantidade: 2})
+  lida            boolean NOT NULL DEFAULT false,
+  criado_em       timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS ix_notif_dest ON notificacoes (destinatario_id, lida, criado_em DESC);

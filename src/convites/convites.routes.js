@@ -5,6 +5,7 @@ const { pool } = require('../db');
 const svc = require('./convites.service');
 const { requerLogin, requerSud0 } = require('../auth/middleware');
 const conexoesRoutes = require('../conexoes/conexoes.routes');
+const { notificar } = require('../notificacoes/notif.service');
 
 const router = express.Router();
 const clientIp = (req) => (req.headers['x-forwarded-for'] || req.ip || '').split(',')[0].trim();
@@ -218,6 +219,7 @@ router.post('/admin/premiar', requerSud0, async (req, res, next) => {
     }
     if (!cid) return res.status(400).json({ ok: false, erro: 'alvo' });
     await svc.premiar(pool, { contaId: cid, quantidade, motivo: b.motivo, desafioId: b.desafioId, sud0Id: req.user.id });
+    await notificar(pool, { destinatario_id: cid, ator_id: req.user.id, tipo: 'premiacao', dados: { quantidade } });
     // anúncio público no feed (dá palco a quem ganhou)
     if (b.anunciar && handle) {
       try {

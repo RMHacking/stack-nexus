@@ -13,6 +13,7 @@ const dmRoutes = require('./dm/dm.routes');
 const reacoesRoutes = require('./reacoes/reacoes.routes');
 const eventosRoutes = require('./eventos/eventos.routes');
 const conexoesRoutes = require('./conexoes/conexoes.routes');
+const notificacoesRoutes = require('./notificacoes/notificacoes.routes');
 
 function criarApp() {
   const app = express();
@@ -33,6 +34,7 @@ function criarApp() {
   app.use('/api', reacoesRoutes);
   app.use('/api', eventosRoutes);
   app.use('/api', conexoesRoutes);
+  app.use('/api', notificacoesRoutes);
 
   // páginas do front servidas pelo mesmo host da API (uma URL só)
   app.use(express.static(path.join(__dirname, '../public')));

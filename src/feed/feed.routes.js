@@ -2,6 +2,7 @@
 const express = require('express');
 const { pool } = require('../db');
 const { requerLogin, requerSud0 } = require('../auth/middleware');
+const { notificar } = require('../notificacoes/notif.service');
 
 const router = express.Router();
 
@@ -130,11 +131,12 @@ router.post('/posts/:id/comentarios', requerLogin, async (req, res, next) => {
     const corpo = String((req.body || {}).corpo || '').trim();
     if (!corpo) return res.status(400).json({ ok: false, erro: 'vazio' });
     if (corpo.length > 500) return res.status(400).json({ ok: false, erro: 'longo' });
-    const ex = await pool.query('SELECT id FROM posts WHERE id = $1', [req.params.id]);
+    const ex = await pool.query('SELECT id, autor_id FROM posts WHERE id = $1', [req.params.id]);
     if (!ex.rows.length) return res.status(404).json({ ok: false });
     const ins = await pool.query(
       `INSERT INTO post_comentarios (post_id, autor_id, corpo) VALUES ($1,$2,$3) RETURNING id`,
       [req.params.id, req.user.id, corpo]);
+    await notificar(pool, { destinatario_id: ex.rows[0].autor_id, ator_id: req.user.id, tipo: 'comentario', ref_id: req.params.id });
     res.json({ ok: true, id: ins.rows[0].id });
   } catch (e) { console.error('[coment]', e); res.status(500).json({ ok:false, erro:'srv', detalhe:String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
 });

@@ -917,7 +917,7 @@
     <button class="navitem" data-nav="projects"><span class="dot"></span><span class="txt">StackProjects</span></button>
     <button class="navitem" data-nav="groups"><span class="dot"></span><span class="txt">StackGroups</span></button>
     <button class="navitem" data-nav="events"><span class="dot"></span><span class="txt">StackEvents</span></button>
-    <button class="navitem" data-nav="notifs"><span class="dot"></span><span class="txt">Notificações</span><span class="badge" id="notifBadge">5</span></button>
+    <button class="navitem" data-nav="notifs"><span class="dot"></span><span class="txt">Notificações</span><span class="badge" id="notifBadge" style="display:none"></span></button>
     <button class="navitem" data-nav="saved"><span class="dot"></span><span class="txt">Salvos</span></button>
     <div class="divider sud0-only"></div>
     <!-- CONFIG: só o fundador vê -->
@@ -1056,17 +1056,7 @@
       <!-- NOTIFICAÇÕES -->
       <section class="view" id="v-notifs">
         <div class="ntitle" style="display:flex;align-items:center;justify-content:space-between;">Notificações <button id="markAllRead" style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);border:1px solid var(--border);border-radius:7px;padding:.3rem .7rem;font-weight:400;">marcar todas como lidas</button></div>
-        <div class="notif unread" data-chat="Kernel P." data-ini="KP" style="cursor:pointer"><div class="nic ni-msg"><span class="ndot"></span></div><div class="nb"><b>Kernel P.</b> te mandou <b>2 mensagens</b> no StackChat.<div class="nt">há 2 min</div></div></div>
-        <div class="notif unread" data-chat="Ana N." data-ini="AN" style="cursor:pointer"><div class="nic ni-msg"><span class="ndot"></span></div><div class="nb"><b>Ana N.</b> te mandou uma mensagem no StackChat.<div class="nt">há 8 min</div></div></div>
-        <div class="notif unread"><div class="nic ni-friend"><span class="ndot"></span></div><div class="nb"><b>Diego V.</b> quer se conectar com você. <span style="font-family:var(--font-mono);font-size:.68rem;color:var(--accent)">ver pedido →</span><div class="nt">há 25 min</div></div></div>
-        <div class="notif unread"><div class="nic ni-crown">♛</div><div class="nb"><b>sud0</b> se manifestou: novo desafio no ar — "foto no Mind The Sec".<div class="nt">há 10 min</div></div></div>
-        <div class="notif unread"><div class="nic ni-crown">♛</div><div class="nb">Você foi <b>premiado com 2 convites</b> pelo desafio da semana.<div class="nt">há 40 min</div></div></div>
-        <div class="notif unread"><div class="nic ni-post"><span class="ndot"></span></div><div class="nb"><b>Marina R.</b> comentou no seu projeto <b>Anomaly Pipeline</b>.<div class="nt">há 1h</div></div></div>
-        <div class="notif unread"><div class="nic ni-friend"><span class="ndot"></span></div><div class="nb"><b>Ana N.</b> aceitou sua conexão. Vocês se conheceram no Mind The Sec.<div class="nt">há 2h</div></div></div>
-        <div class="notif unread"><div class="nic ni-group"><span class="ndot"></span></div><div class="nb">Novo grupo na sua trilha <b>Cyber</b>: <b># Blue Team & SOC</b>.<div class="nt">há 3h</div></div></div>
-        <div class="notif"><div class="nic ni-post"><span class="ndot"></span></div><div class="nb"><b>Kernel P.</b> e outras 12 pessoas reagiram ao seu post.<div class="nt">há 5h</div></div></div>
-        <div class="notif"><div class="nic ni-friend"><span class="ndot"></span></div><div class="nb"><b>@novato_dev</b> entrou na rede convidado por você.<div class="nt">ontem</div></div></div>
-        <div class="notif"><div class="nic ni-group"><span class="ndot"></span></div><div class="nb">Muita atividade em <b># Segurança Ofensiva</b> hoje — 40 mensagens novas.<div class="nt">ontem</div></div></div>
+        <div id="notifList"><div class="placeholder" style="padding:1rem;color:var(--text-faint);font-family:var(--font-mono);font-size:.72rem">Carregando…</div></div>
       </section>
 
       <section class="view" id="v-saved">
@@ -3238,6 +3228,53 @@
     var pb=bar.querySelector('button[data-ptab="pf-posts"]'); if(pb) pb.classList.add('on');
     var pp=document.getElementById('pf-posts'); if(pp) pp.classList.add('on');
   }
+  // ===== NOTIFICAÇÕES (direcionadas a você) =====
+  function nomeAtor(n){ if(n.ator_sud0) return 'sud0'; return n.ator_nome || ('@'+(n.ator_handle||'')); }
+  function notifHTML(n){
+    var nome='<b>'+esc(nomeAtor(n))+'</b>';
+    var ic, txt;
+    if(n.tipo==='conexao_pedido'){ ic='<div class="nic ni-friend"><span class="ndot"></span></div>'; txt=nome+' quer se conectar com você.'; }
+    else if(n.tipo==='conexao_aceita'){ ic='<div class="nic ni-friend"><span class="ndot"></span></div>'; txt=nome+' aceitou sua conexão.'; }
+    else if(n.tipo==='comentario'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' comentou no seu post.'; }
+    else if(n.tipo==='premiacao'){ var q=(n.dados&&n.dados.quantidade)||1; ic='<div class="nic ni-crown">♛</div>'; txt='O <b>sud0</b> te premiou com <b>'+q+' convite'+(q>1?'s':'')+'</b>.'; }
+    else { ic='<div class="nic"><span class="ndot"></span></div>'; txt='Nova atividade.'; }
+    return '<div class="notif'+(n.lida?'':' unread')+'" data-notif="'+esc(n.id)+'" data-ntipo="'+esc(n.tipo)+'" data-nator="'+esc(n.ator_handle||'')+'" data-nref="'+esc(n.ref_id||'')+'" style="cursor:pointer">'+ic+'<div class="nb">'+txt+'<div class="nt">'+tempo(n.criado_em)+'</div></div></div>';
+  }
+  function atualizarBadgeNotif(nao){
+    var b=document.getElementById('notifBadge'); if(!b) return;
+    if(nao>0){ b.textContent=nao; b.style.display=''; } else { b.style.display='none'; }
+  }
+  function carregarNotificacoes(){
+    api('/api/notificacoes').then(function(r){
+      if(!(r.b&&r.b.ok)) return;
+      atualizarBadgeNotif(r.b.nao_lidas||0);
+      var list=document.getElementById('notifList'); if(!list) return;
+      var arr=r.b.notificacoes||[];
+      list.innerHTML=arr.length?arr.map(notifHTML).join(''):'<div class="placeholder" style="padding:1rem;color:var(--text-faint);font-family:var(--font-mono);font-size:.72rem">Nenhuma notificação ainda.</div>';
+    });
+  }
+  document.addEventListener('click',function(e){
+    // marcar todas como lidas
+    var mar=e.target.closest?e.target.closest('#markAllRead'):null;
+    if(mar){ e.preventDefault(); api('/api/notificacoes/lidas',{method:'POST'}).then(function(){ carregarNotificacoes(); }); return; }
+    // abrir a aba de notificacoes recarrega
+    var nav=e.target.closest?e.target.closest('[data-nav="notifs"]'):null;
+    if(nav){ carregarNotificacoes(); return; }
+    // clicar numa notificacao: marca lida + navega
+    var nel=e.target.closest?e.target.closest('[data-notif]'):null;
+    if(nel){
+      var id=nel.getAttribute('data-notif'), tp=nel.getAttribute('data-ntipo'), at=nel.getAttribute('data-nator');
+      if(nel.classList.contains('unread')){
+        api('/api/notificacoes/'+encodeURIComponent(id)+'/lida',{method:'POST'});
+        nel.classList.remove('unread');
+        var b=document.getElementById('notifBadge');
+        if(b && b.style.display!=='none'){ var v=(parseInt(b.textContent,10)||1)-1; atualizarBadgeNotif(v); }
+      }
+      if((tp==='conexao_pedido'||tp==='conexao_aceita') && at){ verPerfil(at); }
+      else if(tp==='comentario'){ if(typeof irParaView==='function') irParaView('v-feed'); }
+      return;
+    }
+  });
   // ===== CONEXÕES (pedido / aceitar / desfazer) =====
   function pintarConectar(btn, handle, estado){
     estado = estado || 'nenhum';
@@ -3947,8 +3984,8 @@
 
     carregarFeed();
     setupProjetosComposer(); carregarProjetos();
-    setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); carregarSugestoes(); carregarPedidos(); carregarMinhasConexoes();
-  }).catch(function(){ carregarFeed(); setupProjetosComposer(); carregarProjetos(); setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); carregarSugestoes(); carregarPedidos(); carregarMinhasConexoes(); });
+    setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); carregarSugestoes(); carregarPedidos(); carregarMinhasConexoes(); carregarNotificacoes(); if(!window.__notifIv){ window.__notifIv=setInterval(carregarNotificacoes,60000); }
+  }).catch(function(){ carregarFeed(); setupProjetosComposer(); carregarProjetos(); setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); carregarSugestoes(); carregarPedidos(); carregarMinhasConexoes(); carregarNotificacoes(); if(!window.__notifIv){ window.__notifIv=setInterval(carregarNotificacoes,60000); } });
 
   /* ===== salvar perfil de verdade (nome, frase, bio, exposicao, trilha, foto, capa) ===== */
   (function(){
