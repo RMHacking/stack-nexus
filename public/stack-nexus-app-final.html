@@ -4155,10 +4155,10 @@
       reps=reps||[];
       var inner=reps.map(comentHTML).join('');
       var section;
-      if(reps.length>1){
-        section='<button class="cmt-verreps" data-verreps="'+esc(t.id)+'">▾ ver '+reps.length+' respostas</button><div class="reps-box" data-repsbox="'+esc(t.id)+'" hidden>'+inner+'</div>';
+      if(reps.length>=1){
+        section='<button class="cmt-verreps" data-verreps="'+esc(t.id)+'">▾ ver '+reps.length+' resposta'+(reps.length>1?'s':'')+'</button><div class="reps-box" data-repsbox="'+esc(t.id)+'" hidden>'+inner+'</div>';
       } else {
-        section='<div class="reps-box" data-repsbox="'+esc(t.id)+'">'+inner+'</div>';
+        section='<div class="reps-box" data-repsbox="'+esc(t.id)+'"></div>';
       }
       return '<div class="cmt-thread" data-thread="'+esc(t.id)+'">'+comentHTML(t)+'<div class="cmt-replywrap"></div>'+section+'</div>';
     }
@@ -4241,7 +4241,7 @@
       // ver/ocultar respostas
       var vr=e.target.closest?e.target.closest('[data-verreps]'):null;
       if(vr){ e.preventDefault(); var vth=vr.closest('.cmt-thread'); var rbx=vth&&vth.querySelector('[data-repsbox]');
-        if(rbx){ rbx.hidden=!rbx.hidden; var qn=rbx.querySelectorAll('.cmt').length; vr.textContent=(rbx.hidden?('▾ ver '+qn+' respostas'):'▴ ocultar respostas'); }
+        if(rbx){ rbx.hidden=!rbx.hidden; var qn=rbx.querySelectorAll('.cmt').length; vr.textContent=(rbx.hidden?('▾ ver '+qn+' resposta'+(qn>1?'s':'')):'▴ ocultar respostas'); }
         return; }
 
       // apagar comentário
