@@ -4131,7 +4131,7 @@
       '.cmt-input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:.5rem .9rem;color:var(--text);font-size:.85rem;font-family:inherit;outline:none;}'+
       '.cmt-input:focus{border-color:var(--btn-border);}'+
       '.cmt-send{font-family:var(--font-mono);font-size:.72rem;font-weight:600;background:var(--btn);color:var(--btn-text);border:1px solid var(--btn-border);border-radius:20px;padding:.5rem 1.1rem;cursor:pointer;flex:none;}'+
-      '.cmt-send:hover{background:var(--btn-hover);}';
+      '.cmt-send:hover{background:var(--btn-hover);}'+'.cmt-cancel{background:transparent;border:0;color:var(--text-faint);font-family:var(--font-mono);font-size:.7rem;cursor:pointer;flex:none;padding:.5rem .3rem;}.cmt-cancel:hover{color:var(--danger);}';
     document.head.appendChild(cst);
 
     function comentHTML(c){
@@ -4207,9 +4207,13 @@
         var cmtEl=rp.closest('.cmt'); var thread=rp.closest('.cmt-thread'); var wrap=thread&&thread.querySelector('.cmt-replywrap'); if(!wrap) return;
         var autor=cmtEl&&cmtEl.getAttribute('data-cautor'); var isRep=cmtEl&&cmtEl.classList.contains('cmt--reply');
         var pref=(isRep&&autor)?('@'+autor+' '):'';
-        wrap.innerHTML='<div class="cmt-foot"><input class="cmt-input" maxlength="500" data-parent="'+esc(rcid)+'" placeholder="Escreva uma resposta..." value="'+esc(pref)+'"><button class="cmt-send" data-csend="r">Responder</button></div>';
+        wrap.innerHTML='<div class="cmt-foot"><input class="cmt-input" maxlength="500" data-parent="'+esc(rcid)+'" placeholder="Escreva uma resposta..." value="'+esc(pref)+'"><button class="cmt-send" data-csend="r">Responder</button><button class="cmt-cancel" data-cancelreply="1">cancelar</button></div>';
         var ri=wrap.querySelector('input'); if(ri){ ri.focus(); try{ri.setSelectionRange(ri.value.length,ri.value.length);}catch(_e){} }
         return; }
+
+      // cancelar a resposta (fecha a caixa)
+      var cx=e.target.closest?e.target.closest('[data-cancelreply]'):null;
+      if(cx){ e.preventDefault(); var cw=cx.closest('.cmt-replywrap'); if(cw) cw.innerHTML=''; return; }
 
       // enviar comentário ou resposta
       var snd=e.target.closest?e.target.closest('[data-csend]'):null;
@@ -4250,7 +4254,9 @@
         api('/api/posts/'+dpid+'/comentarios/'+dl.getAttribute('data-cdel'),{method:'DELETE'}).then(function(r){ if(r.b&&r.b.ok&&dbox) expandir(dpid,dbox); }); return; }
     });
     document.addEventListener('keydown',function(e){
-      if(e.key!=='Enter'||e.shiftKey)return; var inp=e.target; if(!inp||!inp.classList||!inp.classList.contains('cmt-input'))return;
+      var inp=e.target; if(!inp||!inp.classList||!inp.classList.contains('cmt-input'))return;
+      if(e.key==='Escape'){ var rw=inp.closest('.cmt-replywrap'); if(rw){ e.preventDefault(); rw.innerHTML=''; } return; }
+      if(e.key!=='Enter'||e.shiftKey)return;
       var foot=inp.closest('.cmt-foot'); var snd=foot&&foot.querySelector('[data-csend]'); if(snd){ e.preventDefault(); snd.click(); }
     });
   })();
