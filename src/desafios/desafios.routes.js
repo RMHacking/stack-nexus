@@ -77,6 +77,15 @@ router.post('/admin/provas/:pid/premiar', requerSud0, async (req, res, next) => 
     await svc.premiar(pool, { contaId: p.autor_id, quantidade: q, motivo: 'desafio: ' + p.titulo, desafioId: p.desafio_id, sud0Id: req.user.id });
     await pool.query(`UPDATE desafio_provas SET status='premiada' WHERE id=$1`, [p.id]);
     await notificar(pool, { destinatario_id: p.autor_id, ator_id: req.user.id, tipo: 'premiacao', dados: { quantidade: q } });
+    // post de parabéns no feed (dá palco ao vencedor + motiva a rede)
+    try {
+      const w = await pool.query('SELECT handle FROM contas WHERE id = $1', [p.autor_id]);
+      const wh = w.rows[0] && w.rows[0].handle;
+      if (wh) {
+        const corpo = '🏆 @' + wh + ' mandou bem no desafio "' + p.titulo + '" e levou ' + q + ' convite' + (q > 1 ? 's' : '') + '! É assim que a rede cresce — mostrando o que se faz, não o que se diz. Parabéns e bora pro próximo! 🚀';
+        await pool.query(`INSERT INTO posts (autor_id, corpo, tipo) VALUES ($1,$2,'normal')`, [req.user.id, corpo]);
+      }
+    } catch (_e) { /* best-effort: o post é bônus, não trava a premiação */ }
     res.json({ ok: true });
   } catch (e) { console.error('[prova/premiar]', e); res.status(500).json({ ok: false, erro: 'srv', detalhe: String(e.code || '') + ' ' + String(e.message || '').slice(0, 120) }); }
 });
