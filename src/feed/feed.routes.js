@@ -71,7 +71,8 @@ router.get('/feed', requerLogin, async (req, res, next) => {
     const { rows } = await pool.query(
       `SELECT p.id, p.corpo, p.criado_em, p.editado_em, p.fixado, p.tipo, p.ref_id, p.autor_id,
               c.handle, c.nome, c.exposicao, c.trilha, c.is_sud0, c.membro_num,
-              rx.rocket, rx.brain, rx.bolt, rx.minha
+              rx.rocket, rx.brain, rx.bolt, rx.minha,
+              (SELECT count(*)::int FROM post_comentarios pc WHERE pc.post_id = p.id) AS n_com
          FROM posts p JOIN contas c ON c.id = p.autor_id
          LEFT JOIN LATERAL (
            SELECT count(*) FILTER (WHERE tipo='rocket')::int AS rocket,
@@ -87,6 +88,7 @@ router.get('/feed', requerLogin, async (req, res, next) => {
       fixado: r.fixado, editado: !!r.editado_em, tipo: r.tipo, ref_id: r.ref_id,
       meu: r.autor_id === req.user.id,
       rx: { rocket: r.rocket || 0, brain: r.brain || 0, bolt: r.bolt || 0, minha: r.minha || null },
+      coment: r.n_com || 0,
       autor: {
         handle: r.handle,
         nome: r.exposicao === 'aberto' ? r.nome : null,
@@ -94,6 +96,46 @@ router.get('/feed', requerLogin, async (req, res, next) => {
       },
     }));
     res.json(feed);
+  } catch (e) { next(e); }
+});
+
+// ===== comentários (chat) dos posts do feed =====
+router.get('/posts/:id/comentarios', requerLogin, async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT pc.id, pc.corpo, pc.criado_em, pc.autor_id,
+              c.handle, c.nome, c.exposicao, c.is_sud0
+         FROM post_comentarios pc JOIN contas c ON c.id = pc.autor_id
+        WHERE pc.post_id = $1
+        ORDER BY pc.criado_em ASC LIMIT 300`, [req.params.id]);
+    res.json({ ok: true, comentarios: rows.map((r) => ({
+      id: r.id, corpo: r.corpo, criado_em: r.criado_em,
+      handle: r.handle, nome: r.exposicao === 'aberto' ? r.nome : null,
+      is_sud0: r.is_sud0, meu: r.autor_id === req.user.id,
+    })) });
+  } catch (e) { next(e); }
+});
+router.post('/posts/:id/comentarios', requerLogin, async (req, res, next) => {
+  try {
+    const corpo = String((req.body || {}).corpo || '').trim();
+    if (!corpo) return res.status(400).json({ ok: false, erro: 'vazio' });
+    if (corpo.length > 500) return res.status(400).json({ ok: false, erro: 'longo' });
+    const ex = await pool.query('SELECT id FROM posts WHERE id = $1', [req.params.id]);
+    if (!ex.rows.length) return res.status(404).json({ ok: false });
+    const ins = await pool.query(
+      `INSERT INTO post_comentarios (post_id, autor_id, corpo) VALUES ($1,$2,$3) RETURNING id`,
+      [req.params.id, req.user.id, corpo]);
+    res.json({ ok: true, id: ins.rows[0].id });
+  } catch (e) { next(e); }
+});
+router.delete('/posts/:id/comentarios/:cid', requerLogin, async (req, res, next) => {
+  try {
+    const sql = req.user.is_sud0
+      ? 'DELETE FROM post_comentarios WHERE id = $1 AND post_id = $2 RETURNING id'
+      : 'DELETE FROM post_comentarios WHERE id = $1 AND post_id = $2 AND autor_id = $3 RETURNING id';
+    const params = req.user.is_sud0 ? [req.params.cid, req.params.id] : [req.params.cid, req.params.id, req.user.id];
+    const del = await pool.query(sql, params);
+    res.json({ ok: del.rows.length > 0 });
   } catch (e) { next(e); }
 });
 

@@ -149,6 +149,25 @@ router.get('/sugestoes', requerLogin, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// busca de membros (autocomplete dos campos @handle do Config) — só sud0
+router.get('/admin/membros', requerSud0, async (req, res, next) => {
+  try {
+    const q = String(req.query.q || '').replace(/^@/, '').trim();
+    if (q.length < 1) return res.json({ ok: true, membros: [] });
+    const termo = q.replace(/[%_\\]/g, '\\$&');
+    const { rows } = await pool.query(
+      `SELECT handle, nome, membro_num
+         FROM contas
+        WHERE is_sud0 = false
+          AND (handle ILIKE $1 || '%' ESCAPE '\\'
+               OR handle ILIKE '%' || $1 || '%' ESCAPE '\\'
+               OR nome ILIKE '%' || $1 || '%' ESCAPE '\\')
+        ORDER BY (handle ILIKE $1 || '%' ESCAPE '\\') DESC, handle
+        LIMIT 8`, [termo]);
+    res.json({ ok: true, membros: rows });
+  } catch (e) { next(e); }
+});
+
 // ---------------- sud0 ----------------
 // perfil público de um membro (rede fechada: precisa estar logado)
 router.get('/perfil/:handle', requerLogin, async (req, res, next) => {

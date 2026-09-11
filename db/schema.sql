@@ -249,3 +249,13 @@ DO $$ BEGIN ALTER TABLE eventos ADD COLUMN fim    date; EXCEPTION WHEN duplicate
 -- remove a coluna vestigial eventos.grupo_id (o chat do evento agora é evento_mensagens);
 -- a FK dela travava o "apagar grupo"
 DO $$ BEGIN ALTER TABLE eventos DROP COLUMN grupo_id; EXCEPTION WHEN undefined_column THEN NULL; END $$;
+
+-- comentários (chat) embaixo dos posts do feed
+CREATE TABLE IF NOT EXISTS post_comentarios (
+  id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id   uuid NOT NULL REFERENCES posts(id)  ON DELETE CASCADE,
+  autor_id  uuid NOT NULL REFERENCES contas(id) ON DELETE CASCADE,
+  corpo     text NOT NULL CHECK (char_length(corpo) BETWEEN 1 AND 500),
+  criado_em timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS ix_post_coment ON post_comentarios (post_id, criado_em);
