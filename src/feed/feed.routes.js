@@ -134,7 +134,7 @@ router.post('/posts/:id/comentarios', requerLogin, async (req, res, next) => {
       `INSERT INTO post_comentarios (post_id, autor_id, corpo) VALUES ($1,$2,$3) RETURNING id`,
       [req.params.id, req.user.id, corpo]);
     res.json({ ok: true, id: ins.rows[0].id });
-  } catch (e) { next(e); }
+  } catch (e) { console.error('[coment]', e); res.status(500).json({ ok:false, erro:'srv', detalhe:String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
 });
 router.delete('/posts/:id/comentarios/:cid', requerLogin, async (req, res, next) => {
   try {

@@ -3851,7 +3851,6 @@
     setupProjetosComposer(); carregarProjetos();
     setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); carregarSugestoes();
   }).catch(function(){ carregarFeed(); setupProjetosComposer(); carregarProjetos(); setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); carregarSugestoes(); });
-})();
 
   /* ===== salvar perfil de verdade (nome, frase, bio, exposicao, trilha, foto, capa) ===== */
   (function(){
@@ -4020,6 +4019,7 @@
       var kbox=inp.closest('.post-coments'); var snd=kbox&&kbox.querySelector('[data-csend]'); if(snd){ e.preventDefault(); snd.click(); }
     });
   })();
+})();
 
 </script>
 </body>

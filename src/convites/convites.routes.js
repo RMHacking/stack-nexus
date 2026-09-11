@@ -127,7 +127,7 @@ router.patch('/me/perfil', requerLogin, async (req, res, next) => {
     vals.push(req.user.id);
     await pool.query(`UPDATE contas SET ${sets.join(', ')} WHERE id = $${i}`, vals);
     res.json({ ok:true });
-  } catch (e) { next(e); }
+  } catch (e) { console.error('[perfil]', e); res.status(500).json({ ok:false, erro:'srv', detalhe:String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
 });
 
 // sugestoes de conexao: membros reais (mais novos primeiro), fora o sud0 e voce
