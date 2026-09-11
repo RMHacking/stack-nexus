@@ -114,15 +114,22 @@ router.get('/feed', requerLogin, async (req, res, next) => {
 router.get('/posts/:id/comentarios', requerLogin, async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      `SELECT pc.id, pc.corpo, pc.criado_em, pc.autor_id,
-              c.handle, c.nome, c.exposicao, c.is_sud0
-         FROM post_comentarios pc JOIN contas c ON c.id = pc.autor_id
+      `SELECT pc.id, pc.corpo, pc.criado_em, pc.autor_id, pc.parent_id,
+              c.handle, c.nome, c.exposicao, c.is_sud0,
+              COALESCE(rb.n,0) AS curtidas, (rb.eu IS NOT NULL) AS eu_curti
+         FROM post_comentarios pc
+         JOIN contas c ON c.id = pc.autor_id
+         LEFT JOIN LATERAL (
+           SELECT count(*)::int AS n, max(CASE WHEN r.autor_id = $2 THEN 1 END) AS eu
+             FROM reacoes r WHERE r.alvo_tipo='comentario' AND r.alvo_id = pc.id AND r.tipo='bolt'
+         ) rb ON true
         WHERE pc.post_id = $1
-        ORDER BY pc.criado_em ASC LIMIT 300`, [req.params.id]);
+        ORDER BY pc.criado_em ASC LIMIT 400`, [req.params.id, req.user.id]);
     res.json({ ok: true, comentarios: rows.map((r) => ({
-      id: r.id, corpo: r.corpo, criado_em: r.criado_em,
+      id: r.id, corpo: r.corpo, criado_em: r.criado_em, parent_id: r.parent_id,
       handle: r.handle, nome: r.exposicao === 'aberto' ? r.nome : null,
       is_sud0: r.is_sud0, meu: r.autor_id === req.user.id,
+      curtidas: r.curtidas || 0, eu_curti: !!r.eu_curti,
     })) });
   } catch (e) { next(e); }
 });
@@ -133,18 +140,32 @@ router.post('/posts/:id/comentarios', requerLogin, async (req, res, next) => {
     if (corpo.length > 500) return res.status(400).json({ ok: false, erro: 'longo' });
     const ex = await pool.query('SELECT id, autor_id FROM posts WHERE id = $1', [req.params.id]);
     if (!ex.rows.length) return res.status(404).json({ ok: false });
+    // resposta? valida o pai e normaliza pra 1 nivel (a raiz do fio)
+    let parentId = (req.body && req.body.parent_id) ? String(req.body.parent_id) : null;
+    let respondido = null; // autor do comentario respondido (pra notificar)
+    if (parentId) {
+      const pp = await pool.query('SELECT id, parent_id, autor_id FROM post_comentarios WHERE id = $1 AND post_id = $2', [parentId, req.params.id]);
+      if (!pp.rows.length) { parentId = null; }
+      else { respondido = pp.rows[0].autor_id; if (pp.rows[0].parent_id) parentId = pp.rows[0].parent_id; }
+    }
     const ins = await pool.query(
-      `INSERT INTO post_comentarios (post_id, autor_id, corpo) VALUES ($1,$2,$3) RETURNING id`,
-      [req.params.id, req.user.id, corpo]);
+      `INSERT INTO post_comentarios (post_id, autor_id, corpo, parent_id) VALUES ($1,$2,$3,$4) RETURNING id`,
+      [req.params.id, req.user.id, corpo, parentId]);
     const donoId = ex.rows[0].autor_id;
-    // dono do post
-    await notificar(pool, { destinatario_id: donoId, ator_id: req.user.id, tipo: 'comentario', ref_id: req.params.id });
-    // demais participantes da conversa (quem já comentou), menos eu e menos o dono
-    const parts = await pool.query(
-      `SELECT DISTINCT autor_id FROM post_comentarios WHERE post_id=$1 AND autor_id<>$2 AND autor_id<>$3`,
-      [req.params.id, req.user.id, donoId]);
-    for (const row of parts.rows) {
-      await notificar(pool, { destinatario_id: row.autor_id, ator_id: req.user.id, tipo: 'comentario_thread', ref_id: req.params.id });
+    if (parentId) {
+      // resposta: avisa quem foi respondido + o dono do post
+      await notificar(pool, { destinatario_id: respondido, ator_id: req.user.id, tipo: 'resposta', ref_id: req.params.id });
+      if (String(donoId) !== String(respondido))
+        await notificar(pool, { destinatario_id: donoId, ator_id: req.user.id, tipo: 'comentario', ref_id: req.params.id });
+    } else {
+      // comentario de topo: dono + demais participantes
+      await notificar(pool, { destinatario_id: donoId, ator_id: req.user.id, tipo: 'comentario', ref_id: req.params.id });
+      const parts = await pool.query(
+        `SELECT DISTINCT autor_id FROM post_comentarios WHERE post_id=$1 AND parent_id IS NULL AND autor_id<>$2 AND autor_id<>$3`,
+        [req.params.id, req.user.id, donoId]);
+      for (const row of parts.rows) {
+        await notificar(pool, { destinatario_id: row.autor_id, ator_id: req.user.id, tipo: 'comentario_thread', ref_id: req.params.id });
+      }
     }
     res.json({ ok: true, id: ins.rows[0].id });
   } catch (e) { console.error('[coment]', e); res.status(500).json({ ok:false, erro:'srv', detalhe:String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }

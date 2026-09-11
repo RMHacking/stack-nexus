@@ -286,3 +286,7 @@ CREATE TABLE IF NOT EXISTS notificacoes (
   criado_em       timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS ix_notif_dest ON notificacoes (destinatario_id, lida, criado_em DESC);
+
+-- resposta a comentario (1 nivel, estilo Facebook)
+ALTER TABLE post_comentarios ADD COLUMN IF NOT EXISTS parent_id uuid REFERENCES post_comentarios(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS ix_post_coment_parent ON post_comentarios (parent_id);
