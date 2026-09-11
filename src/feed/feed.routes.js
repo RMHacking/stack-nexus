@@ -72,7 +72,14 @@ router.get('/feed', requerLogin, async (req, res, next) => {
       `SELECT p.id, p.corpo, p.criado_em, p.editado_em, p.fixado, p.tipo, p.ref_id, p.autor_id,
               c.handle, c.nome, c.exposicao, c.trilha, c.is_sud0, c.membro_num,
               rx.rocket, rx.brain, rx.bolt, rx.minha,
-              (SELECT count(*)::int FROM post_comentarios pc WHERE pc.post_id = p.id) AS n_com
+              (SELECT count(*)::int FROM post_comentarios pc WHERE pc.post_id = p.id) AS n_com,
+              (SELECT COALESCE(json_agg(t ORDER BY t.criado_em), '[]'::json) FROM (
+                 SELECT pc.corpo, pc.criado_em, c2.handle,
+                        (CASE WHEN c2.exposicao = 'aberto' THEN c2.nome ELSE NULL END) AS nome, c2.is_sud0
+                   FROM post_comentarios pc JOIN contas c2 ON c2.id = pc.autor_id
+                  WHERE pc.post_id = p.id
+                  ORDER BY pc.criado_em DESC LIMIT 2
+               ) t) AS ultimas_com
          FROM posts p JOIN contas c ON c.id = p.autor_id
          LEFT JOIN LATERAL (
            SELECT count(*) FILTER (WHERE tipo='rocket')::int AS rocket,
@@ -89,6 +96,7 @@ router.get('/feed', requerLogin, async (req, res, next) => {
       meu: r.autor_id === req.user.id,
       rx: { rocket: r.rocket || 0, brain: r.brain || 0, bolt: r.bolt || 0, minha: r.minha || null },
       coment: r.n_com || 0,
+      ultimas: r.ultimas_com || [],
       autor: {
         handle: r.handle,
         nome: r.exposicao === 'aberto' ? r.nome : null,
