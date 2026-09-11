@@ -1951,16 +1951,9 @@
   <aside class="col-right" id="colRight">
     <div class="rbar"><button class="rcollapse" id="btnCollapse" title="recolher painel">⟩</button></div>
     <div class="rblock">
-      <div class="h"><span>Pedidos de conexão</span><a>Ver tudo</a></div>
-      <div class="body">
-      <div class="req">
-        <span class="av" style="width:48px;height:48px">AN</span>
-        <div class="b"><div class="n">Ana N.</div><div class="m">@ana_rev · 3 em comum</div><div class="ctx">◆ vocês se falaram no Mind The Sec</div><div class="btns"><button class="b-ok">conectar</button><button class="b-no">ignorar</button></div></div>
-      </div>
-      <div class="req">
-        <span class="av" style="width:48px;height:48px">DV</span>
-        <div class="b"><div class="n">Diego V.</div><div class="m">@diego_dev · 8 em comum</div><div class="btns"><button class="b-ok">conectar</button><button class="b-no">ignorar</button></div></div>
-      </div>
+      <div class="h"><span>Pedidos de conexão</span></div>
+      <div class="body" id="reqBody">
+        <div style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);padding:.4rem .3rem;line-height:1.5">Nenhum pedido de conexão no momento.</div>
       </div>
     </div>
 
@@ -1980,27 +1973,8 @@
 
     <div class="rblock">
       <div class="h"><span>Talvez você conheça</span></div>
-      <div class="body">
-        <div class="suggest">
-          <span class="av" style="width:38px;height:38px;font-size:.7rem">DV</span>
-          <div class="sg-info"><div class="sg-name">Diego V. <span class="sg-tdot tech"></span></div><div class="sg-why">8 conexões em comum · trilha tech</div></div>
-          <button class="sg-connect" data-suggest>conectar</button>
-        </div>
-        <div class="suggest">
-          <span class="av" style="width:38px;height:38px;font-size:.7rem">JM</span>
-          <div class="sg-info"><div class="sg-name">Joana M. <span class="sg-tdot tech"></span></div><div class="sg-why">5 conexões em comum · mesma trilha</div></div>
-          <button class="sg-connect" data-suggest>conectar</button>
-        </div>
-        <div class="suggest">
-          <span class="av" style="width:38px;height:38px;font-size:.7rem">TS</span>
-          <div class="sg-info"><div class="sg-name">th_sec <span class="sg-tdot cyber"></span></div><div class="sg-why">esteve no Mind The Sec · trilha cyber</div></div>
-          <button class="sg-connect" data-suggest>conectar</button>
-        </div>
-        <div class="suggest">
-          <span class="av" style="width:38px;height:38px;font-size:.7rem">BP</span>
-          <div class="sg-info"><div class="sg-name">Bruno P. <span class="sg-tdot cyber"></span></div><div class="sg-why">3 conexões em comum · # Blue Team</div></div>
-          <button class="sg-connect" data-suggest>conectar</button>
-        </div>
+      <div class="body" id="sugBody">
+        <div style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);padding:.4rem .3rem;line-height:1.5">Sugestões aparecem quando a rede crescer.</div>
       </div>
     </div>
   </aside>
