@@ -277,6 +277,11 @@
   .composer .acts{display:flex;gap:.2rem;margin-top:.7rem;border-top:1px solid var(--border);padding-top:.6rem;align-items:center;}
   .composer .acts button,.composer .acts label{flex:1;display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.55rem;border-radius:8px;color:var(--text-dim);font-size:.84rem;font-weight:500;background:transparent;border:0;cursor:pointer;}
   .composer .acts button:hover,.composer .acts label:hover{background:var(--hover);color:var(--text);}
+  /* composer do feed: compacto, expande ao focar (estilo Facebook) */
+  #v-feed .composer .as,#v-feed .composer .charcount,#v-feed .composer .acts{display:none;}
+  #v-feed .composer.expanded .as{display:block;}#v-feed .composer.expanded .charcount{display:block;}#v-feed .composer.expanded .acts{display:flex;}
+  #v-feed .composer .composer-area{resize:none;min-height:44px;}
+  #v-feed .composer.expanded .composer-area{resize:vertical;min-height:120px;}
   .composer .acts .cim{width:15px;height:15px;flex:none;opacity:.65;}
   .composer .acts button:hover .cim,.composer .acts label:hover .cim{opacity:1;}
   .composer .acts .publish{flex:none;color:var(--accent);font-weight:600;}
@@ -4026,6 +4031,12 @@
       var kbox=inp.closest('.post-coments'); var snd=kbox&&kbox.querySelector('[data-csend]'); if(snd){ e.preventDefault(); snd.click(); }
     });
   })();
+
+  // composer do feed expande ao focar e encolhe se sair vazio
+  document.querySelectorAll('#v-feed .composer-area').forEach(function(ta){
+    ta.addEventListener('focus',function(){ var c=ta.closest('.composer'); if(c) c.classList.add('expanded'); });
+    ta.addEventListener('blur',function(){ var c=ta.closest('.composer'); if(c && !ta.value.trim()) c.classList.remove('expanded'); });
+  });
 })();
 
 </script>
