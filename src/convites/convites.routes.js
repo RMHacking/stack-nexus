@@ -130,6 +130,25 @@ router.patch('/me/perfil', requerLogin, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// sugestoes de conexao: membros reais (mais novos primeiro), fora o sud0 e voce
+router.get('/sugestoes', requerLogin, async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT handle, nome, exposicao, trilha, membro_num, foto_url
+         FROM contas
+        WHERE is_sud0 = false AND id <> $1
+        ORDER BY criado_em DESC
+        LIMIT 8`, [req.user.id]
+    );
+    res.json({ ok:true, sugestoes: rows.map((r) => ({
+      handle: r.handle,
+      nome: r.exposicao === 'aberto' ? r.nome : null,
+      trilha: r.trilha, membro_num: r.membro_num,
+      foto_url: r.exposicao === 'aberto' ? r.foto_url : null,
+    })) });
+  } catch (e) { next(e); }
+});
+
 // ---------------- sud0 ----------------
 // perfil público de um membro (rede fechada: precisa estar logado)
 router.get('/perfil/:handle', requerLogin, async (req, res, next) => {

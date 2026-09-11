@@ -3436,6 +3436,23 @@
   }
   function carregarConversas(){ api('/api/dm').then(function(r){ renderConversas(r.b&&r.b.ok?r.b.conversas:[]); }); }
   function setupDM(){ carregarConversas(); if(!dmPollOn){ dmPollOn=true; setInterval(carregarConversas,12000); } }
+  // ===== Talvez você conheça: membros reais =====
+  function sugHTML(s){
+    var nome=s.nome||('@'+s.handle);
+    var ini=iniciais(s.nome||s.handle);
+    var tcls=(s.trilha==='cyber')?'cyber':'tech';
+    var av=s.foto_url?('<span class="av" style="width:38px;height:38px;font-size:.7rem;background-image:url('+s.foto_url+');background-size:cover;background-position:center"></span>'):('<span class="av" style="width:38px;height:38px;font-size:.7rem">'+esc(ini)+'</span>');
+    return '<div class="suggest" data-perfil="'+esc(s.handle)+'" style="cursor:pointer">'+av+
+      '<div class="sg-info"><div class="sg-name">'+esc(nome)+' <span class="sg-tdot '+tcls+'"></span></div><div class="sg-why">'+(s.membro_num?('membro #'+s.membro_num):('@'+esc(s.handle)))+'</div></div>'+
+      '<button class="sg-connect" data-perfil="'+esc(s.handle)+'">ver perfil</button></div>';
+  }
+  function carregarSugestoes(){
+    var body=document.getElementById('sugBody'); if(!body) return;
+    api('/api/sugestoes').then(function(r){
+      var lst=(r.b&&r.b.ok&&r.b.sugestoes)?r.b.sugestoes:[];
+      body.innerHTML=lst.length?lst.map(sugHTML).join(''):'<div style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);padding:.4rem .3rem;line-height:1.5">Sugestões aparecem quando a rede crescer.</div>';
+    });
+  }
   function renderDMBody(win, data){
     var o=data.outro||{};
     var av=win.querySelector('.cw-name .av'); if(av) av.textContent=o.is_sud0?'♛':iniciais(o.nome||o.handle||'');
@@ -3828,8 +3845,8 @@
 
     carregarFeed();
     setupProjetosComposer(); carregarProjetos();
-    setupGruposComposer(); setupChat(); carregarGrupos(); setupDM();
-  }).catch(function(){ carregarFeed(); setupProjetosComposer(); carregarProjetos(); setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); });
+    setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); carregarSugestoes();
+  }).catch(function(){ carregarFeed(); setupProjetosComposer(); carregarProjetos(); setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); carregarSugestoes(); });
 })();
 
   /* ===== salvar perfil de verdade (nome, frase, bio, exposicao, trilha, foto, capa) ===== */
