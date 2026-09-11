@@ -2880,7 +2880,7 @@
     if(a.is_sud0){
       return '<article class="post crown" data-id="'+p.id+'">'+pin+'<div class="head"><span class="av av--crown" style="width:42px;height:42px">♛</span>'+
         '<div class="id"><div class="name"><span class="lnk-perfil" data-perfil="'+esc(a.handle)+'">sud0/n3xus</span> <span class="crowntag">♛ MASTER</span></div><div class="meta">◆ entidade fundadora · '+tempo(p.criado_em)+ed+'</div></div>'+menu+'</div>'+
-        '<div class="body">'+esc(p.corpo)+'</div><div class="post-reac">'+reacBar('post',p.id,p.rx)+'</div></article>';
+        '<div class="body">'+esc(p.corpo)+'</div><div class="post-reac">'+reacBar('post',p.id,p.rx)+'</div>'+(!p.fixado&&window.comentBox?window.comentBox(p):'')+'</article>';
     }
     var nome=a.nome||('@'+a.handle);
     var tt=''; if(a.trilha){var cls=a.trilha==='cyber'?'cyber':'tech';var lbl=a.trilha==='both'?'tech+cyber':a.trilha; tt=' <span class="utags"><span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span></span>';}
