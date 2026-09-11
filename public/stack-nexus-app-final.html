@@ -79,7 +79,7 @@
   .cw-body::-webkit-scrollbar{width:5px;}.cw-body::-webkit-scrollbar-thumb{background:var(--surface-2);border-radius:6px;}
   .cwmsg{max-width:78%;padding:.45rem .7rem;border-radius:12px;font-size:.83rem;line-height:1.4;}
   .cwmsg.them{background:var(--surface-2);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;}
-  .cwmsg.me{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+  .cwmsg.me{background:var(--btn);color:var(--btn-text);align-self:flex-end;border-bottom-right-radius:4px;}
   .cw-foot{display:flex;align-items:center;gap:.3rem;padding:.5rem .6rem;border-top:1px solid var(--border);}
   .cw-foot input{flex:1;background:var(--surface-2);border:0;border-radius:16px;padding:.5rem .8rem;color:var(--text);font-size:.83rem;outline:none;}
   .cw-clip{width:28px;height:28px;border-radius:6px;color:var(--text-faint);display:grid;place-items:center;cursor:pointer;flex:none;}
@@ -230,7 +230,7 @@
   .suggest .sg-tdot{width:7px;height:7px;border-radius:50%;flex:none;}
   .suggest .sg-tdot.tech{background:var(--accent);}.suggest .sg-tdot.cyber{background:var(--cyber);}
   .suggest .sg-why{font-family:var(--font-mono);font-size:.62rem;color:var(--text-faint);margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .sg-connect{font-family:var(--font-mono);font-size:.66rem;color:var(--ok);border:1px solid var(--ok);border-radius:7px;padding:.3rem .6rem;background:transparent;flex:none;}
+  .sg-connect{font-family:var(--font-mono);font-size:.66rem;color:var(--btn-text);border:1px solid var(--btn-border);border-radius:7px;padding:.3rem .6rem;background:var(--btn);flex:none;}
   .sg-connect:hover{background:var(--ok-soft);}
   .sg-connect.done{color:var(--text-faint);border-color:var(--border);}
   .navitem{display:flex;align-items:center;gap:.7rem;padding:.65rem .7rem;border-radius:8px;width:100%;text-align:left;color:var(--text-dim);font-size:.9rem;margin-bottom:.35rem;}
@@ -331,8 +331,8 @@
   .req .ctx{font-family:var(--font-mono);font-size:.62rem;color:var(--accent);margin-top:.15rem;}
   .req .btns{display:flex;gap:.4rem;margin-top:.5rem;}
   .req .btns button{font-family:var(--font-mono);font-size:.7rem;font-weight:500;padding:.35rem .8rem;border-radius:6px;border:1px solid var(--border);}
-  .b-ok{color:var(--ok);border-color:var(--ok) !important;background:var(--ok-soft);}
-  .b-ok:hover{background:rgba(49,162,76,.22);}
+  .b-ok{color:var(--btn-text);border:1px solid var(--btn-border) !important;background:var(--btn);}
+  .b-ok:hover{background:var(--btn-hover);}
   .b-no{color:var(--text-faint);background:transparent;}
   .b-no:hover{color:var(--text-dim);border-color:var(--text-faint) !important;}
   .contact{display:flex;align-items:center;gap:.7rem;padding:.5rem .3rem;border-radius:8px;}
@@ -895,7 +895,7 @@
   <!-- barra superior (mobile) -->
   <div class="mobtop">
     <button class="mt-burger" id="mtLeft" aria-label="menu"><span></span><span></span><span></span></button>
-    <div class="mt-brand">Stack_<b>n3xus</b></div>
+    <div class="mt-brand" data-nav="feed" style="cursor:pointer" title="voltar ao StackFeed">Stack_<b>n3xus</b></div>
     <button class="mt-burger" id="mtRight" aria-label="conexões"><span></span><span></span><span></span></button>
   </div>
   <div class="drawer-backdrop" id="drawerBackdrop"></div>
@@ -1099,7 +1099,7 @@
                   </div>
                   <div class="other-profile">
                     <div class="connrow">
-                      <button class="connbtn" id="connBtn">+ conectar</button>
+                      <button class="connbtn" id="connBtn">conectar</button>
                       <div class="connmenu-wrap">
                         <button class="connmenu-btn" id="connMenuBtn">⋯</button>
                         <div class="connmenu" id="connMenu" hidden>
@@ -1172,7 +1172,7 @@
               <!-- texto de bio -->
               <span class="aflabel af-edit">bio</span>
               <p class="af-view" style="font-size:.9rem;color:var(--text-dim);line-height:1.6;margin-bottom:1rem;">Engenheiro de dados há 7 anos. Foco em detecção de anomalias, pipelines de streaming e IA aplicada a problemas reais. Sempre afim de trocar ideia sobre feature engineering.</p>
-              <textarea class="af-edit area" maxlength="160" data-count="160">Engenheiro de dados há 7 anos. Foco em detecção de anomalias, pipelines de streaming e IA aplicada a problemas reais. Sempre afim de trocar ideia sobre feature engineering.</textarea>
+              <textarea class="af-edit area" id="set-bio" maxlength="160" data-count="160">Engenheiro de dados há 7 anos. Foco em detecção de anomalias, pipelines de streaming e IA aplicada a problemas reais. Sempre afim de trocar ideia sobre feature engineering.</textarea>
               <div class="charcount af-edit" data-for-count>0 / 160</div>
 
               <div class="pmeta af-view" style="flex-direction:column;gap:.5rem;">
@@ -1278,16 +1278,16 @@
                 <label class="photoup">trocar foto<input type="file" id="setphoto" accept="image/*"></label>
               </div>
               <div class="setrow">
-                <div class="setfield"><label>nome</label><input value="Rafael Moreno"></div>
-                <div class="setfield"><label>@handle</label><input value="@rafa"></div>
+                <div class="setfield"><label>nome</label><input id="set-nome" value="Rafael Moreno"></div>
+                <div class="setfield"><label>@handle</label><input id="set-handle" value="@rafa" readonly></div>
               </div>
               <div class="setrow">
-                <div class="setfield"><label>email</label><input type="email" value="rafael@email.com"></div>
+                <div class="setfield"><label>email</label><input type="email" id="set-email" value="rafael@email.com" readonly></div>
               </div>
               <div class="setrow">
-                <div class="setfield"><label>frase (aparece embaixo do seu nome)</label><input value="Engenheiro de dados · IA aplicada" placeholder="uma linha que te define" maxlength="70" data-count="70"><div class="charcount" data-for-count>0 / 70</div></div>
+                <div class="setfield"><label>frase (aparece embaixo do seu nome)</label><input id="set-frase" value="Engenheiro de dados · IA aplicada" placeholder="uma linha que te define" maxlength="70" data-count="70"><div class="charcount" data-for-count>0 / 70</div></div>
               </div>
-              <button class="setbtn" data-save>Salvar alterações</button>
+              <button class="setbtn" data-save data-save-kind="conta">Salvar alterações</button>
             </div>
 
             <div class="setsec">
@@ -1310,7 +1310,7 @@
               <div class="toggle"><input type="checkbox" checked> mostrar minha localização</div>
               <div class="toggle"><input type="checkbox" checked> aparecer em "talvez você conheça" dos outros</div>
               <p class="cfgnote" style="margin-top:.6rem;line-height:1.5;">Sua reputação aparece do mesmo jeito, independente de quanto você se expõe — ela reflete o que você contribui, não quem você é.</p>
-              <button class="setbtn" data-save style="margin-top:.5rem;">Salvar</button>
+              <button class="setbtn" data-save data-save-kind="exposicao" style="margin-top:.5rem;">Salvar</button>
             </div>
 
             <div class="setsec">
@@ -1321,7 +1321,7 @@
                 <button class="pick" data-pick="cyber"><div class="pk-t">Cyber <span class="pkdot cyber"></span></div><div class="pk-d">red team, blue team, SOC, pentest.</div></button>
                 <button class="pick" data-pick="both"><div class="pk-t">Ambas <span class="pkdot both"></span></div><div class="pk-d">híbrido: aparece nas duas trilhas.</div></button>
               </div>
-              <button class="setbtn" data-save style="margin-top:.5rem;">Salvar trilha</button>
+              <button class="setbtn" data-save data-save-kind="trilha" style="margin-top:.5rem;">Salvar trilha</button>
             </div>
 
             <div class="setsec">
@@ -1955,11 +1955,11 @@
       <div class="body">
       <div class="req">
         <span class="av" style="width:48px;height:48px">AN</span>
-        <div class="b"><div class="n">Ana N.</div><div class="m">@ana_rev · 3 em comum</div><div class="ctx">◆ vocês se falaram no Mind The Sec</div><div class="btns"><button class="b-ok">+ conectar</button><button class="b-no">ignorar</button></div></div>
+        <div class="b"><div class="n">Ana N.</div><div class="m">@ana_rev · 3 em comum</div><div class="ctx">◆ vocês se falaram no Mind The Sec</div><div class="btns"><button class="b-ok">conectar</button><button class="b-no">ignorar</button></div></div>
       </div>
       <div class="req">
         <span class="av" style="width:48px;height:48px">DV</span>
-        <div class="b"><div class="n">Diego V.</div><div class="m">@diego_dev · 8 em comum</div><div class="btns"><button class="b-ok">+ conectar</button><button class="b-no">ignorar</button></div></div>
+        <div class="b"><div class="n">Diego V.</div><div class="m">@diego_dev · 8 em comum</div><div class="btns"><button class="b-ok">conectar</button><button class="b-no">ignorar</button></div></div>
       </div>
       </div>
     </div>
@@ -1984,22 +1984,22 @@
         <div class="suggest">
           <span class="av" style="width:38px;height:38px;font-size:.7rem">DV</span>
           <div class="sg-info"><div class="sg-name">Diego V. <span class="sg-tdot tech"></span></div><div class="sg-why">8 conexões em comum · trilha tech</div></div>
-          <button class="sg-connect" data-suggest>+ conectar</button>
+          <button class="sg-connect" data-suggest>conectar</button>
         </div>
         <div class="suggest">
           <span class="av" style="width:38px;height:38px;font-size:.7rem">JM</span>
           <div class="sg-info"><div class="sg-name">Joana M. <span class="sg-tdot tech"></span></div><div class="sg-why">5 conexões em comum · mesma trilha</div></div>
-          <button class="sg-connect" data-suggest>+ conectar</button>
+          <button class="sg-connect" data-suggest>conectar</button>
         </div>
         <div class="suggest">
           <span class="av" style="width:38px;height:38px;font-size:.7rem">TS</span>
           <div class="sg-info"><div class="sg-name">th_sec <span class="sg-tdot cyber"></span></div><div class="sg-why">esteve no Mind The Sec · trilha cyber</div></div>
-          <button class="sg-connect" data-suggest>+ conectar</button>
+          <button class="sg-connect" data-suggest>conectar</button>
         </div>
         <div class="suggest">
           <span class="av" style="width:38px;height:38px;font-size:.7rem">BP</span>
           <div class="sg-info"><div class="sg-name">Bruno P. <span class="sg-tdot cyber"></span></div><div class="sg-why">3 conexões em comum · # Blue Team</div></div>
-          <button class="sg-connect" data-suggest>+ conectar</button>
+          <button class="sg-connect" data-suggest>conectar</button>
         </div>
       </div>
     </div>
@@ -2356,7 +2356,7 @@
   // sugestões de conexão: botão conectar
   $$('[data-suggest]').forEach(b=>b.addEventListener('click',function(){
     if(this.classList.contains('done')){
-      this.classList.remove('done'); this.textContent='+ conectar';
+      this.classList.remove('done'); this.textContent='conectar';
     }else{
       this.classList.add('done'); this.textContent='pedido enviado';
     }
@@ -2558,7 +2558,7 @@
   if(connBtn){
     connBtn.addEventListener('click',()=>{
       if(connBtn.classList.contains('pending')){
-        connBtn.className='connbtn'; connBtn.textContent='+ conectar';
+        connBtn.className='connbtn'; connBtn.textContent='conectar';
       }else{
         connBtn.className='connbtn pending'; connBtn.textContent='pedido enviado · cancelar';
       }
@@ -2572,8 +2572,8 @@
       const act=b.dataset.conn;
       connMenu.hidden=true;
       if(act==='connect'){connBtn.className='connbtn pending';connBtn.textContent='pedido enviado · cancelar';}
-      if(act==='ignore'){connBtn.className='connbtn';connBtn.textContent='+ conectar';}
-      if(act==='disconnect'){connBtn.className='connbtn';connBtn.textContent='+ conectar';}
+      if(act==='ignore'){connBtn.className='connbtn';connBtn.textContent='conectar';}
+      if(act==='disconnect'){connBtn.className='connbtn';connBtn.textContent='conectar';}
       if(act==='block'){connBtn.className='connbtn blocked';connBtn.textContent='⊗ bloqueado';}
     }));
   }
@@ -2593,6 +2593,7 @@
   }));
   // botões salvar → feedback visual
   $$('[data-save]').forEach(b=>b.addEventListener('click',function(){
+    if(this.hasAttribute('data-save-kind'))return;
     const orig=this.textContent;
     this.textContent='✓ salvo';
     this.classList.add('saved');
@@ -2606,24 +2607,7 @@
       lbl.textContent='✓ '+this.files[0].name;
     }
   });
-  // editar foto do perfil / capa pelos lápis: abre a galeria (accept=image/*) e mostra a prévia na hora
-  (function(){
-    function lerImagem(file,cb){ var r=new FileReader(); r.onload=function(){cb(r.result);}; r.readAsDataURL(file); }
-    var avInput=document.getElementById('setavatar'), avPencil=document.querySelector('#v-profile .pavatar-edit');
-    var pav=document.querySelector('#v-profile .pavatar');
-    if(avPencil&&avInput){
-      avPencil.addEventListener('click',function(){ avInput.click(); });
-      avInput.addEventListener('change',function(){ if(!avInput.files||!avInput.files[0])return; lerImagem(avInput.files[0],function(url){ if(pav){pav.style.backgroundImage='url('+url+')';pav.textContent='';} var pb=document.querySelector('.photobig'); if(pb){pb.style.backgroundImage='url('+url+')';pb.textContent='';} }); });
-    }
-    var cvInput=document.getElementById('setcover'), cvPencil=document.querySelector('#v-profile .cover .edit-pencil');
-    var cover=document.querySelector('#v-profile .cover');
-    if(cvPencil&&cvInput){
-      cvPencil.addEventListener('click',function(){ cvInput.click(); });
-      cvInput.addEventListener('change',function(){ if(!cvInput.files||!cvInput.files[0])return; lerImagem(cvInput.files[0],function(url){ if(cover){cover.style.backgroundImage='url('+url+')';cover.style.backgroundSize='cover';cover.style.backgroundPosition='center';var ct=cover.querySelector('.covertxt'); if(ct) ct.style.display='none';} }); });
-    }
-    var sp=document.getElementById('setphoto');
-    if(sp) sp.addEventListener('change',function(){ if(!sp.files||!sp.files[0])return; lerImagem(sp.files[0],function(url){ if(pav){pav.style.backgroundImage='url('+url+')';pav.textContent='';} }); });
-  })();
+  // (a lógica de foto/capa foi movida para a camada de integração — salva de verdade)
 
   // editar Sobre inline
   const aboutPanel=$('#aboutPanel'), aboutEdit=$('#aboutEdit');
@@ -3282,7 +3266,8 @@
     var sud0=!!d.is_sud0;
     var root=document.getElementById('profileRoot'); if(root) root.classList.toggle('viewing-other', !souEu);
     var nomeExib=d.nome||('@'+d.handle);
-    var pav=document.querySelector(P+'.pavatar'); if(pav) pav.textContent=sud0?'♛':iniciais(d.nome||d.handle);
+    var pav=document.querySelector(P+'.pavatar'); if(pav){ if(d.foto_url){ pav.style.backgroundImage='url('+d.foto_url+')'; pav.textContent=''; } else { pav.style.backgroundImage=''; pav.textContent=sud0?'♛':iniciais(d.nome||d.handle); } }
+    var cov=document.querySelector(P+'.cover'); if(cov){ if(d.capa_url){ cov.style.backgroundImage='url('+d.capa_url+')'; cov.style.backgroundSize='cover'; cov.style.backgroundPosition='center'; var ctx=cov.querySelector('.covertxt'); if(ctx) ctx.style.display='none'; } else { cov.style.backgroundImage=''; var ctx2=cov.querySelector('.covertxt'); if(ctx2) ctx2.style.display=''; } }
     var pname=document.querySelector(P+'.pheadinfo .pname');
     if(pname){ var tt=''; if(d.trilha){var cls=d.trilha==='cyber'?'cyber':'tech';var lbl=d.trilha==='both'?'tech+cyber':d.trilha; tt=' <span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
       pname.innerHTML=esc(nomeExib)+tt+' <span class="reptag"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block"></span>rep '+(d.reputacao||0)+'</span>'; }
@@ -3839,6 +3824,7 @@
     if(r.s===401){ try{localStorage.removeItem('sn_token');}catch(e){} location.href='stack-nexus-login.html'; return; }
     var me=r.b; if(!me||!me.handle){ carregarFeed(); return; }
     meuHandle=me.handle; meuPerfil=me;
+    try{ if(window.preencherAjustes) preencherAjustes(me); }catch(e){}
     var sud0=!!me.is_sud0; souSud0=sud0; minhaTrilha=me.trilha||null;
     document.body.classList.toggle('view-sud0',sud0);
     document.body.classList.toggle('view-user',!sud0);
@@ -3871,6 +3857,69 @@
     setupGruposComposer(); setupChat(); carregarGrupos(); setupDM();
   }).catch(function(){ carregarFeed(); setupProjetosComposer(); carregarProjetos(); setupGruposComposer(); setupChat(); carregarGrupos(); setupDM(); });
 })();
+
+  /* ===== salvar perfil de verdade (nome, frase, bio, exposicao, trilha, foto, capa) ===== */
+  (function(){
+    function q(sel){ return document.querySelector(sel); }
+    function toast(btn,txt){ if(!btn)return; var o=btn.getAttribute('data-orig')||btn.textContent; btn.setAttribute('data-orig',o); btn.textContent=txt||'✓ salvo'; btn.classList.add('saved'); setTimeout(function(){ btn.textContent=o; btn.classList.remove('saved'); },1600); }
+    function pickExpo(){ var p=document.querySelector('.pick.on[data-pick="aberto"],.pick.on[data-pick="reservado"]'); return p?p.getAttribute('data-pick'):null; }
+    function pickTrilha(){ var p=document.querySelector('.pick.on[data-pick="tech"],.pick.on[data-pick="cyber"],.pick.on[data-pick="both"]'); return p?p.getAttribute('data-pick'):null; }
+    // redimensiona a imagem no cliente antes de salvar (nao estoura o banco)
+    function resizeImg(file,max,cb){
+      try{ var img=new Image(); var url=URL.createObjectURL(file);
+        img.onload=function(){ var w=img.width,h=img.height, s=Math.min(1,max/Math.max(w,h)); var cw=Math.max(1,Math.round(w*s)), ch=Math.max(1,Math.round(h*s));
+          var c=document.createElement('canvas'); c.width=cw; c.height=ch; c.getContext('2d').drawImage(img,0,0,cw,ch); URL.revokeObjectURL(url);
+          try{ cb(c.toDataURL('image/jpeg',0.72)); }catch(e){ cb(null); } };
+        img.onerror=function(){ URL.revokeObjectURL(url); cb(null); }; img.src=url;
+      }catch(e){ cb(null); }
+    }
+    function salvar(campos,btn,okcb){
+      api('/api/me/perfil',{method:'PATCH',body:campos}).then(function(r){
+        if(r.s===401){ try{localStorage.removeItem('sn_token');}catch(e){} location.href='stack-nexus-login.html'; return; }
+        if(r.b && r.b.ok){ if(typeof meuPerfil!=='undefined' && meuPerfil){ for(var k in campos) meuPerfil[k]=campos[k]; } toast(btn); if(okcb) okcb(); }
+        else if(r.b && r.b.erro==='imagem_grande'){ toast(btn,'imagem grande demais'); }
+        else { toast(btn,'erro ao salvar'); }
+      });
+    }
+    // preenche o formulario de Ajustes com os dados reais do perfil
+    window.preencherAjustes=function(me){
+      if(!me) return;
+      var n=q('#set-nome'); if(n) n.value=me.nome||'';
+      var h=q('#set-handle'); if(h) h.value='@'+(me.handle||'');
+      var e=q('#set-email'); if(e && me.email) e.value=me.email;
+      var fr=q('#set-frase'); if(fr) fr.value=me.frase||'';
+      var bio=q('#set-bio'); if(bio) bio.value=me.bio||'';
+      var bv=document.querySelector('#aboutPanel .af-view'); if(bv) bv.textContent=me.bio||'Sem bio ainda.';
+      document.querySelectorAll('.pick[data-pick="aberto"],.pick[data-pick="reservado"]').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-pick')===(me.exposicao||'aberto')); });
+      if(me.trilha) document.querySelectorAll('.pick[data-pick="tech"],.pick[data-pick="cyber"],.pick[data-pick="both"]').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-pick')===me.trilha); });
+    };
+    // botoes de salvar por secao
+    document.querySelectorAll('[data-save-kind]').forEach(function(b){
+      b.addEventListener('click',function(){
+        var kind=b.getAttribute('data-save-kind');
+        if(kind==='conta'){ salvar({ nome:(q('#set-nome')||{}).value||'', frase:(q('#set-frase')||{}).value||'' }, b, function(){ if(typeof pintarPerfilNoView==='function' && meuPerfil) pintarPerfilNoView(meuPerfil,true); }); }
+        else if(kind==='exposicao'){ var x=pickExpo(); if(x) salvar({ exposicao:x }, b); }
+        else if(kind==='trilha'){ var t=pickTrilha(); if(t) salvar({ trilha:t }, b, function(){ if(typeof pintarPerfilNoView==='function' && meuPerfil) pintarPerfilNoView(meuPerfil,true); }); }
+      });
+    });
+    // salvar Sobre (bio)
+    var aboutSave=document.getElementById('aboutSave');
+    if(aboutSave) aboutSave.addEventListener('click',function(){ var bio=(q('#set-bio')||{}).value||''; salvar({ bio:bio }, aboutSave, function(){ var bv=document.querySelector('#aboutPanel .af-view'); if(bv) bv.textContent=bio||'Sem bio ainda.'; }); });
+    // foto do perfil e capa (lapis + "trocar foto"): abre galeria, redimensiona, salva
+    function ligarFoto(input,pencil,max,campo,aplicar){
+      if(!input) return;
+      if(pencil) pencil.addEventListener('click',function(){ input.click(); });
+      input.addEventListener('change',function(){ if(!input.files||!input.files[0])return; resizeImg(input.files[0],max,function(url){ if(!url)return; aplicar(url); var o={}; o[campo]=url; salvar(o,null); }); });
+    }
+    var pav=document.querySelector('#v-profile .pavatar');
+    var cover=document.querySelector('#v-profile .cover');
+    ligarFoto(document.getElementById('setavatar'), document.querySelector('#v-profile .pavatar-edit'), 240, 'foto_url', function(url){ if(pav){pav.style.backgroundImage='url('+url+')';pav.textContent='';} var pb=document.querySelector('.photobig'); if(pb){pb.style.backgroundImage='url('+url+')';pb.textContent='';} });
+    ligarFoto(document.getElementById('setcover'), document.querySelector('#v-profile .cover .edit-pencil'), 1000, 'capa_url', function(url){ if(cover){cover.style.backgroundImage='url('+url+')';cover.style.backgroundSize='cover';cover.style.backgroundPosition='center';var ct=cover.querySelector('.covertxt'); if(ct) ct.style.display='none';} });
+    ligarFoto(document.getElementById('setphoto'), null, 240, 'foto_url', function(url){ if(pav){pav.style.backgroundImage='url('+url+')';pav.textContent='';} var pb=document.querySelector('.photobig'); if(pb){pb.style.backgroundImage='url('+url+')';pb.textContent='';} });
+    // se o perfil ja carregou antes deste bloco, preenche agora
+    try{ if(typeof meuPerfil!=='undefined' && meuPerfil) window.preencherAjustes(meuPerfil); }catch(e){}
+  })();
+
 </script>
 </body>
 </html>

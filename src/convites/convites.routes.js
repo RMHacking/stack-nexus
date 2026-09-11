@@ -82,7 +82,7 @@ router.get('/me/arvore', requerLogin, async (req, res, next) => {
 router.get('/me/perfil', requerLogin, async (req, res, next) => {
   try {
     const p = await pool.query(
-      `SELECT c.id, c.handle, c.nome, c.bio, c.frase, c.foto_url, c.trilha,
+      `SELECT c.id, c.handle, c.nome, c.bio, c.frase, c.foto_url, c.capa_url, c.trilha,
               c.exposicao, c.reputacao, c.membro_num, c.is_sud0, c.criado_em,
               o.handle AS origem_handle, o.nome AS origem_nome
          FROM contas c
@@ -101,12 +101,41 @@ router.get('/me/perfil', requerLogin, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// atualizar o proprio perfil (nome, frase, bio, exposicao, trilha, foto, capa)
+router.patch('/me/perfil', requerLogin, async (req, res, next) => {
+  try {
+    const b = req.body || {};
+    const sets = [], vals = [];
+    let i = 1;
+    const MAXIMG = 700000; // ~700 KB de dataURL (imagem ja redimensionada no cliente)
+    if (b.nome !== undefined)  { sets.push(`nome = $${i++}`);  vals.push(b.nome ? String(b.nome).slice(0, 120) : null); }
+    if (b.frase !== undefined) { sets.push(`frase = $${i++}`); vals.push(b.frase ? String(b.frase).slice(0, 70) : null); }
+    if (b.bio !== undefined)   { sets.push(`bio = $${i++}`);   vals.push(b.bio ? String(b.bio).slice(0, 160) : null); }
+    if (b.exposicao !== undefined && ['aberto','reservado'].includes(b.exposicao)) { sets.push(`exposicao = $${i++}`); vals.push(b.exposicao); }
+    if (b.trilha !== undefined) {
+      if (b.trilha === null || b.trilha === '') { sets.push(`trilha = $${i++}`); vals.push(null); }
+      else if (['tech','cyber','both'].includes(b.trilha)) { sets.push(`trilha = $${i++}`); vals.push(b.trilha); }
+    }
+    for (const campo of ['foto_url','capa_url']) {
+      if (b[campo] !== undefined) {
+        const v = b[campo];
+        if (v && String(v).length > MAXIMG) return res.status(413).json({ ok:false, erro:'imagem_grande' });
+        sets.push(`${campo} = $${i++}`); vals.push(v || null);
+      }
+    }
+    if (!sets.length) return res.status(400).json({ ok:false, erro:'nada_para_salvar' });
+    vals.push(req.user.id);
+    await pool.query(`UPDATE contas SET ${sets.join(', ')} WHERE id = $${i}`, vals);
+    res.json({ ok:true });
+  } catch (e) { next(e); }
+});
+
 // ---------------- sud0 ----------------
 // perfil público de um membro (rede fechada: precisa estar logado)
 router.get('/perfil/:handle', requerLogin, async (req, res, next) => {
   try {
     const p = await pool.query(
-      `SELECT c.id, c.handle, c.nome, c.bio, c.frase, c.foto_url, c.trilha,
+      `SELECT c.id, c.handle, c.nome, c.bio, c.frase, c.foto_url, c.capa_url, c.trilha,
               c.exposicao, c.reputacao, c.membro_num, c.is_sud0, c.criado_em,
               o.handle AS origem_handle
          FROM contas c LEFT JOIN contas o ON o.id = c.origem_conta_id
@@ -123,7 +152,7 @@ router.get('/perfil/:handle', requerLogin, async (req, res, next) => {
       ok: true, handle: r.handle,
       nome: reservado ? null : r.nome,
       foto_url: reservado ? null : r.foto_url,
-      bio: r.bio, frase: r.frase, trilha: r.trilha,
+      bio: r.bio, frase: r.frase, trilha: r.trilha, capa_url: reservado ? null : r.capa_url,
       exposicao: r.exposicao, reputacao: await calcularReputacao(r.id), membro_num: r.membro_num,
       origem_handle: r.origem_handle,
       projetos: proj.rows[0].n, trouxe: trouxe.rows[0].n,

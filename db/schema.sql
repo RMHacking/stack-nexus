@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS contas (
   profundidade           integer NOT NULL DEFAULT 0,
   criado_em     timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE contas ADD COLUMN IF NOT EXISTS capa_url text;
 CREATE INDEX IF NOT EXISTS ix_contas_origem ON contas(origem_conta_id);
 
 -- ---------- convite_links (QR fixo permanente + saldo) ----------
