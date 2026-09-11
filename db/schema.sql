@@ -293,3 +293,26 @@ CREATE INDEX IF NOT EXISTS ix_post_coment_parent ON post_comentarios (parent_id)
 
 -- terceira trilha: Investigação Digital
 ALTER TYPE trilha_tipo ADD VALUE IF NOT EXISTS 'investig';
+
+-- ---------- desafios (sud0 lança; membro envia prova; sud0 premia) ----------
+CREATE TABLE IF NOT EXISTS desafios (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  titulo      text NOT NULL CHECK (char_length(titulo) BETWEEN 1 AND 160),
+  tipo        text NOT NULL DEFAULT 'comunidade' CHECK (tipo IN ('velocidade','contribuicao','presenca','comunidade')),
+  premio      integer NOT NULL DEFAULT 1 CHECK (premio BETWEEN 1 AND 50),  -- convites por vencedor
+  ativo       boolean NOT NULL DEFAULT true,
+  criado_por  uuid REFERENCES contas(id) ON DELETE SET NULL,
+  post_id     uuid REFERENCES posts(id) ON DELETE SET NULL,   -- card do feed
+  criado_em   timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS desafio_provas (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  desafio_id  uuid NOT NULL REFERENCES desafios(id) ON DELETE CASCADE,
+  autor_id    uuid NOT NULL REFERENCES contas(id) ON DELETE CASCADE,
+  corpo       text CHECK (corpo IS NULL OR char_length(corpo) <= 500),
+  imagem      text,
+  status      text NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente','premiada','recusada')),
+  criado_em   timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (desafio_id, autor_id)
+);
+CREATE INDEX IF NOT EXISTS ix_desafio_provas ON desafio_provas (desafio_id, criado_em);

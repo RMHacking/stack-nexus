@@ -958,7 +958,7 @@
           <div class="charcount" data-for-count>0 / 500</div>
           <div class="acts">
             <button data-foto><svg class="cim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Foto</button>
-            <button><svg class="cim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10"/></svg>Desafio</button>
+            <button data-desafio><svg class="cim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10"/></svg>Desafio</button>
             <button data-premiar><svg class="cim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M8.5 13L7 22l5-3 5 3-1.5-9"/></svg>Premiação</button>
             <button class="publish">Publicar</button>
           </div>
@@ -1730,66 +1730,16 @@
         </div>
 
         <div class="cfgpane" id="cf-challenges">
-          <div class="wip-banner">⚠️ <b>Mockup</b> — este painel ainda não tem backend. O visual é o blueprint; os dados abaixo são só exemplo.</div>
           <div class="panel">
             <div class="panel-h">Criar desafio</div>
-            <p class="cfgnote" style="margin-bottom:.8rem;">Desafios aparecem do nada e dão convites — mantêm a rede de olho e ligam o digital ao evento real.</p>
-            <div style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:flex-end;">
-              <div class="cfgfield" style="flex:1;min-width:180px;"><label>o desafio</label><input placeholder="ex: 3 primeiros com foto no Roadsec"></div>
-              <div class="cfgfield"><label>convites por vencedor</label><div class="stepper"><button>−</button><span class="n">2</span><button>+</button></div></div>
-              <div class="cfgfield"><label>tipo</label><select><option>Velocidade</option><option>Contribuição</option><option>Evento/presença</option><option>Comunidade</option></select></div>
-            </div>
-            <button class="cfgbtn" style="margin-top:.9rem;">Lançar desafio</button>
+            <p class="cfgnote" style="margin-bottom:.8rem;">Desafios ficam fixados no topo do feed até você encerrar. A galera envia prova pelo feed e você premia por lá (ou aqui).</p>
+            <button class="cfgbtn" data-desafio>🏆 Lançar desafio</button>
           </div>
-          <div class="panel" id="challenge-list">
-            <div class="panel-h">Desafios ativos <span class="sub">2 no ar · clique para ver as provas</span></div>
-            <div class="table-scroll"><table><thead><tr><th>desafio</th><th>tipo</th><th>prêmio</th><th>provas</th><th></th></tr></thead><tbody>
-              <tr><td>Foto no Mind The Sec</td><td>presença</td><td class="mono">2 convites</td><td class="mono">5 enviadas</td><td><button class="seeproof" data-proof="p-mts">ver provas</button></td></tr>
-              <tr><td>Melhor writeup de eBPF</td><td>contribuição</td><td class="mono">3 convites</td><td class="mono">3 enviadas</td><td><button class="seeproof" data-proof="p-ebpf">ver provas</button></td></tr>
-            </tbody></table></div>
-          </div>
-
-          <div class="panel proofpanel" id="p-mts" hidden>
-            <button class="proofback" data-proofback>← voltar aos desafios</button>
-            <div class="panel-h">Provas — Foto no Mind The Sec <span class="sub">prêmio: 2 convites · você julga e concede</span></div>
-            <div class="proof">
-              <span class="av" style="width:38px;height:38px;font-size:.7rem">RF</span>
-              <div class="pbody"><div class="pwho">Rafael F. <span class="ph">@rafa</span> <span class="utag tech"><span class="ud"></span>tech</span></div><div class="ptime">enviada há 3h</div><div class="pcontent">Cheguei! Foto do credenciamento com o crachá.</div><div class="pimg">[ foto enviada ]</div></div>
-              <div class="pact"><button class="rewardbtn" data-reward>premiar · 2</button><button class="skipbtn">recusar</button></div>
-            </div>
-            <div class="proof">
-              <span class="av" style="width:38px;height:38px;font-size:.7rem">AN</span>
-              <div class="pbody"><div class="pwho">Ana N. <span class="ph">@ana_rev</span> <span class="utag cyber"><span class="ud"></span>cyber</span></div><div class="ptime">enviada há 2h</div><div class="pcontent">No palco principal, palestra de threat hunting.</div><div class="pimg">[ foto enviada ]</div></div>
-              <div class="pact"><button class="rewardbtn" data-reward>premiar · 2</button><button class="skipbtn">recusar</button></div>
-            </div>
-            <div class="proof">
-              <span class="av" style="width:38px;height:38px;font-size:.7rem">KP</span>
-              <div class="pbody"><div class="pwho">Kernel P. <span class="ph">@k3rnel</span> <span class="utag cyber"><span class="ud"></span>cyber</span></div><div class="ptime">enviada há 1h</div><div class="pcontent">Foto na área de CTF.</div><div class="pimg">[ foto enviada ]</div></div>
-              <div class="pact"><button class="rewardbtn" data-reward>premiar · 2</button><button class="skipbtn">recusar</button></div>
-            </div>
-            <div class="proof">
-              <span class="av" style="width:38px;height:38px;font-size:.7rem">SP</span>
-              <div class="pbody"><div class="pwho">spammer_x <span class="ph">@spammer_x</span></div><div class="ptime">enviada há 40min</div><div class="pcontent">foto qualquer da internet, claramente não é do evento.</div><div class="pimg">[ imagem suspeita ]</div></div>
-              <div class="pact"><button class="rewardbtn" data-reward>premiar · 2</button><button class="skipbtn">recusar</button></div>
-            </div>
-          </div>
-
-          <div class="panel proofpanel" id="p-ebpf" hidden>
-            <button class="proofback" data-proofback>← voltar aos desafios</button>
-            <div class="panel-h">Provas — Melhor writeup de eBPF <span class="sub">prêmio: 3 convites · você julga e concede</span></div>
-            <div class="proof">
-              <span class="av" style="width:38px;height:38px;font-size:.7rem">NB</span>
-              <div class="pbody"><div class="pwho">nullbyte <span class="ph">@nullbyte</span> <span class="utag cyber"><span class="ud"></span>cyber</span></div><div class="ptime">enviada há 1 dia</div><div class="pcontent">Writeup completo sobre hooking de syscalls com eBPF, com código e benchmarks. Link no StackProjects.</div></div>
-              <div class="pact"><button class="rewardbtn" data-reward>premiar · 3</button><button class="skipbtn">recusar</button></div>
-            </div>
-            <div class="proof">
-              <span class="av" style="width:38px;height:38px;font-size:.7rem">MR</span>
-              <div class="pbody"><div class="pwho">Marina R. <span class="ph">@marina_sec</span> <span class="utag tech"><span class="ud"></span>tech</span></div><div class="ptime">enviada há 20h</div><div class="pcontent">Meu writeup de observabilidade com eBPF, focado em produção.</div></div>
-              <div class="pact"><button class="rewardbtn" data-reward>premiar · 3</button><button class="skipbtn">recusar</button></div>
-            </div>
+          <div class="panel">
+            <div class="panel-h">Desafios <span class="sub">clique em "ver provas" pra julgar</span></div>
+            <div id="dsf-admin-list"><div class="prova-vazio">carregando…</div></div>
           </div>
         </div>
-
         <div class="cfgpane" id="cf-moderation">
           <div class="wip-banner">⚠️ <b>Mockup</b> — este painel ainda não tem backend. O visual é o blueprint; os dados abaixo são só exemplo.</div>
           <div class="secbox" style="margin-bottom:1.2rem;"><b>Poder de moderação do Fundador.</b> Só você pode expulsar da rede inteira e remover qualquer conteúdo. É o último recurso pra proteger a comunidade — use com peso, mas sem hesitar quando precisa.</div>
@@ -2883,6 +2833,20 @@
         '<div class="ev-chatpeek" data-evchat="'+esc(p.ref_id||'')+'" hidden></div>'+
         '<button class="ev-chattab" data-evchat="'+esc(p.ref_id||'')+'">\ud83d\udcac bate-papo do evento</button>'+
         '<div class="ev-chatbox" hidden></div></article>';
+    }
+    if(p.tipo==='desafio'){
+      var encerrado=!p.fixado;
+      var mD=souSud0?'<div class="pmenu-wrap"><button class="pmenu-btn" data-menu-toggle>⋯</button><div class="pmenu" hidden><button data-act="apagar" class="danger">🗑 apagar</button></div></div>':'';
+      var acao = souSud0
+        ? '<button class="dsf-btn" data-dsf-provas="'+esc(p.ref_id||'')+'">🔎 ver provas / julgar</button>'+(encerrado?'':'<button class="dsf-btn ghost" data-dsf-encerrar="'+esc(p.ref_id||'')+'">encerrar</button>')
+        : (encerrado ? '<span class="dsf-fim">🏁 desafio encerrado</span>' : '<button class="dsf-btn" data-dsf-enviar="'+esc(p.ref_id||'')+'">📸 Enviar prova</button>');
+      return '<article class="post post-desafio" data-id="'+p.id+'">'+mD+
+        '<div class="dsf-ribbon">🏆 desafio'+(encerrado?' <span class="dsf-enc">· encerrado</span>':'')+'</div>'+
+        '<div class="dsf-corpo">'+esc(p.corpo)+'</div>'+
+        '<div class="dsf-meta">lançado por <b style="color:var(--crown)">sud0/n3xus</b> · '+tempo(p.criado_em)+'</div>'+
+        '<div class="dsf-acts">'+acao+'</div>'+
+        '<div class="dsf-provas" data-provasbox="'+esc(p.ref_id||'')+'" hidden></div>'+
+        '</article>';
     }
     if(a.is_sud0){
       return '<article class="post crown" data-id="'+p.id+'">'+pin+'<div class="head"><span class="av av--crown" style="width:42px;height:42px">♛</span>'+
@@ -4334,6 +4298,186 @@
       ov.querySelector('#pr-motivo').value=''; ov.querySelector('#pr-qtd').value='2'; ov.querySelector('#pr-anun').checked=true; ov.querySelector('#pr-msg').textContent='';
     }
     pb.addEventListener('click',function(){ abrir(); });
+  })();
+
+  /* ===== DESAFIOS (feed-cêntrico: membro envia prova, sud0 julga e premia) ===== */
+  (function(){
+    var st=document.createElement('style');
+    st.textContent=''+
+      '.post-desafio{border:1px solid var(--crown);background:var(--crown-soft);border-radius:14px;padding:1rem 1.1rem;position:relative;}'+
+      '.post-desafio .dsf-ribbon{font-family:var(--font-mono);font-size:.72rem;font-weight:700;color:var(--crown);letter-spacing:.03em;margin-bottom:.4rem;}'+
+      '.dsf-enc{color:var(--text-faint);font-weight:400;}'+
+      '.dsf-corpo{font-size:.95rem;line-height:1.45;color:var(--text);margin-bottom:.4rem;white-space:pre-wrap;word-break:break-word;}'+
+      '.dsf-meta{font-family:var(--font-mono);font-size:.66rem;color:var(--text-faint);margin-bottom:.7rem;}'+
+      '.dsf-acts{display:flex;gap:.5rem;flex-wrap:wrap;}'+
+      '.dsf-btn{font-family:var(--font-mono);font-size:.74rem;font-weight:700;background:var(--crown);color:#1a1400;border:0;border-radius:9px;padding:.5rem 1rem;cursor:pointer;}'+
+      '.dsf-btn.ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);font-weight:600;}'+
+      '.dsf-btn.ghost:hover{border-color:var(--danger);color:var(--danger);}'+
+      '.dsf-fim{font-family:var(--font-mono);font-size:.74rem;color:var(--text-faint);}'+
+      '.dsf-provas{margin-top:.8rem;border-top:1px solid var(--border);padding-top:.7rem;display:flex;flex-direction:column;gap:.8rem;}'+
+      '.prova{display:flex;gap:.6rem;align-items:flex-start;}'+
+      '.prova .pbody{flex:1;min-width:0;}'+
+      '.prova .pwho{font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;}'+
+      '.prova .pwho .lnk-perfil{cursor:pointer;}.prova .pwho .lnk-perfil:hover{color:var(--accent);}'+
+      '.prova .ph{font-family:var(--font-mono);font-size:.62rem;color:var(--text-faint);font-weight:400;}'+
+      '.prova .ptime{font-family:var(--font-mono);font-size:.6rem;color:var(--text-faint);margin:.1rem 0;}'+
+      '.prova .pcontent{font-size:.86rem;color:var(--text);line-height:1.4;word-break:break-word;white-space:pre-wrap;}'+
+      '.prova .prova-img{margin-top:.4rem;}'+
+      '.prova .prova-img img{max-width:220px;max-height:220px;border-radius:10px;border:1px solid var(--border);display:block;}'+
+      '.prova .pact{display:flex;flex-direction:column;gap:.35rem;align-items:flex-end;flex:none;}'+
+      '.prova-qtd{width:58px;box-sizing:border-box;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:.3rem .4rem;font-size:.8rem;text-align:center;outline:none;}'+
+      '.prova-premiar{font-family:var(--font-mono);font-size:.68rem;font-weight:700;background:var(--crown);color:#1a1400;border:0;border-radius:7px;padding:.35rem .7rem;cursor:pointer;white-space:nowrap;}'+
+      '.prova-recusar{font-family:var(--font-mono);font-size:.66rem;background:transparent;color:var(--text-faint);border:1px solid var(--border);border-radius:7px;padding:.3rem .6rem;cursor:pointer;}'+
+      '.prova-recusar:hover{color:var(--danger);border-color:var(--danger);}'+
+      '.prova-ok{font-family:var(--font-mono);font-size:.68rem;color:var(--ok);font-weight:700;}'+
+      '.prova-no{font-family:var(--font-mono);font-size:.66rem;color:var(--text-faint);}'+
+      '.prova-vazio{font-family:var(--font-mono);font-size:.7rem;color:var(--text-faint);padding:.3rem;}'+
+      '.dsf-list-row{display:flex;align-items:center;gap:.6rem;padding:.55rem .2rem;border-bottom:1px solid var(--border);font-size:.82rem;flex-wrap:wrap;}'+
+      '.dsf-list-row .dl-t{flex:1;min-width:140px;}'+
+      '.dsf-list-row .dl-m{font-family:var(--font-mono);font-size:.64rem;color:var(--text-faint);margin-top:.15rem;}';
+    document.head.appendChild(st);
+
+    var TIPO_LBL={velocidade:'velocidade',contribuicao:'contribuição',presenca:'presença',comunidade:'comunidade'};
+
+    function provaHTML(pv, premio){
+      var nome=pv.is_sud0?'sud0/n3xus':(pv.nome||('@'+pv.handle));
+      var av=pv.is_sud0?'♛':iniciais(pv.nome||pv.handle);
+      var tag=pv.trilha?(' <span class="utag '+trkCls(pv.trilha)+'"><span class="ud"></span>'+(pv.trilha==='both'?'tech+cyber':pv.trilha)+'</span>'):'';
+      var img=pv.imagem?('<div class="prova-img"><img src="'+pv.imagem+'" alt=""></div>'):'';
+      var corpo=pv.corpo?('<div class="pcontent">'+esc(pv.corpo)+'</div>'):'';
+      var act;
+      if(pv.status==='premiada') act='<span class="prova-ok">✓ premiada</span>';
+      else if(pv.status==='recusada') act='<span class="prova-no">recusada</span>';
+      else act='<input class="prova-qtd" type="number" min="1" value="'+(premio||1)+'" title="convites"><button class="prova-premiar" data-prova-premiar="'+esc(pv.id)+'">premiar</button><button class="prova-recusar" data-prova-recusar="'+esc(pv.id)+'">recusar</button>';
+      return '<div class="prova" data-provaid="'+esc(pv.id)+'">'+
+        '<span class="av'+(pv.is_sud0?' av--crown':'')+'" style="width:36px;height:36px;font-size:.66rem;flex:none">'+esc(av)+'</span>'+
+        '<div class="pbody"><div class="pwho"><span class="lnk-perfil" data-perfil="'+esc(pv.handle||'')+'">'+esc(nome)+'</span> <span class="ph">@'+esc(pv.handle||'')+'</span>'+tag+'</div>'+
+        '<div class="ptime">enviada '+tempo(pv.criado_em)+'</div>'+corpo+img+'</div>'+
+        '<div class="pact">'+act+'</div></div>';
+    }
+    function carregarProvas(desafioId, box){
+      box.innerHTML='<div class="prova-vazio">carregando…</div>';
+      api('/api/admin/desafios/'+encodeURIComponent(desafioId)+'/provas').then(function(r){
+        if(!(r.b&&r.b.ok)){ box.innerHTML='<div class="prova-vazio">não deu pra carregar as provas.</div>'; return; }
+        var premio=(r.b.desafio&&r.b.desafio.premio)||1; var lst=r.b.provas||[];
+        box.innerHTML=lst.length?lst.map(function(pv){return provaHTML(pv,premio);}).join(''):'<div class="prova-vazio">Nenhuma prova enviada ainda.</div>';
+      });
+    }
+
+    function abrirCriarDesafio(){
+      var ov=document.getElementById('dsf-criar-ov');
+      if(!ov){
+        ov=document.createElement('div'); ov.id='dsf-criar-ov';
+        ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9998;display:flex;align-items:flex-start;justify-content:center;padding:5vh 1rem;';
+        ov.innerHTML='<div style="background:var(--surface);border:1px solid var(--crown);border-radius:14px;max-width:460px;width:100%;padding:1.3rem;box-shadow:0 20px 60px rgba(0,0,0,.6);">'
+          +'<div style="font-family:var(--font-mono);font-size:.9rem;font-weight:700;color:var(--crown);margin-bottom:.2rem;">🏆 Lançar desafio</div>'
+          +'<div style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);margin-bottom:1rem;line-height:1.5;">Fica fixado no topo do feed até você encerrar. A galera envia prova e você premia.</div>'
+          +'<label style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-dim);display:block;margin-bottom:.3rem;">o desafio</label><input id="dsf-tit" maxlength="160" placeholder="ex: 3 primeiros com foto no Roadsec" style="width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.55rem .75rem;font-size:.9rem;outline:none;margin-bottom:.8rem;">'
+          +'<div style="display:flex;gap:.8rem;margin-bottom:1rem;"><div style="flex:none;"><label style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-dim);display:block;margin-bottom:.3rem;">convites/vencedor</label><input id="dsf-premio" type="number" min="1" value="2" style="width:100px;box-sizing:border-box;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.55rem .5rem;font-size:.9rem;outline:none;"></div><div style="flex:1;"><label style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-dim);display:block;margin-bottom:.3rem;">tipo</label><select id="dsf-tipo" style="width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.55rem .5rem;font-size:.86rem;outline:none;font-family:var(--font-mono)"><option value="velocidade">velocidade</option><option value="contribuicao">contribuição</option><option value="presenca">presença</option><option value="comunidade" selected>comunidade</option></select></div></div>'
+          +'<div id="dsf-msg" style="font-family:var(--font-mono);font-size:.72rem;color:var(--danger);margin-bottom:.6rem;min-height:1rem;"></div>'
+          +'<div style="display:flex;gap:.6rem;justify-content:flex-end;"><button id="dsf-cancel" type="button" style="font-family:var(--font-mono);font-size:.78rem;color:var(--text-dim);border:1px solid var(--border);border-radius:8px;padding:.5rem 1rem;background:transparent;cursor:pointer;">cancelar</button><button id="dsf-go" type="button" style="font-family:var(--font-mono);font-size:.78rem;font-weight:700;color:#1a1400;background:var(--crown);border:0;border-radius:8px;padding:.5rem 1.3rem;cursor:pointer;">Lançar</button></div></div>';
+        document.body.appendChild(ov);
+        ov.addEventListener('click',function(e){ if(e.target===ov) ov.style.display='none'; });
+        ov.querySelector('#dsf-cancel').addEventListener('click',function(){ ov.style.display='none'; });
+        ov.querySelector('#dsf-go').addEventListener('click',function(){
+          var tit=(ov.querySelector('#dsf-tit').value||'').trim();
+          var premio=parseInt(ov.querySelector('#dsf-premio').value||'0',10);
+          var tipo=ov.querySelector('#dsf-tipo').value; var msg=ov.querySelector('#dsf-msg');
+          if(!tit){ msg.textContent='Escreva o desafio.'; return; }
+          if(!(premio>0)){ msg.textContent='Convites por vencedor? (maior que 0)'; return; }
+          var go=ov.querySelector('#dsf-go'); go.disabled=true; go.textContent='lançando…';
+          api('/api/admin/desafios',{method:'POST',body:{titulo:tit,premio:premio,tipo:tipo}}).then(function(r){
+            go.disabled=false; go.textContent='Lançar';
+            if(r.b&&r.b.ok){ ov.style.display='none'; if(window.snFlash) snFlash('Desafio no ar! 🏆', true); carregarFeed(); carregarDesafiosAdmin(); }
+            else { msg.textContent=(r.s===403)?'Só o sud0 pode lançar.':'Não deu pra lançar agora.'; }
+          });
+        });
+      }
+      ov.querySelector('#dsf-tit').value=''; ov.querySelector('#dsf-premio').value='2'; ov.querySelector('#dsf-msg').textContent='';
+      ov.style.display='flex'; setTimeout(function(){ ov.querySelector('#dsf-tit').focus(); },50);
+    }
+
+    function abrirEnviarProva(desafioId){
+      api('/api/desafios/'+encodeURIComponent(desafioId)).then(function(r){
+        if(!(r.b&&r.b.ok)){ if(window.snFlash) snFlash('Desafio não encontrado.', false); return; }
+        var dsf=r.b.desafio, minha=r.b.minha_prova;
+        if(!dsf.ativo){ if(window.snFlash) snFlash('Esse desafio já foi encerrado.', false); return; }
+        var ov=document.getElementById('dsf-prova-ov');
+        if(!ov){
+          ov=document.createElement('div'); ov.id='dsf-prova-ov';
+          ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9998;display:flex;align-items:flex-start;justify-content:center;padding:5vh 1rem;';
+          ov.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;max-width:460px;width:100%;padding:1.3rem;box-shadow:0 20px 60px rgba(0,0,0,.6);">'
+            +'<div id="dpv-tit" style="font-size:.95rem;font-weight:700;margin-bottom:.2rem;"></div>'
+            +'<div id="dpv-sub" style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);margin-bottom:.9rem;"></div>'
+            +'<textarea id="dpv-corpo" maxlength="500" placeholder="Conte/mostre sua prova..." style="width:100%;box-sizing:border-box;min-height:90px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:.6rem .8rem;font-size:.9rem;font-family:inherit;outline:none;resize:vertical;margin-bottom:.6rem;"></textarea>'
+            +'<div id="dpv-prev" style="display:none;margin-bottom:.6rem;"></div>'
+            +'<label style="display:inline-flex;align-items:center;gap:.4rem;font-family:var(--font-mono);font-size:.72rem;color:var(--btn-text);background:var(--btn);border:1px solid var(--btn-border);border-radius:8px;padding:.4rem .8rem;cursor:pointer;margin-bottom:.9rem;">📷 anexar foto<input id="dpv-file" type="file" accept="image/*" style="display:none;"></label>'
+            +'<div id="dpv-msg" style="font-family:var(--font-mono);font-size:.72rem;color:var(--danger);margin-bottom:.5rem;min-height:1rem;"></div>'
+            +'<div style="display:flex;gap:.6rem;justify-content:flex-end;"><button id="dpv-cancel" type="button" style="font-family:var(--font-mono);font-size:.78rem;color:var(--text-dim);border:1px solid var(--border);border-radius:8px;padding:.5rem 1rem;background:transparent;cursor:pointer;">cancelar</button><button id="dpv-go" type="button" style="font-family:var(--font-mono);font-size:.78rem;font-weight:700;color:var(--btn-text);background:var(--btn);border:1px solid var(--btn-border);border-radius:8px;padding:.5rem 1.3rem;cursor:pointer;">Enviar prova</button></div></div>';
+          document.body.appendChild(ov);
+          ov._img=null;
+          ov.addEventListener('click',function(e){ if(e.target===ov) ov.style.display='none'; });
+          ov.querySelector('#dpv-cancel').addEventListener('click',function(){ ov.style.display='none'; });
+          ov.querySelector('#dpv-file').addEventListener('change',function(){ var f=this.files&&this.files[0]; if(!f)return; resizeImgPost(f,1200,function(url){ if(!url)return; ov._img=url; var pv=ov.querySelector('#dpv-prev'); pv.innerHTML='<img src="'+url+'" style="max-width:180px;max-height:180px;border-radius:10px;border:1px solid var(--border);display:block;"><button type="button" id="dpv-rmimg" style="font-family:var(--font-mono);font-size:.66rem;color:var(--text-faint);background:transparent;border:0;cursor:pointer;margin-top:.2rem;">remover foto ✕</button>'; pv.style.display='block'; }); });
+          ov.querySelector('#dpv-prev').addEventListener('click',function(e){ if(e.target&&e.target.id==='dpv-rmimg'){ ov._img=null; this.innerHTML=''; this.style.display='none'; ov.querySelector('#dpv-file').value=''; } });
+          ov.querySelector('#dpv-go').addEventListener('click',function(){
+            var corpo=(ov.querySelector('#dpv-corpo').value||'').trim(); var msg=ov.querySelector('#dpv-msg');
+            if(!corpo && !ov._img){ msg.textContent='Escreva algo ou anexe uma foto.'; return; }
+            var go=ov.querySelector('#dpv-go'); go.disabled=true; go.textContent='enviando…';
+            api('/api/desafios/'+encodeURIComponent(ov._did)+'/provas',{method:'POST',body:{corpo:corpo||null, imagem:ov._img||null}}).then(function(r){
+              go.disabled=false; go.textContent='Enviar prova';
+              if(r.b&&r.b.ok){ ov.style.display='none'; if(window.snFlash) snFlash('Prova enviada! 📸', true); }
+              else if(r.b&&r.b.erro==='imagem_grande'){ msg.textContent='Imagem muito grande.'; }
+              else if(r.b&&r.b.erro==='encerrado'){ msg.textContent='Desafio já encerrado.'; }
+              else { msg.textContent='Não deu pra enviar agora.'; }
+            });
+          });
+        }
+        ov._did=desafioId; ov._img=null;
+        ov.querySelector('#dpv-tit').textContent=dsf.titulo;
+        ov.querySelector('#dpv-sub').textContent='prêmio: '+dsf.premio+' convite'+(dsf.premio>1?'s':'')+' · '+(TIPO_LBL[dsf.tipo]||dsf.tipo);
+        ov.querySelector('#dpv-corpo').value=(minha&&minha.corpo)||'';
+        var pv=ov.querySelector('#dpv-prev'); pv.style.display='none'; pv.innerHTML='';
+        ov.querySelector('#dpv-msg').textContent=minha?'você já enviou — reenviar substitui.':'';
+        ov.querySelector('#dpv-file').value='';
+        ov.style.display='flex'; setTimeout(function(){ ov.querySelector('#dpv-corpo').focus(); },50);
+      });
+    }
+
+    function carregarDesafiosAdmin(){
+      var box=document.getElementById('dsf-admin-list'); if(!box) return;
+      api('/api/admin/desafios').then(function(r){
+        var lst=(r.b&&r.b.ok&&r.b.desafios)?r.b.desafios:[];
+        if(!lst.length){ box.innerHTML='<div class="prova-vazio">Nenhum desafio ainda. Lance o primeiro.</div>'; return; }
+        box.innerHTML=lst.map(function(d){
+          return '<div class="dsf-list-row"><div class="dl-t"><b>'+esc(d.titulo)+'</b><div class="dl-m">'+(TIPO_LBL[d.tipo]||d.tipo)+' · '+d.premio+' convite'+(d.premio>1?'s':'')+' · '+d.provas+' prova'+(d.provas===1?'':'s')+(d.ativo?'':' · encerrado')+'</div></div>'+
+            '<button class="dsf-btn ghost" data-dsf-provas-adm="'+esc(d.id)+'">ver provas</button>'+
+            (d.ativo?'<button class="dsf-btn ghost" data-dsf-encerrar="'+esc(d.id)+'">encerrar</button>':'')+
+            '<div class="dsf-provas" data-provasbox-adm="'+esc(d.id)+'" hidden style="flex-basis:100%;"></div></div>';
+        }).join('');
+      });
+    }
+    window.carregarDesafiosAdmin=carregarDesafiosAdmin;
+
+    document.addEventListener('click',function(e){
+      var t=e.target;
+      var cb=t.closest?t.closest('button[data-desafio]'):null;
+      if(cb){ e.preventDefault(); abrirCriarDesafio(); return; }
+      var en=t.closest?t.closest('[data-dsf-enviar]'):null;
+      if(en){ e.preventDefault(); abrirEnviarProva(en.getAttribute('data-dsf-enviar')); return; }
+      var vp=t.closest?t.closest('[data-dsf-provas]'):null;
+      if(vp){ e.preventDefault(); var art=vp.closest('.post-desafio'); var box=art&&art.querySelector('.dsf-provas'); if(box){ if(box.hidden){ box.hidden=false; carregarProvas(vp.getAttribute('data-dsf-provas'),box); } else { box.hidden=true; } } return; }
+      var vpa=t.closest?t.closest('[data-dsf-provas-adm]'):null;
+      if(vpa){ e.preventDefault(); var id=vpa.getAttribute('data-dsf-provas-adm'); var box2=document.querySelector('[data-provasbox-adm="'+id+'"]'); if(box2){ if(box2.hidden){ box2.hidden=false; carregarProvas(id,box2); } else { box2.hidden=true; } } return; }
+      var enc=t.closest?t.closest('[data-dsf-encerrar]'):null;
+      if(enc){ e.preventDefault(); if(!confirm('Encerrar este desafio? Sai do topo do feed e para de receber provas.')) return; api('/api/admin/desafios/'+encodeURIComponent(enc.getAttribute('data-dsf-encerrar'))+'/encerrar',{method:'POST'}).then(function(r){ if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Desafio encerrado.', true); carregarFeed(); carregarDesafiosAdmin(); } }); return; }
+      var pm=t.closest?t.closest('[data-prova-premiar]'):null;
+      if(pm){ e.preventDefault(); var prova=pm.closest('.prova'); var qi=prova&&prova.querySelector('.prova-qtd'); var q=parseInt(qi&&qi.value||'0',10); if(!(q>0)){ if(window.snFlash) snFlash('Quantos convites?', false); return; } pm.disabled=true; api('/api/admin/provas/'+encodeURIComponent(pm.getAttribute('data-prova-premiar'))+'/premiar',{method:'POST',body:{quantidade:q}}).then(function(r){ pm.disabled=false; if(r.b&&r.b.ok){ if(prova){ var pact=prova.querySelector('.pact'); if(pact) pact.innerHTML='<span class="prova-ok">✓ premiada</span>'; } if(window.snFlash) snFlash('Premiado com '+q+' convite'+(q>1?'s':'')+'! ✅', true); } else { if(window.snFlash) snFlash('Não deu pra premiar.', false); } }); return; }
+      var rc=t.closest?t.closest('[data-prova-recusar]'):null;
+      if(rc){ e.preventDefault(); var prova2=rc.closest('.prova'); rc.disabled=true; api('/api/admin/provas/'+encodeURIComponent(rc.getAttribute('data-prova-recusar'))+'/recusar',{method:'POST'}).then(function(r){ rc.disabled=false; if(r.b&&r.b.ok&&prova2){ var pact2=prova2.querySelector('.pact'); if(pact2) pact2.innerHTML='<span class="prova-no">recusada</span>'; } }); return; }
+      var cfgt=t.closest?t.closest('[data-cfg="challenges"]'):null;
+      if(cfgt){ carregarDesafiosAdmin(); return; }
+    });
   })();
 })();
 
