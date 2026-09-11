@@ -4032,10 +4032,14 @@
     });
   })();
 
-  // composer do feed expande ao focar e encolhe se sair vazio
+  // composer do feed: expande ao focar; encolhe so ao clicar fora (deixa clicar nos botoes)
   document.querySelectorAll('#v-feed .composer-area').forEach(function(ta){
     ta.addEventListener('focus',function(){ var c=ta.closest('.composer'); if(c) c.classList.add('expanded'); });
-    ta.addEventListener('blur',function(){ var c=ta.closest('.composer'); if(c && !ta.value.trim()) c.classList.remove('expanded'); });
+  });
+  document.addEventListener('click',function(e){
+    document.querySelectorAll('#v-feed .composer.expanded').forEach(function(c){
+      var ta=c.querySelector('.composer-area'); if(ta && !c.contains(e.target) && !ta.value.trim()) c.classList.remove('expanded');
+    });
   });
 })();
 
