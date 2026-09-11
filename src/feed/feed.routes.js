@@ -9,12 +9,14 @@ const router = express.Router();
 router.post('/posts', requerLogin, async (req, res, next) => {
   try {
     const corpo = ((req.body && req.body.corpo) || '').trim();
-    if (!corpo) return res.status(400).json({ erro: 'vazio' });
+    const imagem = (req.body && req.body.imagem) ? String(req.body.imagem) : null;
+    if (!corpo && !imagem) return res.status(400).json({ erro: 'vazio' });
     if (corpo.length > 500) return res.status(400).json({ erro: 'muito_longo' });
+    if (imagem && imagem.length > 1500000) return res.status(413).json({ ok: false, erro: 'imagem_grande' });
     const { rows } = await pool.query(
-      `INSERT INTO posts (autor_id, corpo) VALUES ($1, $2)
+      `INSERT INTO posts (autor_id, corpo, imagem) VALUES ($1, $2, $3)
        RETURNING id, corpo, criado_em`,
-      [req.user.id, corpo]
+      [req.user.id, corpo, imagem]
     );
     res.json({ ok: true, post: rows[0] });
   } catch (e) { next(e); }
@@ -69,7 +71,7 @@ router.get('/feed', requerLogin, async (req, res, next) => {
     // evento que já passou do último dia: desafixa (o post continua no feed, com o chat)
     try { await pool.query("UPDATE posts SET fixado=false WHERE tipo='evento_novo' AND fixado=true AND ref_id IN (SELECT id FROM eventos WHERE fim IS NOT NULL AND CURRENT_DATE > fim)"); } catch (_e) { /* best-effort */ }
     const { rows } = await pool.query(
-      `SELECT p.id, p.corpo, p.criado_em, p.editado_em, p.fixado, p.tipo, p.ref_id, p.autor_id,
+      `SELECT p.id, p.corpo, p.imagem, p.criado_em, p.editado_em, p.fixado, p.tipo, p.ref_id, p.autor_id,
               c.handle, c.nome, c.exposicao, c.trilha, c.is_sud0, c.membro_num,
               rx.rocket, rx.brain, rx.bolt, rx.minha,
               (SELECT count(*)::int FROM post_comentarios pc WHERE pc.post_id = p.id) AS n_com,
@@ -91,7 +93,7 @@ router.get('/feed', requerLogin, async (req, res, next) => {
         ORDER BY p.fixado DESC, p.criado_em DESC LIMIT 100`, [req.user.id]
     );
     const feed = rows.map((r) => ({
-      id: r.id, corpo: r.corpo, criado_em: r.criado_em,
+      id: r.id, corpo: r.corpo, imagem: r.imagem, criado_em: r.criado_em,
       fixado: r.fixado, editado: !!r.editado_em, tipo: r.tipo, ref_id: r.ref_id,
       meu: r.autor_id === req.user.id,
       rx: { rocket: r.rocket || 0, brain: r.brain || 0, bolt: r.bolt || 0, minha: r.minha || null },

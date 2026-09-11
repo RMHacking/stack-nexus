@@ -112,6 +112,7 @@ ALTER TABLE posts ADD COLUMN IF NOT EXISTS editado_em timestamptz;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS fixado boolean NOT NULL DEFAULT false;
 -- aviso automático de novo projeto no feed
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS tipo text NOT NULL DEFAULT 'normal';
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS imagem text;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS ref_id uuid;
 
 -- ---------- projetos (StackProjects) ----------
