@@ -1320,7 +1320,6 @@
                 <button class="pick on" data-pick="tech"><div class="pk-t">Tech <span class="pkdot tech"></span></div><div class="pk-d">dev, IA, engenharia, dados.</div></button>
                 <button class="pick" data-pick="cyber"><div class="pk-t">Cyber <span class="pkdot cyber"></span></div><div class="pk-d">red team, blue team, SOC, pentest.</div></button>
                 <button class="pick" data-pick="investig"><div class="pk-t">Investigação Digital <span class="pkdot investig"></span></div><div class="pk-d">OSINT, forense, perícia, investigação.</div></button>
-                <button class="pick" data-pick="both"><div class="pk-t">Ambas <span class="pkdot both"></span></div><div class="pk-d">híbrido: aparece nas duas trilhas.</div></button>
               </div>
               <button class="setbtn" data-save data-save-kind="trilha" style="margin-top:.5rem;">Salvar trilha</button>
             </div>
@@ -3058,7 +3057,7 @@
       '<div style="display:flex;flex-wrap:wrap;gap:.5rem">'+
         '<input class="e-repo" placeholder="link do repo (opcional)" style="'+ei+'flex:1;min-width:150px">'+
         '<input class="e-stack" placeholder="stack (vírgulas)" style="'+ei+'flex:1;min-width:150px">'+
-        '<select class="e-trilha" style="'+ei+'width:auto;background:var(--surface-2)"><option value="tech">tech</option><option value="cyber">cyber</option><option value="investig">investigação</option><option value="both">tech+cyber</option></select>'+
+        '<select class="e-trilha" style="'+ei+'width:auto;background:var(--surface-2)"><option value="tech">tech</option><option value="cyber">cyber</option><option value="investig">investigação</option></select>'+
         '<select class="e-fase" style="'+ei+'width:auto;background:var(--surface-2)"><option value="no ar">no ar</option><option value="em construção">em construção</option></select>'+
       '</div>'+
       '<div style="display:flex;gap:.5rem;justify-content:flex-end"><button class="e-cancel" style="font-family:var(--font-mono);font-size:.72rem;color:var(--text-dim);border:1px solid var(--border);border-radius:7px;padding:.4rem .8rem;background:transparent;cursor:pointer">cancelar</button><button class="e-save" style="font-family:var(--font-mono);font-size:.72rem;color:var(--btn-text);background:var(--btn);border:1px solid var(--btn-border);border-radius:7px;padding:.4rem .9rem;cursor:pointer">salvar</button></div>';
@@ -3112,7 +3111,7 @@
         '<input class="proj-stack" placeholder="#  stack: Python, eBPF, Linux" style="'+fi+'">'+
       '</div>'+
       '<div style="display:flex;gap:1.3rem;align-items:center;flex-wrap:wrap;">'+
-        '<label style="display:flex;align-items:center;gap:.5rem;'+lbl+'">trilha <select class="proj-trilha" style="'+sels+'"><option value="tech">tech</option><option value="cyber">cyber</option><option value="investig">investigação</option><option value="both">tech+cyber</option></select></label>'+
+        '<label style="display:flex;align-items:center;gap:.5rem;'+lbl+'">trilha <select class="proj-trilha" style="'+sels+'"><option value="tech">tech</option><option value="cyber">cyber</option><option value="investig">investigação</option></select></label>'+
         '<label style="display:flex;align-items:center;gap:.5rem;'+lbl+'">fase <select class="proj-fase" style="'+sels+'"><option value="no ar">no ar</option><option value="em construção">em construção</option></select></label>'+
       '</div>';
     var col=(titulo&&titulo.parentElement)||comp;
@@ -3493,7 +3492,7 @@
     var nome=comp.querySelector('input'); var btn=comp.querySelector('button');
     var row=document.createElement('div'); row.style.cssText='display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;';
     var fi='background:var(--surface-2);border:0;border-radius:8px;padding:.5rem .7rem;color:var(--text);outline:none;font-size:.82rem;';
-    row.innerHTML='<input class="grp-desc" placeholder="descrição curta (opcional)" style="flex:1;min-width:160px;'+fi+'"><select class="grp-trilha" style="'+fi+'font-family:var(--font-mono)"><option value="tech">tech</option><option value="cyber">cyber</option><option value="investig">investigação</option><option value="both">tech+cyber</option></select>';
+    row.innerHTML='<input class="grp-desc" placeholder="descrição curta (opcional)" style="flex:1;min-width:160px;'+fi+'"><select class="grp-trilha" style="'+fi+'font-family:var(--font-mono)"><option value="tech">tech</option><option value="cyber">cyber</option><option value="investig">investigação</option></select>';
     var note=comp.querySelector('.cfgnote'); if(note) comp.insertBefore(row,note); else comp.appendChild(row);
     var trSel=row.querySelector('.grp-trilha'); if(minhaTrilha&&trSel) trSel.value=minhaTrilha;
     var msg=document.createElement('div'); msg.className='grp-msg'; msg.style.cssText='font-size:.72rem;color:var(--danger);margin-top:.4rem;min-height:1em;font-family:var(--font-mono)'; comp.appendChild(msg);
