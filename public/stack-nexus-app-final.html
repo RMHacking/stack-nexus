@@ -952,7 +952,7 @@
           <div class="acts">
             <button data-foto><svg class="cim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Foto</button>
             <button><svg class="cim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10"/></svg>Desafio</button>
-            <button><svg class="cim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M8.5 13L7 22l5-3 5 3-1.5-9"/></svg>Premiação</button>
+            <button data-premiar><svg class="cim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M8.5 13L7 22l5-3 5 3-1.5-9"/></svg>Premiação</button>
             <button class="publish">Publicar</button>
           </div>
         </div>
@@ -3973,6 +3973,7 @@
       });
       input.addEventListener('blur',function(){ setTimeout(fechar,160); });
     }
+    window.ligarAutocompleteMembros=ligar;
     document.querySelectorAll('input[placeholder="@handle"]').forEach(ligar);
   })();
 
@@ -4055,6 +4056,51 @@
     inp.addEventListener('change',function(){ if(!inp.files||!inp.files[0])return; resizeImgPost(inp.files[0],1200,function(url){ if(!url)return; comp._imagem=url; prev.innerHTML='<img src="'+url+'" alt=""><button class="comp-foto-x" type="button">remover foto \u2715</button>'; prev.style.display='block'; }); });
     prev.addEventListener('click',function(e){ if(e.target.closest('.comp-foto-x')){ comp._imagem=null; prev.innerHTML=''; prev.style.display='none'; inp.value=''; } });
   });
+
+  // Premiacao: atalho do composer do sud0 (backend ja existe: /api/admin/premiar)
+  (function(){
+    var pb=document.querySelector('#v-feed .composer button[data-premiar]'); if(!pb) return;
+    var ov=null;
+    function fechar(){ if(ov) ov.style.display='none'; }
+    function abrir(){
+      if(!ov){
+        ov=document.createElement('div'); ov.id='premiar-overlay';
+        ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9998;display:flex;align-items:flex-start;justify-content:center;padding:5vh 1rem;';
+        ov.innerHTML='<div style="background:var(--surface);border:1px solid var(--crown);border-radius:14px;max-width:440px;width:100%;padding:1.3rem;box-shadow:0 20px 60px rgba(0,0,0,.6);">'
+          +'<div style="font-family:var(--font-mono);font-size:.9rem;font-weight:700;color:var(--crown);margin-bottom:.2rem;">\ud83c\udf96\ufe0f Premiar com convites</div>'
+          +'<div style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);margin-bottom:1rem;line-height:1.5;">O convite \u00e9 a moeda da rede. Aparece publicamente no feed, dando palco a quem mereceu.</div>'
+          +'<div style="position:relative;margin-bottom:.8rem;"><label style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-dim);display:block;margin-bottom:.3rem;">quem merece</label><input id="pr-handle" placeholder="@handle" style="width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.55rem .75rem;font-size:.9rem;outline:none;"></div>'
+          +'<div style="display:flex;gap:.8rem;margin-bottom:.8rem;"><div style="flex:none;"><label style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-dim);display:block;margin-bottom:.3rem;">convites</label><input id="pr-qtd" type="number" min="1" value="2" style="width:84px;box-sizing:border-box;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.55rem .5rem;font-size:.9rem;outline:none;"></div><div style="flex:1;"><label style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-dim);display:block;margin-bottom:.3rem;">motivo (aparece pra todos)</label><input id="pr-motivo" placeholder="ex: melhor writeup da semana" style="width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.55rem .75rem;font-size:.9rem;outline:none;"></div></div>'
+          +'<label style="display:flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;color:var(--text-dim);margin-bottom:1rem;"><input id="pr-anun" type="checkbox" checked> anunciar publicamente no feed</label>'
+          +'<div id="pr-msg" style="font-family:var(--font-mono);font-size:.72rem;margin-bottom:.6rem;min-height:1rem;"></div>'
+          +'<div style="display:flex;gap:.6rem;justify-content:flex-end;"><button id="pr-cancel" type="button" style="font-family:var(--font-mono);font-size:.78rem;color:var(--text-dim);border:1px solid var(--border);border-radius:8px;padding:.5rem 1rem;background:transparent;cursor:pointer;">cancelar</button><button id="pr-go" type="button" style="font-family:var(--font-mono);font-size:.78rem;font-weight:700;color:#1a1400;background:var(--crown);border:0;border-radius:8px;padding:.5rem 1.3rem;cursor:pointer;">Premiar</button></div>'
+          +'</div>';
+        document.body.appendChild(ov);
+        ov.addEventListener('click',function(e){ if(e.target===ov) fechar(); });
+        ov.querySelector('#pr-cancel').addEventListener('click',fechar);
+        if(window.ligarAutocompleteMembros) window.ligarAutocompleteMembros(ov.querySelector('#pr-handle'));
+        ov.querySelector('#pr-go').addEventListener('click',function(){
+          var h=(ov.querySelector('#pr-handle').value||'').trim().replace(/^@/,'');
+          var q=parseInt(ov.querySelector('#pr-qtd').value||'0',10);
+          var mot=(ov.querySelector('#pr-motivo').value||'').trim();
+          var anun=ov.querySelector('#pr-anun').checked;
+          var msg=ov.querySelector('#pr-msg'); msg.style.color='var(--danger)';
+          if(!h){ msg.textContent='Diga quem merece.'; return; }
+          if(!(q>0)){ msg.textContent='Quantos convites? (n\u00famero maior que 0)'; return; }
+          var go=ov.querySelector('#pr-go'); go.disabled=true; go.textContent='premiando\u2026';
+          api('/api/admin/premiar',{method:'POST',body:{handle:h,quantidade:q,motivo:mot,anunciar:anun}}).then(function(r){
+            go.disabled=false; go.textContent='Premiar';
+            if(r.b&&r.b.ok){ fechar(); if(window.snFlash) snFlash('@'+(r.b.handle||h)+' premiado com '+q+' convite'+(q>1?'s':''), true); if(anun) carregarFeed(); }
+            else { msg.style.color='var(--danger)'; msg.textContent=(r.b&&r.b.motivo==='nao_encontrado')?'Membro n\u00e3o encontrado.':((r.s===403)?'S\u00f3 o sud0 pode premiar.':'N\u00e3o deu pra premiar agora.'); }
+          });
+        });
+      }
+      ov.style.display='flex';
+      var hi=ov.querySelector('#pr-handle'); if(hi){ hi.value=''; setTimeout(function(){hi.focus();},50); }
+      ov.querySelector('#pr-motivo').value=''; ov.querySelector('#pr-qtd').value='2'; ov.querySelector('#pr-anun').checked=true; ov.querySelector('#pr-msg').textContent='';
+    }
+    pb.addEventListener('click',function(){ abrir(); });
+  })();
 })();
 
 </script>
