@@ -82,7 +82,7 @@ router.post('/admin/provas/:pid/premiar', requerSud0, async (req, res, next) => 
       const w = await pool.query('SELECT handle FROM contas WHERE id = $1', [p.autor_id]);
       const wh = w.rows[0] && w.rows[0].handle;
       if (wh) {
-        const corpo = '🏆 @' + wh + ' mandou bem no desafio "' + p.titulo + '" e levou ' + q + ' convite' + (q > 1 ? 's' : '') + '! É assim que a rede cresce — mostrando o que se faz, não o que se diz. Parabéns e bora pro próximo! 🚀';
+        const corpo = '🏆 @' + wh + ' provou seu valor no desafio "' + p.titulo + '" e conquistou ' + q + ' convite' + (q > 1 ? 's' : '') + '. Aqui ninguém entra à toa — o lugar se merece. E quem entrega ganha o poder de trazer os próximos que também merecem estar dentro. Respeito. 🖤';
         await pool.query(`INSERT INTO posts (autor_id, corpo, tipo) VALUES ($1,$2,'normal')`, [req.user.id, corpo]);
       }
     } catch (_e) { /* best-effort: o post é bônus, não trava a premiação */ }
