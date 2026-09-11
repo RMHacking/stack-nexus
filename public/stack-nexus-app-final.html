@@ -3856,6 +3856,7 @@
   /* ===== salvar perfil de verdade (nome, frase, bio, exposicao, trilha, foto, capa) ===== */
   (function(){
     function q(sel){ return document.querySelector(sel); }
+    window.snFlash=function(msg,ok){ var el=document.getElementById('sn-flash'); if(!el){ el=document.createElement('div'); el.id='sn-flash'; el.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;max-width:92%;padding:.65rem 1.05rem;border-radius:10px;font-family:var(--font-mono);font-size:.78rem;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.55);text-align:center;'; document.body.appendChild(el);} el.style.background=ok?'var(--ok)':'var(--danger)'; el.style.color='#fff'; el.textContent=msg; el.style.display='block'; clearTimeout(el.__t); el.__t=setTimeout(function(){el.style.display='none';},4500); };
     function toast(btn,txt){ if(!btn)return; var o=btn.getAttribute('data-orig')||btn.textContent; btn.setAttribute('data-orig',o); btn.textContent=txt||'✓ salvo'; btn.classList.add('saved'); setTimeout(function(){ btn.textContent=o; btn.classList.remove('saved'); },1600); }
     function pickExpo(){ var p=document.querySelector('.pick.on[data-pick="aberto"],.pick.on[data-pick="reservado"]'); return p?p.getAttribute('data-pick'):null; }
     function pickTrilha(){ var p=document.querySelector('.pick.on[data-pick="tech"],.pick.on[data-pick="cyber"],.pick.on[data-pick="both"]'); return p?p.getAttribute('data-pick'):null; }
@@ -3871,10 +3872,10 @@
     function salvar(campos,btn,okcb){
       api('/api/me/perfil',{method:'PATCH',body:campos}).then(function(r){
         if(r.s===401){ try{localStorage.removeItem('sn_token');}catch(e){} location.href='stack-nexus-login.html'; return; }
-        if(r.b && r.b.ok){ if(typeof meuPerfil!=='undefined' && meuPerfil){ for(var k in campos) meuPerfil[k]=campos[k]; } toast(btn); if(okcb) okcb(); }
-        else if(r.b && r.b.erro==='imagem_grande'){ toast(btn,'imagem grande demais'); alert('A imagem ficou grande demais pra salvar. Tenta uma menor.'); }
-        else { toast(btn,'erro '+r.s); try{ alert('Nao salvou (status '+r.s+'). Me manda esse numero: '+r.s+' — '+(r.b&&r.b.erro?r.b.erro:'')); }catch(e){} }
-      });
+        if(r.b && r.b.ok){ if(typeof meuPerfil!=='undefined' && meuPerfil){ for(var k in campos) meuPerfil[k]=campos[k]; } toast(btn); snFlash('perfil salvo \u2713', true); if(okcb) okcb(); }
+        else if(r.b && r.b.erro==='imagem_grande'){ toast(btn,'imagem grande'); snFlash('imagem grande demais \u2014 tenta uma menor', false); }
+        else { toast(btn,'erro '+r.s); snFlash('nao salvou \u00b7 status '+r.s+(r.b&&r.b.erro?(' \u00b7 '+r.b.erro):''), false); }
+      }).catch(function(e){ snFlash('erro de rede ao salvar', false); });
     }
     // preenche o formulario de Ajustes com os dados reais do perfil
     window.preencherAjustes=function(me){
@@ -4010,7 +4011,7 @@
       var vt=e.target.closest?e.target.closest('[data-cload]'):null;
       if(vt){ e.preventDefault(); var vbox=vt.closest('.post-coments'); if(vbox) carregarTudo(vt.getAttribute('data-cload'),vbox); return; }
       var snd=e.target.closest?e.target.closest('[data-csend]'):null;
-      if(snd){ var pid=snd.getAttribute('data-csend'); var sbox=snd.closest('.post-coments'); var inp=sbox&&sbox.querySelector('.cmt-input'); var v=(inp&&inp.value||'').trim(); if(!v)return; snd.disabled=true; api('/api/posts/'+pid+'/comentarios',{method:'POST',body:{corpo:v}}).then(function(r){ snd.disabled=false; if(r.b&&r.b.ok){ if(inp)inp.value=''; carregarTudo(pid,sbox); } else { try{ alert('Comentario nao enviou (status '+r.s+'). Me manda: '+r.s+' — '+(r.b&&r.b.erro?r.b.erro:'')); }catch(e){} if(inp) inp.focus(); } }); return; }
+      if(snd){ var pid=snd.getAttribute('data-csend'); var sbox=snd.closest('.post-coments'); var inp=sbox&&sbox.querySelector('.cmt-input'); var v=(inp&&inp.value||'').trim(); if(!v)return; snd.disabled=true; api('/api/posts/'+pid+'/comentarios',{method:'POST',body:{corpo:v}}).then(function(r){ snd.disabled=false; if(r.b&&r.b.ok){ if(inp)inp.value=''; if(window.snFlash) snFlash('comentario enviado \u2713', true); carregarTudo(pid,sbox); } else { if(window.snFlash) snFlash('comentario nao enviou \u00b7 status '+r.s+(r.b&&r.b.erro?(' \u00b7 '+r.b.erro):''), false); if(inp) inp.focus(); } }).catch(function(e){ snd.disabled=false; if(window.snFlash) snFlash('erro de rede ao comentar', false); }); return; }
       var dl=e.target.closest?e.target.closest('[data-cdel]'):null;
       if(dl){ var dbox=dl.closest('.post-coments'); var dpid=dbox&&dbox.getAttribute('data-cbox'); api('/api/posts/'+dpid+'/comentarios/'+dl.getAttribute('data-cdel'),{method:'DELETE'}).then(function(r){ if(r.b&&r.b.ok&&dbox) carregarTudo(dpid,dbox); }); return; }
     });
