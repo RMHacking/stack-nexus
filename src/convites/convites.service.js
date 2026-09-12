@@ -85,20 +85,21 @@ async function concluirResgate(pool, { resgateId, conta }) {
     if (rr.status !== 'pendente') { await client.query('ROLLBACK'); return { ok: false, motivo: 'resgate_' + rr.status }; }
     if (rr.slots_usados >= rr.slots_total) { await client.query('ROLLBACK'); return { ok: false, motivo: 'sem_saldo' }; }
 
-    const dono = (await client.query(`SELECT handle, linhagem, profundidade FROM contas WHERE id=$1`, [rr.dono_id])).rows[0];
+    const dono = (await client.query(`SELECT handle, linhagem, profundidade, is_sud0 FROM contas WHERE id=$1`, [rr.dono_id])).rows[0];
+    const pendente = !!dono.is_sud0; // entrada pelo convite do Fundador precisa de aprovação manual
     const linhagem = [...(dono.linhagem || []), dono.handle];
     const profundidade = (dono.profundidade || 0) + 1;
 
     const nova = await client.query(
       `INSERT INTO contas
          (handle, email, senha_hash, provider, nome, trilha, exposicao,
-          membro_num, origem_conta_id, origem_convite_link_id, linhagem, profundidade)
+          membro_num, origem_conta_id, origem_convite_link_id, linhagem, profundidade, pendente_aprovacao)
        VALUES ($1,$2,$3,$4,$5,$6,COALESCE($7,'aberto')::exposicao_tipo,
-               nextval('seq_membro_num'), $8, $9, $10, $11)
+               nextval('seq_membro_num'), $8, $9, $10, $11, $12)
        RETURNING id, membro_num`,
       [conta.handle, conta.email || null, conta.senha_hash || null, conta.provider || 'email',
        conta.nome || null, conta.trilha || null, conta.exposicao || 'aberto',
-       rr.dono_id, rr.convite_link_id, linhagem, profundidade]
+       rr.dono_id, rr.convite_link_id, linhagem, profundidade, pendente]
     );
     const novaContaId = nova.rows[0].id;
 
@@ -110,7 +111,7 @@ async function concluirResgate(pool, { resgateId, conta }) {
     const linkNovo = await criarLinkConvite(client, novaContaId, { slots: 3 });
 
     await client.query('COMMIT');
-    return { ok: true, conta_id: novaContaId, membro_num: nova.rows[0].membro_num, convite_codigo: linkNovo.codigo };
+    return { ok: true, conta_id: novaContaId, membro_num: nova.rows[0].membro_num, convite_codigo: linkNovo.codigo, pendente };
   } catch (e) {
     await client.query('ROLLBACK');
     // @nick ou email já em uso -> erro amigável (não 500)

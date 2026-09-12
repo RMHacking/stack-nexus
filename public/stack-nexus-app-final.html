@@ -521,6 +521,9 @@
   .ptabbar button.on::after{content:"";position:absolute;left:.7rem;right:.7rem;bottom:-1px;height:2px;background:var(--accent);}
   /* abas privadas (Convites, Cartão, Ajustes): só o dono vê */
   .profile.viewing-other .private-tab{display:none;}
+  /* sud0/Fundador convida só pelo Genesis — esconde as abas de convite comum no perfil dele */
+  body.view-sud0 .ptabbar button[data-ptab="pf-invites"],
+  body.view-sud0 .ptabbar button[data-ptab="pf-card"]{display:none !important;}
   .pcontent{padding:1.2rem;}
   .pprofpane{display:none;}.pprofpane.on{display:block;}
 
@@ -1216,7 +1219,7 @@
               <div class="invqr__code" id="invqrcode"></div>
               <div class="invqr__info">
                 <div class="invqr__title">Seu convite é sempre o mesmo</div>
-                <div class="invqr__desc">Este QR é permanente e pessoal. Mostre pra quem você quer trazer — cada pessoa que entra por ele consome 1 dos seus <b>5</b> convites. Quando zerar, ele desliga sozinho até você ganhar mais.</div>
+                <div class="invqr__desc">Este QR é permanente e pessoal. Mostre pra quem você quer trazer — cada pessoa que entra por ele consome 1 dos seus convites. Quando zerar, ele desliga sozinho até você ganhar mais.</div>
                 <div class="invqr__acts">
                   <button class="pri" id="invqrfull">Mostrar em tela cheia</button>
                   <button id="invqrcopy">Copiar link</button>
@@ -1743,6 +1746,11 @@
         <div class="cfgpane" id="cf-moderation">
           <div class="secbox" style="margin-bottom:1.2rem;"><b>Poder de moderação do Fundador.</b> Só você pode expulsar da rede inteira e remover qualquer conteúdo. É o último recurso pra proteger a comunidade — use com peso, mas sem hesitar quando precisa.</div>
 
+          <div class="panel" style="border-color:var(--crown)">
+            <div class="panel-h">Entradas aguardando sua aprovação <span class="sub" id="pend-count">—</span></div>
+            <p class="cfgnote" style="margin-bottom:.7rem;">Quem entra pelo <b>seu convite de Fundador</b> fica aqui até você confirmar. Aprovar libera o acesso na hora; recusar bloqueia e devolve o convite pro seu saldo.</p>
+            <div id="mod-pendentes"><div class="cfgnote" style="opacity:.7;padding:.6rem .2rem">—</div></div>
+          </div>
           <div class="panel">
             <div class="panel-h">Denúncias a julgar <span class="sub" id="mod-count">—</span></div>
             <p class="cfgnote" style="margin-bottom:.9rem;">Quando um membro denuncia alguém ou um conteúdo, chega aqui pra você decidir. Nada é automático — e o denunciante é confidencial.</p>
@@ -4532,6 +4540,39 @@
       });
     }
     window.carregarDenuncias=carregarDenuncias;
+    function pendHTML(p){
+      var nome=p.nome||('@'+p.handle); var ini=iniciais(p.nome||p.handle);
+      var tt=p.trilha?(' · '+(p.trilha==='both'?'tech+cyber':p.trilha)):'';
+      var orig=p.origem_handle?(' · via @'+esc(p.origem_handle)):'';
+      return '<div class="report" data-pend="'+esc(p.id)+'"><span class="av" style="width:38px;height:38px;font-size:.7rem">'+esc(ini)+'</span>'+
+        '<div class="rbody"><div class="rtop"><b>'+esc(nome)+'</b> <span class="mhandle">@'+esc(p.handle)+'</span></div>'+
+        '<div class="rwhat">membro #'+(p.membro_num||'—')+tt+orig+'</div><div class="rtime">'+tempo(p.criado_em)+'</div></div>'+
+        '<div class="racts"><button class="cfgbtn" data-pend-ok="'+esc(p.id)+'" style="border-color:var(--ok);background:var(--ok);color:#04210f">aprovar</button><button class="ghost-btn" data-pend-no="'+esc(p.id)+'">recusar</button></div></div>';
+    }
+    function carregarPendentes(){
+      var box=document.getElementById('mod-pendentes'); if(!box) return;
+      api('/api/admin/pendentes').then(function(r){
+        var lst=(r.b&&r.b.ok&&r.b.pendentes)?r.b.pendentes:[];
+        var cnt=document.getElementById('pend-count'); if(cnt) cnt.textContent=lst.length+' na fila';
+        box.innerHTML=lst.length?lst.map(pendHTML).join(''):'<div class="cfgnote" style="opacity:.7;padding:.6rem .2rem">Ninguém aguardando. 🕊️</div>';
+      });
+    }
+    window.carregarPendentes=carregarPendentes;
+    document.addEventListener('click',function(e){
+      var ok=e.target.closest?e.target.closest('[data-pend-ok]'):null;
+      if(ok){ e.preventDefault(); var id=ok.getAttribute('data-pend-ok'); ok.disabled=true;
+        api('/api/admin/pendentes/'+encodeURIComponent(id)+'/aprovar',{method:'POST'}).then(function(r){
+          if(r.b&&r.b.ok){ if(window.snFlash) snFlash('✓ @'+(r.b.handle||'')+' aprovado — já tem acesso.', true); carregarPendentes(); }
+          else { ok.disabled=false; if(window.snFlash) snFlash('Não deu pra aprovar.', false); } });
+        return; }
+      var no=e.target.closest?e.target.closest('[data-pend-no]'):null;
+      if(no){ e.preventDefault(); var id2=no.getAttribute('data-pend-no');
+        window.snConfirm('Recusar esta entrada? A pessoa fica bloqueada e o convite volta pro seu saldo.', function(){ no.disabled=true;
+          api('/api/admin/pendentes/'+encodeURIComponent(id2)+'/recusar',{method:'POST'}).then(function(r){
+            if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Entrada recusada.', true); carregarPendentes(); }
+            else { no.disabled=false; if(window.snFlash) snFlash('Não deu pra recusar.', false); } }); }, {okText:'recusar'});
+        return; }
+    });
 
     document.addEventListener('click',function(e){
       // julgar uma denúncia
@@ -4545,7 +4586,7 @@
         return; }
       // recarregar ao abrir a aba Moderação
       var cfgt=e.target.closest?e.target.closest('[data-cfg="moderation"]'):null;
-      if(cfgt){ carregarDenuncias(); return; }
+      if(cfgt){ carregarDenuncias(); carregarPendentes(); return; }
     });
 
     // ação direta sobre um membro (busca manual)

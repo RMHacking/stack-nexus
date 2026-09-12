@@ -146,4 +146,38 @@ router.get('/admin/admins', requerSud0, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+
+// ---- sud0: fila de entradas aguardando aprovação (convites do Fundador) ----
+router.get('/admin/pendentes', requerSud0, async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT c.id, c.handle, c.nome, c.exposicao, c.trilha, c.membro_num, c.criado_em, o.handle AS origem_handle
+         FROM contas c LEFT JOIN contas o ON o.id = c.origem_conta_id
+        WHERE c.pendente_aprovacao = true
+        ORDER BY c.criado_em ASC`);
+    res.json({ ok: true, pendentes: rows.map((r) => ({
+      id: r.id, handle: r.handle, nome: r.exposicao === 'aberto' ? r.nome : null,
+      trilha: r.trilha, membro_num: r.membro_num, criado_em: r.criado_em, origem_handle: r.origem_handle,
+    })) });
+  } catch (e) { next(e); }
+});
+router.post('/admin/pendentes/:id/aprovar', requerSud0, async (req, res, next) => {
+  try {
+    const upd = await pool.query(
+      `UPDATE contas SET pendente_aprovacao = false WHERE id = $1 AND pendente_aprovacao = true RETURNING handle`, [req.params.id]);
+    if (!upd.rowCount) return res.status(404).json({ ok: false, erro: 'nao_encontrado' });
+    res.json({ ok: true, handle: upd.rows[0].handle });
+  } catch (e) { console.error('[aprovar]', e); res.status(500).json({ ok: false, erro: 'srv', detalhe: String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
+});
+router.post('/admin/pendentes/:id/recusar', requerSud0, async (req, res, next) => {
+  try {
+    const c = await pool.query('SELECT handle, origem_convite_link_id FROM contas WHERE id=$1 AND pendente_aprovacao=true', [req.params.id]);
+    if (!c.rows.length) return res.status(404).json({ ok: false, erro: 'nao_encontrado' });
+    // devolve o slot ao Fundador e bloqueia a conta recusada
+    if (c.rows[0].origem_convite_link_id) await pool.query('UPDATE convite_links SET slots_usados = GREATEST(0, slots_usados - 1) WHERE id=$1', [c.rows[0].origem_convite_link_id]);
+    await pool.query('UPDATE contas SET banido=true, pendente_aprovacao=false WHERE id=$1', [req.params.id]);
+    res.json({ ok: true, handle: c.rows[0].handle });
+  } catch (e) { console.error('[recusar]', e); res.status(500).json({ ok: false, erro: 'srv', detalhe: String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
+});
+
 module.exports = router;

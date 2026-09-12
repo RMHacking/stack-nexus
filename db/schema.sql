@@ -337,3 +337,6 @@ CREATE INDEX IF NOT EXISTS ix_denuncias_status ON denuncias (status, criado_em D
 
 -- ---------- admin global (moderador nomeado pelo sud0) ----------
 ALTER TABLE contas ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false;
+
+-- entradas pelo convite do Fundador ficam pendentes de aprovação manual
+ALTER TABLE contas ADD COLUMN IF NOT EXISTS pendente_aprovacao boolean NOT NULL DEFAULT false;

@@ -249,6 +249,14 @@
         <button class="btn btn--pri" onclick="window.location.href='stack-nexus-app-final.html'">Entrar no Stack_n3xus →</button>
       </section>
 
+      <section class="screen center" id="s-pend">
+        <div class="inv-av" style="margin:0 auto 1.1rem;">♛</div>
+        <h2 style="margin:0 0 .6rem;">Sua entrada está<br>sendo avaliada.</h2>
+        <p class="sub" style="max-width:340px;margin:0 auto 1.2rem;">Você entrou por um convite do <b>Fundador</b>. Esse convite não abre a porta sozinho — o próprio sud0 confirma cada entrada, uma a uma. É assim que a rede se mantém fechada e de confiança.</p>
+        <p class="mono-tag" style="color:var(--text-faint);margin-bottom:1.4rem;">// aguardando confirmação · seu acesso libera assim que ele aprovar</p>
+        <button class="btn btn--pri" onclick="location.href='stack-nexus-login.html'">Entendi</button>
+      </section>
+
     </div>
     <div class="cfg">servidor: <input id="apiInput" value="http://localhost:3000"></div>
   </div>
@@ -278,7 +286,7 @@
     return { status: r.status, body: await r.json().catch(() => ({})) };
   }
 
-  const screens = ['s-load','s-code','s-block','s1','s2','s3','s4'];
+  const screens = ['s-load','s-code','s-block','s1','s2','s3','s4','s-pend'];
   function go(id){ screens.forEach(s => document.getElementById(s).classList.toggle('is-on', s===id)); }
 
   const iniciais = (s) => (s||'?').replace(/[^A-Za-zÀ-ÿ0-9]/g,'').slice(0,2).toUpperCase() || '··';
@@ -424,6 +432,11 @@
         note.className='note err'; note.textContent=msg; btn.disabled=false; btn.textContent='Criar acesso →'; return;
       }
       novo = concl.body; credencial = { email, senha };
+      if(novo.pendente){
+        document.querySelectorAll('.screen').forEach(function(x){ x.classList.remove('is-on'); });
+        var pn=document.getElementById('s-pend'); if(pn) pn.classList.add('is-on');
+        return;
+      }
       // auto-login (guarda o token pro app)
       try{
         const lg = await api('/api/auth/login', { method:'POST', body: credencial });
