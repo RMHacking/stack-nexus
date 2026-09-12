@@ -259,6 +259,23 @@ router.get('/admin/visaogeral', requerSud0, async (_req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// ajustar o saldo de convites de alguém (sud0) — +/− no total, sem descer abaixo do já usado
+router.post('/admin/convites/ajustar', requerSud0, async (req, res, next) => {
+  try {
+    const b = req.body || {};
+    const handle = String(b.handle || '').replace(/^@/, '').trim();
+    const delta = parseInt(b.delta, 10);
+    if (!handle || !Number.isFinite(delta)) return res.status(400).json({ ok: false, erro: 'dados' });
+    const q = await pool.query('SELECT id, is_sud0 FROM contas WHERE lower(handle)=lower($1)', [handle]);
+    if (!q.rows.length) return res.status(404).json({ ok: false, erro: 'nao_encontrado' });
+    if (q.rows[0].is_sud0) return res.status(400).json({ ok: false, erro: 'sud0' });
+    const upd = await pool.query('UPDATE convite_links SET slots_total = GREATEST(slots_usados, slots_total + $1) WHERE conta_id=$2 RETURNING id', [delta, q.rows[0].id]);
+    if (!upd.rowCount) return res.status(404).json({ ok: false, erro: 'sem_convite' });
+    let saldo = null; try { const c = await svc.meuConvite(pool, q.rows[0].id); if (c && c.slots_disponiveis != null) saldo = c.slots_disponiveis; } catch (_e) {}
+    res.json({ ok: true, saldo });
+  } catch (e) { console.error('[ajustar-saldo]', e); res.status(500).json({ ok: false, erro: 'srv', detalhe: String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
+});
+
 // ajuste manual de reputação pelo sud0 (o "dedo na régua")
 router.post('/admin/reputacao', requerSud0, async (req, res, next) => {
   try {

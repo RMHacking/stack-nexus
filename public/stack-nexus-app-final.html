@@ -1808,12 +1808,12 @@
             </div>
           </div>
           <div class="panel">
-            <div class="panel-h">Ajustar o saldo de convites de alguém <span class="sub" style="color:var(--crown)">🚧 em construção</span></div>
-            <p class="cfgnote" style="margin-bottom:.8rem;">Deu convites demais, ou a pessoa não merece mais? Ajuste o saldo direto — para cima ou para baixo.</p>
+            <div class="panel-h">Ajustar o saldo de convites de alguém</div>
+            <p class="cfgnote" style="margin-bottom:.8rem;">Deu convites demais, ou a pessoa não merece mais? Ajuste o saldo — para cima (+) ou para baixo (−). Nunca desce abaixo do que ela já usou.</p>
             <div style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:flex-end;">
-              <div class="cfgfield" style="flex:1;min-width:160px;"><label>membro</label><input placeholder="@handle"></div>
-              <div class="cfgfield"><label>novo saldo</label><div class="stepper"><button>−</button><span class="n">3</span><button>+</button></div></div>
-              <button class="cfgbtn" style="padding:.5rem 1rem;">Aplicar saldo</button>
+              <div class="cfgfield" style="flex:1;min-width:160px;"><label>membro</label><input id="cv-handle" placeholder="@handle"></div>
+              <div class="cfgfield"><label>ajuste (+/−)</label><input id="cv-delta" type="number" value="1" style="width:96px;box-sizing:border-box;background:var(--surface-2);border:0;border-radius:8px;padding:.55rem .7rem;color:var(--text);outline:none;font-size:.9rem;"></div>
+              <button class="cfgbtn" id="cv-apply" style="padding:.5rem 1rem;">Aplicar</button>
             </div>
           </div>
           <div class="panel">
@@ -4556,6 +4556,20 @@
       if(cd){ e.preventDefault(); var id=cd.getAttribute('data-comdel'); window.snConfirm('Apagar este comunicado? Some do feed e do histórico.', function(){ api('/api/posts/'+encodeURIComponent(id),{method:'DELETE'}).then(function(r){ if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Comunicado apagado.', true); window.carregarComunicados(); if(typeof carregarFeed==='function') carregarFeed(); } }); }, {okText:'apagar'}); return; }
       var cfgt=e.target.closest?e.target.closest('[data-cfg="broadcast"]'):null;
       if(cfgt){ window.carregarComunicados(); return; }
+    });
+  })();
+  (function(){
+    var btn=document.getElementById('cv-apply'); if(!btn) return;
+    var h=document.getElementById('cv-handle'); if(window.ligarAutocompleteMembros&&h) window.ligarAutocompleteMembros(h);
+    btn.addEventListener('click',function(){
+      var handle=(h&&h.value||'').trim().replace(/^@/,''); var dl=document.getElementById('cv-delta'); var delta=parseInt((dl&&dl.value)||'0',10);
+      if(!handle){ if(window.snFlash) snFlash('Diga o @handle.', false); return; }
+      if(!delta){ if(window.snFlash) snFlash('Coloque um ajuste diferente de zero.', false); return; }
+      btn.disabled=true; var o=btn.textContent; btn.textContent='aplicando…';
+      api('/api/admin/convites/ajustar',{method:'POST',body:{handle:handle,delta:delta}}).then(function(r){ btn.disabled=false; btn.textContent=o;
+        if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Saldo de @'+handle+' ajustado ('+(delta>0?'+':'')+delta+')'+(r.b.saldo!=null?(' → '+r.b.saldo+' disponíveis'):''), true); if(h) h.value=''; }
+        else { if(window.snFlash) snFlash(r.s===404?'Membro não encontrado.':(r.b&&r.b.erro==='sud0'?'O sud0 não usa saldo.':'Não deu pra ajustar.'), false); }
+      });
     });
   })();
 })();
