@@ -3297,8 +3297,11 @@
     var cov=document.querySelector(P+'.cover'); if(cov){ if(d.capa_url){ cov.style.backgroundImage='url('+d.capa_url+')'; cov.style.backgroundSize='cover'; cov.style.backgroundPosition='center'; var ctx=cov.querySelector('.covertxt'); if(ctx) ctx.style.display='none'; } else { cov.style.backgroundImage=''; var ctx2=cov.querySelector('.covertxt'); if(ctx2) ctx2.style.display=''; } }
     var pname=document.querySelector(P+'.pheadinfo .pname');
     if(pname){ var tt=''; if(d.trilha){var cls=trkCls(d.trilha);var lbl=d.trilha==='both'?'tech+cyber':d.trilha; tt=' <span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
-      pname.innerHTML=esc(nomeExib)+tt+(d.is_admin?' <span class="utag" style="color:var(--crown);background:var(--crown-soft);border:1px solid var(--crown)"><span class="ud" style="background:var(--crown)"></span>admin</span>':'')+' <span class="reptag"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block"></span>rep '+(d.reputacao||0)+'</span>'; }
-    var phl=document.querySelector(P+'.pheadline'); if(phl) phl.textContent=d.bio||'membro do Stack_n3xus';
+      var _seloAdm=' <span class="utag" style="color:var(--crown);background:var(--crown-soft);border:1px solid var(--crown)"><span class="ud" style="background:var(--crown)"></span>admin</span>';
+      var _selo=sud0?' <span class="utag" style="color:var(--crown);background:var(--crown-soft);border:1px solid var(--crown)"><span class="ud" style="background:var(--crown)"></span>\u265b Fundador</span>':(d.is_admin?_seloAdm:'');
+      var _rep=sud0?'':' <span class="reptag"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block"></span>rep '+(d.reputacao||0)+'</span>';
+      pname.innerHTML=esc(nomeExib)+tt+_selo+_rep; }
+    var phl=document.querySelector(P+'.pheadline'); if(phl) phl.textContent=d.bio||(sud0?'entidade fundadora':'membro do Stack_n3xus');
     var sobreBio=document.querySelector('#aboutPanel .af-view'); if(sobreBio && sobreBio.tagName==='P') sobreBio.textContent=d.bio||'Sem bio ainda.';
     var sobreMeta=document.querySelector('#aboutPanel .pmeta.af-view');
     if(sobreMeta){ var L=[]; if(d.trilha) L.push('\u25c6 trilha: '+(d.trilha==='both'?'tech + cyber':d.trilha)); L.push('\u25c6 membro #'+(d.membro_num||'\u2014')); L.push('\u25c6 '+(d.origem_handle?('trazido por @'+d.origem_handle):'raiz da rede')); L.push('\u25c6 perfil '+(d.exposicao==='aberto'?'Aberto':'Reservado')); sobreMeta.innerHTML=L.map(function(x){return '<span>'+esc(x)+'</span>';}).join(''); }
@@ -3324,7 +3327,7 @@
     var nproj=(d.projetos!=null?d.projetos:projetosCache.filter(function(p){return p.autor.handle===d.handle;}).length);
     if(vs2[0]) vs2[0].textContent=nproj;
     if(vs2[1]) vs2[1].textContent=(d.conexoes!=null?d.conexoes:0);
-    if(vs2[2]) vs2[2].textContent=(d.reputacao||0);
+    if(vs2[2]) vs2[2].textContent=sud0?'\u265b':(d.reputacao||0);
     if(souEu){ var cvEl=document.querySelector(P+'.pstats .pstat.own-only .v'); if(cvEl && d.convite) cvEl.textContent=d.convite.slots_disponiveis; }
     var posts=feedCache.filter(function(p){return p.autor.handle===d.handle;});
     var pf=document.getElementById('pf-posts');
@@ -3341,7 +3344,7 @@
       if(meuPerfil) pintarPerfilNoView(meuPerfil,true); resetAbaPerfilPosts(); irParaView('v-profile'); return;
     }
     api('/api/perfil/'+encodeURIComponent(handle)).then(function(r){
-      if(r.b&&r.b.is_sud0){ irParaView('v-sud0denied'); return; }
+      if(r.b&&r.b.is_sud0&&!r.b.revelado){ irParaView('v-sud0denied'); return; }
       if(r.b&&r.b.ok){ pintarPerfilNoView(r.b,false); resetAbaPerfilPosts(); irParaView('v-profile'); }
     });
   }

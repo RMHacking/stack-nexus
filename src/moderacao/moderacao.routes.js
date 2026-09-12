@@ -115,17 +115,26 @@ router.post('/admin/admins', requerSud0, async (req, res, next) => {
     const handle = String(b.handle || '').replace(/^@/, '').trim();
     const conceder = b.conceder !== false;
     if (!handle) return res.status(400).json({ ok: false, erro: 'handle' });
-    const q = await pool.query('SELECT id, handle, is_sud0 FROM contas WHERE lower(handle)=lower($1)', [handle]);
+    const q = await pool.query('SELECT id, handle, nome, is_sud0 FROM contas WHERE lower(handle)=lower($1)', [handle]);
     if (!q.rows.length) return res.status(404).json({ ok: false, erro: 'nao_encontrado' });
     const alvo = q.rows[0];
     if (alvo.is_sud0) return res.status(400).json({ ok: false, erro: 'sud0' });
     await pool.query('UPDATE contas SET is_admin=$1 WHERE id=$2', [conceder, alvo.id]);
     if (conceder) {
+      // conexão com o Fundador: o Admin passa a ver o rosto do sud0 e aparece ligado a ele
+      try {
+        await pool.query(`DELETE FROM conexoes WHERE (de_id=$1 AND para_id=$2) OR (de_id=$2 AND para_id=$1)`, [req.user.id, alvo.id]);
+        await pool.query(`INSERT INTO conexoes (de_id, para_id, status) VALUES ($1,$2,'aceita')`, [req.user.id, alvo.id]);
+      } catch (_e) {}
       await notificar(pool, { destinatario_id: alvo.id, ator_id: req.user.id, tipo: 'admin', dados: {} });
-      if (b.anunciar) {
-        const corpo = '🛡️ @' + alvo.handle + ' agora é Admin do Stack_n3xus — guardião da comunidade. A honraria não se pede, se merece.';
+      if (b.anunciar !== false) {
+        const nom = alvo.nome ? (alvo.nome + ' (@' + alvo.handle + ')') : ('@' + alvo.handle);
+        const corpo = '♛ Comunicado do Fundador\n\n' + nom + ' foi elevado a Admin — guardião do Stack_n3xus.\n\nAqui esse posto não se pede: ele é entregue a quem provou zelo pela rede e visão pra proteger o que a gente constrói junto. A partir de hoje faz parte de quem mantém a régua alta e a comunidade de pé.\n\nRespeito e responsabilidade caminham juntos. Que sirva de exemplo pra quem ainda está subindo. 🖤';
         try { await pool.query(`INSERT INTO posts (autor_id, corpo, fixado, tipo) VALUES ($1,$2,false,'comunicado')`, [req.user.id, corpo]); } catch (_e) {}
       }
+    } else {
+      // revogou: desfaz a conexão com o Fundador (o acesso ao perfil dele cai junto, via is_admin=false)
+      try { await pool.query(`DELETE FROM conexoes WHERE (de_id=$1 AND para_id=$2) OR (de_id=$2 AND para_id=$1)`, [req.user.id, alvo.id]); } catch (_e) {}
     }
     res.json({ ok: true, handle: alvo.handle });
   } catch (e) { console.error('[admins]', e); res.status(500).json({ ok: false, erro: 'srv', detalhe: String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }

@@ -188,7 +188,26 @@ router.get('/perfil/:handle', requerLogin, async (req, res, next) => {
     );
     if (!p.rows.length) return res.status(404).json({ ok: false, erro: 'nao_encontrado' });
     const r = p.rows[0];
-    if (r.is_sud0) return res.json({ ok: true, is_sud0: true, handle: r.handle }); // fundador anônimo -> 403 no cliente
+    if (r.is_sud0) {
+      // Fundador anônimo: 403 pra rede toda. Só os Admins (guardiões) e o próprio sud0 veem o rosto dele.
+      let podeVer = !!req.user.is_sud0;
+      if (!podeVer) {
+        const a = await pool.query('SELECT is_admin FROM contas WHERE id = $1', [req.user.id]);
+        podeVer = !!(a.rows[0] && a.rows[0].is_admin);
+      }
+      if (!podeVer) return res.json({ ok: true, is_sud0: true, handle: r.handle }); // -> 403 no cliente
+      const proj0 = await pool.query('SELECT count(*)::int AS n FROM projetos WHERE dono_id = $1', [r.id]);
+      return res.json({
+        ok: true, is_sud0: true, revelado: true, handle: r.handle,
+        nome: r.nome, foto_url: r.foto_url, capa_url: r.capa_url,
+        bio: r.bio, frase: r.frase, trilha: r.trilha,
+        exposicao: r.exposicao, reputacao: r.reputacao, membro_num: r.membro_num,
+        origem_handle: null, is_admin: false,
+        projetos: proj0.rows[0].n, trouxe: 0,
+        conexoes: await conexoesRoutes.contarConexoes(r.id),
+        estado: await conexoesRoutes.estadoEntre(req.user.id, r.id),
+      });
+    }
     const reservado = r.exposicao !== 'aberto';
     const proj = await pool.query('SELECT count(*)::int AS n FROM projetos WHERE dono_id = $1', [r.id]);
     const trouxe = await pool.query('SELECT count(*)::int AS n FROM contas WHERE origem_conta_id = $1', [r.id]);
