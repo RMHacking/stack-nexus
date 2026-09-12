@@ -250,12 +250,12 @@
       </section>
 
     </div>
-    <div class="cfg">servidor: <input id="apiInput" value=""></div>
+    <div class="cfg">servidor: <input id="apiInput" value="http://localhost:3000"></div>
   </div>
 
 <script>
   const $ = (s) => document.querySelector(s);
-  let API = '';
+  let API = (['localhost','127.0.0.1'].indexOf(location.hostname)>=0?'http://localhost:3000':'');
   const _sp = new URLSearchParams(location.search);
   let codigo = _sp.get('c') || '';
   let eventoCodigo = _sp.get('e') || '';
@@ -266,7 +266,7 @@
   let novo = null;            // resposta do concluir
   let credencial = null;      // {email, senha} p/ auto-login
 
-  $('#apiInput').value = API;
+  $('#apiInput').value = API; if(location.hostname!=='localhost'&&location.hostname!=='127.0.0.1'){ var _cfg=document.querySelector('.cfg'); if(_cfg) _cfg.style.display='none'; }
   $('#apiInput').addEventListener('change', e => { API = e.target.value.trim().replace(/\/$/, ''); });
 
   async function api(path, opt = {}) {

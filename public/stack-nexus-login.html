@@ -138,7 +138,7 @@
   </div>
 
 <script>
-  const API=''; // troque quando hospedar o backend
+  const API=(['localhost','127.0.0.1'].indexOf(location.hostname)>=0?'http://localhost:3000':''); // dev=localhost, hospedado=mesmo host
   // sessão ativa? verifica e entra direto (senão limpa e fica no login)
   (function(){
     try{

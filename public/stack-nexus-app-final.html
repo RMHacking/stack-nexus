@@ -2675,7 +2675,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 (function(){
-  var API=''; // mesmo host (hospedado)
+  var API=(['localhost','127.0.0.1'].indexOf(location.hostname)>=0?'http://localhost:3000':''); // dev=localhost, hospedado=mesmo host
   var token=null; try{ token=localStorage.getItem('sn_token'); }catch(e){}
   var $=function(s,r){return (r||document).querySelector(s);};
   var $$=function(s,r){return [].slice.call((r||document).querySelectorAll(s));};
@@ -3867,6 +3867,7 @@
   // ---- convite: cartão + QR real em tela cheia (mesmo motor pra todos; sud0 = Genesis) ----
   function linkConvite(codigo){ try{ return new URL('stack-nexus-onboarding.html?c='+encodeURIComponent(codigo), location.href).href; }catch(e){ return 'stack-nexus-onboarding.html?c='+encodeURIComponent(codigo); } }
   function gerarQR(el, texto, tam){ if(!el) return; el.innerHTML=''; try{ if(window.QRCode){ new QRCode(el,{text:texto,width:tam,height:tam,colorDark:'#0a0a0a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M}); } else { el.textContent=texto; } }catch(e){ el.textContent=texto; } }
+  (function(){ var iq=document.getElementById('invqrcode'); if(iq){ api('/api/me/convite').then(function(r){ if(r.b&&r.b.codigo){ iq.innerHTML=''; gerarQR(iq, linkConvite(r.b.codigo), 110); } }); } })();
   function mostrarConviteOverlay(c){
     var link=linkConvite(c.codigo);
     var ov=document.getElementById('convite-overlay');
