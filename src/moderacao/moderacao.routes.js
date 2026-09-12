@@ -175,7 +175,9 @@ router.post('/admin/pendentes/:id/recusar', requerSud0, async (req, res, next) =
     if (!c.rows.length) return res.status(404).json({ ok: false, erro: 'nao_encontrado' });
     // devolve o slot ao Fundador e bloqueia a conta recusada
     if (c.rows[0].origem_convite_link_id) await pool.query('UPDATE convite_links SET slots_usados = GREATEST(0, slots_usados - 1) WHERE id=$1', [c.rows[0].origem_convite_link_id]);
-    await pool.query('UPDATE contas SET banido=true, pendente_aprovacao=false WHERE id=$1', [req.params.id]);
+    // recusado nunca chegou a entrar: cancela o cadastro e libera @handle/email
+    await pool.query('UPDATE resgates SET convidado_conta_id=NULL WHERE convidado_conta_id=$1', [req.params.id]);
+    await pool.query('DELETE FROM contas WHERE id=$1', [req.params.id]);
     res.json({ ok: true, handle: c.rows[0].handle });
   } catch (e) { console.error('[recusar]', e); res.status(500).json({ ok: false, erro: 'srv', detalhe: String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
 });

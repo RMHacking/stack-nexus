@@ -99,7 +99,7 @@ router.get('/me/perfil', requerLogin, async (req, res, next) => {
     const convite = await svc.meuConvite(pool, req.user.id);
     // quantos eu já trouxe (descendência direta)
     const conv = await pool.query(
-      `SELECT count(*)::int AS n FROM contas WHERE origem_conta_id = $1`, [req.user.id]
+      `SELECT count(*)::int AS n FROM contas WHERE origem_conta_id = $1 AND pendente_aprovacao = false AND banido = false`, [req.user.id]
     );
     const rep = await calcularReputacao(req.user.id);
     const nConex = await conexoesRoutes.contarConexoes(req.user.id);
@@ -142,7 +142,7 @@ router.get('/sugestoes', requerLogin, async (req, res, next) => {
     const { rows } = await pool.query(
       `SELECT handle, nome, exposicao, trilha, membro_num, foto_url
          FROM contas
-        WHERE is_sud0 = false AND id <> $1
+        WHERE is_sud0 = false AND pendente_aprovacao = false AND banido = false AND id <> $1
         ORDER BY criado_em DESC
         LIMIT 8`, [req.user.id]
     );
@@ -164,7 +164,7 @@ router.get('/admin/membros', requerSud0, async (req, res, next) => {
     const { rows } = await pool.query(
       `SELECT handle, nome, membro_num
          FROM contas
-        WHERE is_sud0 = false
+        WHERE is_sud0 = false AND pendente_aprovacao = false AND banido = false
           AND (handle ILIKE $1 || '%' ESCAPE '\\'
                OR handle ILIKE '%' || $1 || '%' ESCAPE '\\'
                OR nome ILIKE '%' || $1 || '%' ESCAPE '\\')
@@ -180,7 +180,7 @@ router.get('/perfil/:handle', requerLogin, async (req, res, next) => {
   try {
     const p = await pool.query(
       `SELECT c.id, c.handle, c.nome, c.bio, c.frase, c.foto_url, c.capa_url, c.trilha,
-              c.exposicao, c.reputacao, c.membro_num, c.is_sud0, c.is_admin, c.criado_em,
+              c.exposicao, c.reputacao, c.membro_num, c.is_sud0, c.is_admin, c.criado_em, c.pendente_aprovacao,
               o.handle AS origem_handle
          FROM contas c LEFT JOIN contas o ON o.id = c.origem_conta_id
         WHERE lower(c.handle) = lower($1)`,
@@ -188,6 +188,7 @@ router.get('/perfil/:handle', requerLogin, async (req, res, next) => {
     );
     if (!p.rows.length) return res.status(404).json({ ok: false, erro: 'nao_encontrado' });
     const r = p.rows[0];
+    if (r.pendente_aprovacao && !req.user.is_sud0) return res.status(404).json({ ok: false, erro: 'nao_encontrado' });
     if (r.is_sud0) {
       // Fundador anônimo: 403 pra rede toda. Só os Admins (guardiões) e o próprio sud0 veem o rosto dele.
       let podeVer = !!req.user.is_sud0;
@@ -210,7 +211,7 @@ router.get('/perfil/:handle', requerLogin, async (req, res, next) => {
     }
     const reservado = r.exposicao !== 'aberto';
     const proj = await pool.query('SELECT count(*)::int AS n FROM projetos WHERE dono_id = $1', [r.id]);
-    const trouxe = await pool.query('SELECT count(*)::int AS n FROM contas WHERE origem_conta_id = $1', [r.id]);
+    const trouxe = await pool.query('SELECT count(*)::int AS n FROM contas WHERE origem_conta_id = $1 AND pendente_aprovacao = false AND banido = false', [r.id]);
     res.json({
       ok: true, handle: r.handle,
       nome: reservado ? null : r.nome,
@@ -266,7 +267,7 @@ router.get('/admin/economia', requerSud0, async (_req, res, next) => {
 // visão geral do painel do sud0 (números reais + últimas premiações)
 router.get('/admin/visaogeral', requerSud0, async (_req, res, next) => {
   try {
-    const m = await pool.query('SELECT count(*)::int AS n FROM contas');
+    const m = await pool.query('SELECT count(*)::int AS n FROM contas WHERE pendente_aprovacao = false AND banido = false');
     const e = await pool.query('SELECT COALESCE(SUM(slots_disponiveis),0)::int AS c FROM convite_saldo');
     const g = await pool.query("SELECT count(*)::int AS n FROM convite_links WHERE tipo='genesis'");
     const pr = await pool.query(

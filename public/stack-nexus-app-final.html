@@ -3655,7 +3655,8 @@
       var minP=Math.min.apply(null, rows.map(function(x){return x.profundidade;}));
       tree.innerHTML=rows.map(function(x){
         var d=(x.profundidade-minP); var indent=''; for(var i=0;i<d;i++){ indent+='&nbsp;&nbsp;'; }
-        return '<div class="node"><span class="tline">'+indent+'&#9492;&#9472;</span> <span class="thandle">@'+esc(x.handle)+'</span> <span class="tcount">&middot; #'+x.membro_num+'</span></div>';
+        var mark=x.banido?' <span class="tcount" style="color:var(--danger);font-weight:600">&middot; \ud83d\udeab expulso</span>':'';
+        return '<div class="node"'+(x.banido?' style="opacity:.55"':'')+'><span class="tline">'+indent+'&#9492;&#9472;</span> <span class="thandle">@'+esc(x.handle)+'</span> <span class="tcount">&middot; #'+x.membro_num+'</span>'+mark+'</div>';
       }).join('');
     });
   }

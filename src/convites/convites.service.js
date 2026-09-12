@@ -156,12 +156,13 @@ async function meuConvite(pool, contaId) {
 async function minhaArvore(pool, contaId) {
   const { rows } = await pool.query(
     `WITH RECURSIVE descendencia AS (
-       SELECT id, handle, membro_num, origem_conta_id, profundidade FROM contas WHERE id=$1
+       SELECT id, handle, membro_num, origem_conta_id, profundidade, banido FROM contas WHERE id=$1
        UNION ALL
-       SELECT c.id, c.handle, c.membro_num, c.origem_conta_id, c.profundidade
+       SELECT c.id, c.handle, c.membro_num, c.origem_conta_id, c.profundidade, c.banido
          FROM contas c JOIN descendencia d ON c.origem_conta_id = d.id
+        WHERE c.pendente_aprovacao = false
      )
-     SELECT id, handle, membro_num, origem_conta_id, profundidade
+     SELECT id, handle, membro_num, origem_conta_id, profundidade, banido
        FROM descendencia WHERE id <> $1 ORDER BY profundidade, membro_num`,
     [contaId]
   );
