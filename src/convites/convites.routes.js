@@ -88,7 +88,7 @@ router.get('/me/perfil', requerLogin, async (req, res, next) => {
   try {
     const p = await pool.query(
       `SELECT c.id, c.handle, c.nome, c.bio, c.frase, c.foto_url, c.capa_url, c.trilha,
-              c.exposicao, c.reputacao, c.membro_num, c.is_sud0, c.criado_em,
+              c.exposicao, c.reputacao, c.membro_num, c.is_sud0, c.is_admin, c.criado_em,
               o.handle AS origem_handle, o.nome AS origem_nome
          FROM contas c
          LEFT JOIN contas o ON o.id = c.origem_conta_id
@@ -180,7 +180,7 @@ router.get('/perfil/:handle', requerLogin, async (req, res, next) => {
   try {
     const p = await pool.query(
       `SELECT c.id, c.handle, c.nome, c.bio, c.frase, c.foto_url, c.capa_url, c.trilha,
-              c.exposicao, c.reputacao, c.membro_num, c.is_sud0, c.criado_em,
+              c.exposicao, c.reputacao, c.membro_num, c.is_sud0, c.is_admin, c.criado_em,
               o.handle AS origem_handle
          FROM contas c LEFT JOIN contas o ON o.id = c.origem_conta_id
         WHERE lower(c.handle) = lower($1)`,
@@ -198,7 +198,7 @@ router.get('/perfil/:handle', requerLogin, async (req, res, next) => {
       foto_url: reservado ? null : r.foto_url,
       bio: r.bio, frase: r.frase, trilha: r.trilha, capa_url: reservado ? null : r.capa_url,
       exposicao: r.exposicao, reputacao: await calcularReputacao(r.id), membro_num: r.membro_num,
-      origem_handle: r.origem_handle,
+      origem_handle: r.origem_handle, is_admin: r.is_admin,
       projetos: proj.rows[0].n, trouxe: trouxe.rows[0].n,
       conexoes: await conexoesRoutes.contarConexoes(r.id),
       estado: await conexoesRoutes.estadoEntre(req.user.id, r.id),

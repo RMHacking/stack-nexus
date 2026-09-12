@@ -13,6 +13,7 @@ async function papelDe(grupoId, contaId) {
   return r.rows.length ? r.rows[0].papel : null;
 }
 function podeModerar(papel, isSud0) { return !!isSud0 || papel === 'admin'; }
+async function ehAdminGlobal(contaId) { const r = await pool.query('SELECT is_admin FROM contas WHERE id=$1', [contaId]); return !!(r.rows[0] && r.rows[0].is_admin); }
 
 // listar grupos (marca se sou membro e meu papel; conta quantos sou membro p/ o limite)
 router.get('/grupos', requerLogin, async (req, res, next) => {
@@ -139,7 +140,7 @@ router.post('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
 router.post('/grupos/:id/mensagens/:mid/remover', requerLogin, async (req, res, next) => {
   try {
     const papel = await papelDe(req.params.id, req.user.id);
-    if (!podeModerar(papel, req.user.is_sud0)) return res.status(403).json({ ok: false });
+    if (!podeModerar(papel, req.user.is_sud0) && !(await ehAdminGlobal(req.user.id))) return res.status(403).json({ ok: false });
     const motivo = ((req.body && req.body.motivo) || '').trim().slice(0, 80) || 'moderação';
     const { rows } = await pool.query(
       `UPDATE grupo_mensagens SET removida = true, removida_por = $1, removida_motivo = $2
@@ -154,7 +155,7 @@ router.post('/grupos/:id/mensagens/:mid/remover', requerLogin, async (req, res, 
 router.post('/grupos/:id/expulsar', requerLogin, async (req, res, next) => {
   try {
     const papel = await papelDe(req.params.id, req.user.id);
-    if (!podeModerar(papel, req.user.is_sud0)) return res.status(403).json({ ok: false });
+    if (!podeModerar(papel, req.user.is_sud0) && !(await ehAdminGlobal(req.user.id))) return res.status(403).json({ ok: false });
     const alvo = req.body && req.body.conta_id;
     if (!alvo) return res.status(400).json({ ok: false });
     const cr = await pool.query('SELECT criador_id FROM grupos WHERE id = $1', [req.params.id]);

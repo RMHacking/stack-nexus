@@ -108,4 +108,34 @@ router.post('/admin/membro/acao', requerSud0, async (req, res, next) => {
   } catch (e) { console.error('[membro/acao]', e); res.status(500).json({ ok: false, erro: 'srv', detalhe: String(e.code || '') + ' ' + String(e.message || '').slice(0, 120) }); }
 });
 
+// ---- sud0: conceder/revogar Admin (moderador global) ----
+router.post('/admin/admins', requerSud0, async (req, res, next) => {
+  try {
+    const b = req.body || {};
+    const handle = String(b.handle || '').replace(/^@/, '').trim();
+    const conceder = b.conceder !== false;
+    if (!handle) return res.status(400).json({ ok: false, erro: 'handle' });
+    const q = await pool.query('SELECT id, handle, is_sud0 FROM contas WHERE lower(handle)=lower($1)', [handle]);
+    if (!q.rows.length) return res.status(404).json({ ok: false, erro: 'nao_encontrado' });
+    const alvo = q.rows[0];
+    if (alvo.is_sud0) return res.status(400).json({ ok: false, erro: 'sud0' });
+    await pool.query('UPDATE contas SET is_admin=$1 WHERE id=$2', [conceder, alvo.id]);
+    if (conceder) {
+      await notificar(pool, { destinatario_id: alvo.id, ator_id: req.user.id, tipo: 'admin', dados: {} });
+      if (b.anunciar) {
+        const corpo = '🛡️ @' + alvo.handle + ' agora é Admin do Stack_n3xus — guardião da comunidade. A honraria não se pede, se merece.';
+        try { await pool.query(`INSERT INTO posts (autor_id, corpo, fixado, tipo) VALUES ($1,$2,false,'comunicado')`, [req.user.id, corpo]); } catch (_e) {}
+      }
+    }
+    res.json({ ok: true, handle: alvo.handle });
+  } catch (e) { console.error('[admins]', e); res.status(500).json({ ok: false, erro: 'srv', detalhe: String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
+});
+router.get('/admin/admins', requerSud0, async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT handle, nome, exposicao, membro_num FROM contas WHERE is_admin=true ORDER BY membro_num NULLS LAST, handle`);
+    res.json({ ok: true, admins: rows.map((r) => ({ handle: r.handle, nome: r.exposicao === 'aberto' ? r.nome : null, membro_num: r.membro_num })) });
+  } catch (e) { next(e); }
+});
+
 module.exports = router;

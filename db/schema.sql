@@ -334,3 +334,6 @@ CREATE TABLE IF NOT EXISTS denuncias (
   resolvido_em   timestamptz
 );
 CREATE INDEX IF NOT EXISTS ix_denuncias_status ON denuncias (status, criado_em DESC);
+
+-- ---------- admin global (moderador nomeado pelo sud0) ----------
+ALTER TABLE contas ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false;

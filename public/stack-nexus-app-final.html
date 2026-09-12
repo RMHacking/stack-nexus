@@ -1828,18 +1828,15 @@
         </div>
 
         <div class="cfgpane" id="cf-admins">
-          <div class="wip-banner">⚠️ <b>Mockup</b> — este painel ainda não tem backend. O visual é o blueprint; os dados abaixo são só exemplo.</div>
           <div class="panel">
             <div class="panel-h">Conceder Admin — uma honraria</div>
             <p class="cfgnote" style="margin-bottom:.8rem;">Admin não se pede, se merece. Você observa a rede rodando e presenteia quem já se comporta como guardião do lugar. Na linha do Genesis: raro, pessoal, vindo da origem.</p>
-            <div style="display:flex;gap:.7rem;margin-bottom:.7rem;"><div class="cfgfield" style="flex:1"><label>usuário que merece</label><input placeholder="@handle"></div><div class="cfgfield" style="flex:1"><label>escopo</label><select><option>Moderador de grupo específico</option><option>Moderador global</option></select></div></div>
-            <div style="display:flex;align-items:center;gap:.8rem;"><label class="cfgnote"><input type="checkbox" checked style="margin-right:.4rem;">anunciar com cerimônia (selo no perfil + comunicado do sud0)</label><button class="cfgbtn" style="margin-left:auto">Presentear com Admin</button></div>
+            <div style="display:flex;gap:.7rem;margin-bottom:.7rem;"><div class="cfgfield" style="flex:1"><label>usuário que merece</label><input id="adm-handle" placeholder="@handle"></div></div>
+            <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;"><label class="cfgnote"><input type="checkbox" id="adm-anunciar" checked style="margin-right:.4rem;">anunciar com cerimônia (selo no perfil + comunicado do sud0)</label><button class="cfgbtn" id="adm-grant" style="margin-left:auto">Presentear com Admin</button></div>
           </div>
           <div class="panel">
-            <div class="panel-h">Admins atuais <span class="sub">nenhum ainda</span></div>
-            <div class="table-scroll"><table><thead><tr><th>admin</th><th>escopo</th><th>apagar msg</th><th>expulsar</th><th>ver dados</th><th></th></tr></thead><tbody>
-              <tr><td colspan="6" class="cfgnote" style="padding:.8rem;opacity:.7">Você ainda não nomeou nenhum admin. Os que você presentear aparecem aqui. <span style="color:var(--crown)">(painel em construção — falta o backend de papéis)</span></td></tr>
-            </tbody></table></div>
+            <div class="panel-h">Admins atuais <span class="sub" id="adm-count">—</span></div>
+            <div id="admins-list"><div class="cfgnote" style="opacity:.7;padding:.4rem">carregando…</div></div>
           </div>
           <div class="panel">
             <div class="panel-h">Permissões dos admins <span class="sub">o que você libera pra eles</span></div>
@@ -3172,6 +3169,7 @@
     else if(n.tipo==='resposta'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' respondeu seu comentário.'; }
     else if(n.tipo==='premiacao'){ var q=(n.dados&&n.dados.quantidade)||1; ic='<div class="nic ni-crown">♛</div>'; txt='O <b>sud0</b> te premiou com <b>'+q+' convite'+(q>1?'s':'')+'</b>.'; }
     else if(n.tipo==='aviso'){ ic='<div class="nic ni-crown">⚠️</div>'; txt='<b>Advertência do sud0.</b> Cuidado com a conduta na rede.'; }
+    else if(n.tipo==='admin'){ ic='<div class="nic ni-crown">🛡️</div>'; txt='Você foi nomeado <b>Admin</b> pelo sud0 — guardião da comunidade.'; }
     else { ic='<div class="nic"><span class="ndot"></span></div>'; txt='Nova atividade.'; }
     return '<div class="notif'+(n.lida?'':' unread')+'" data-notif="'+esc(n.id)+'" data-ntipo="'+esc(n.tipo)+'" data-nator="'+esc(n.ator_handle||'')+'" data-nref="'+esc(n.ref_id||'')+'" style="cursor:pointer">'+ic+'<div class="nb">'+txt+'<div class="nt">'+tempo(n.criado_em)+'</div></div></div>';
   }
@@ -3299,7 +3297,7 @@
     var cov=document.querySelector(P+'.cover'); if(cov){ if(d.capa_url){ cov.style.backgroundImage='url('+d.capa_url+')'; cov.style.backgroundSize='cover'; cov.style.backgroundPosition='center'; var ctx=cov.querySelector('.covertxt'); if(ctx) ctx.style.display='none'; } else { cov.style.backgroundImage=''; var ctx2=cov.querySelector('.covertxt'); if(ctx2) ctx2.style.display=''; } }
     var pname=document.querySelector(P+'.pheadinfo .pname');
     if(pname){ var tt=''; if(d.trilha){var cls=trkCls(d.trilha);var lbl=d.trilha==='both'?'tech+cyber':d.trilha; tt=' <span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
-      pname.innerHTML=esc(nomeExib)+tt+' <span class="reptag"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block"></span>rep '+(d.reputacao||0)+'</span>'; }
+      pname.innerHTML=esc(nomeExib)+tt+(d.is_admin?' <span class="utag" style="color:var(--crown);background:var(--crown-soft);border:1px solid var(--crown)"><span class="ud" style="background:var(--crown)"></span>admin</span>':'')+' <span class="reptag"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block"></span>rep '+(d.reputacao||0)+'</span>'; }
     var phl=document.querySelector(P+'.pheadline'); if(phl) phl.textContent=d.bio||'membro do Stack_n3xus';
     var sobreBio=document.querySelector('#aboutPanel .af-view'); if(sobreBio && sobreBio.tagName==='P') sobreBio.textContent=d.bio||'Sem bio ainda.';
     var sobreMeta=document.querySelector('#aboutPanel .pmeta.af-view');
@@ -3906,7 +3904,7 @@
     var pname=$(P+'.pheadinfo .pname');
     if(pname){ var tt=''; if(me.trilha){var cls=trkCls(me.trilha);var lbl=me.trilha==='both'?'tech+cyber':me.trilha; tt=' <span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
       var cb=sud0?' <span class="crownbadge">♛ FUNDADOR</span>':'';
-      pname.innerHTML=esc(nomeExib)+tt+cb+' <span class="reptag"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block"></span>rep '+(me.reputacao||0)+'</span>'; }
+      pname.innerHTML=esc(nomeExib)+tt+cb+(me.is_admin?' <span class="utag" style="color:var(--crown);background:var(--crown-soft);border:1px solid var(--crown)"><span class="ud" style="background:var(--crown)"></span>admin</span>':'')+' <span class="reptag"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block"></span>rep '+(me.reputacao||0)+'</span>'; }
     var phl=$(P+'.pheadline'); if(phl) phl.textContent=me.bio||(sud0?'entidade fundadora':'membro do Stack_n3xus');
     var ph=$(P+'.pheadinfo .phandle'); if(ph) ph.textContent='@'+me.handle;
     var pm=$(P+'.pheadinfo .pmeta'); if(pm) pm.innerHTML='<span>◆ '+(me.exposicao==='aberto'?'perfil Aberto':'perfil Reservado')+'</span><span>◆ membro #'+(me.membro_num||'—')+'</span><span>◆ '+(me.origem_handle?('trazido por @'+me.origem_handle):'raiz da rede')+'</span>';
@@ -4570,6 +4568,38 @@
         if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Saldo de @'+handle+' ajustado ('+(delta>0?'+':'')+delta+')'+(r.b.saldo!=null?(' → '+r.b.saldo+' disponíveis'):''), true); if(h) h.value=''; }
         else { if(window.snFlash) snFlash(r.s===404?'Membro não encontrado.':(r.b&&r.b.erro==='sud0'?'O sud0 não usa saldo.':'Não deu pra ajustar.'), false); }
       });
+    });
+  })();
+  (function(){
+    function admHTML(a){
+      var nome=a.nome||('@'+a.handle);
+      return '<div class="dsf-list-row"><div class="dl-t"><b>🛡️ '+esc(nome)+'</b><div class="dl-m">@'+esc(a.handle)+(a.membro_num?(' · membro #'+a.membro_num):'')+'</div></div><button class="dsf-btn ghost" data-adm-revogar="'+esc(a.handle)+'">revogar</button></div>';
+    }
+    window.carregarAdmins=function(){
+      var box=document.getElementById('admins-list'); if(!box) return;
+      api('/api/admin/admins').then(function(r){
+        var lst=(r.b&&r.b.ok&&r.b.admins)?r.b.admins:[];
+        var cnt=document.getElementById('adm-count'); if(cnt) cnt.textContent=lst.length?(lst.length+' admin'+(lst.length>1?'s':'')):'nenhum ainda';
+        box.innerHTML=lst.length?lst.map(admHTML).join(''):'<div class="cfgnote" style="opacity:.7;padding:.4rem">Nenhum admin ainda. Presenteie quem merece.</div>';
+      });
+    };
+    var gb=document.getElementById('adm-grant');
+    if(gb){
+      var ah=document.getElementById('adm-handle'); if(window.ligarAutocompleteMembros&&ah) window.ligarAutocompleteMembros(ah);
+      gb.addEventListener('click',function(){
+        var h=(ah&&ah.value||'').trim().replace(/^@/,''); if(!h){ if(window.snFlash) snFlash('Diga o @handle.', false); return; }
+        var an=document.getElementById('adm-anunciar'); var anunciar=an?an.checked:false;
+        gb.disabled=true; var o=gb.textContent; gb.textContent='concedendo…';
+        api('/api/admin/admins',{method:'POST',body:{handle:h,conceder:true,anunciar:anunciar}}).then(function(r){ gb.disabled=false; gb.textContent=o;
+          if(r.b&&r.b.ok){ if(window.snFlash) snFlash('@'+(r.b.handle||h)+' agora é Admin 🛡️', true); if(ah) ah.value=''; window.carregarAdmins(); if(anunciar&&typeof carregarFeed==='function') carregarFeed(); }
+          else { if(window.snFlash) snFlash(r.s===404?'Membro não encontrado.':(r.b&&r.b.erro==='sud0'?'O sud0 já é tudo.':'Não deu pra conceder.'), false); }
+        });
+      });
+    }
+    document.addEventListener('click',function(e){
+      var rv=e.target.closest?e.target.closest('[data-adm-revogar]'):null;
+      if(rv){ e.preventDefault(); var h=rv.getAttribute('data-adm-revogar'); window.snConfirm('Revogar o Admin de @'+h+'?', function(){ api('/api/admin/admins',{method:'POST',body:{handle:h,conceder:false}}).then(function(r){ if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Admin de @'+h+' revogado.', true); window.carregarAdmins(); } }); }, {okText:'revogar'}); return; }
+      var ct=e.target.closest?e.target.closest('[data-cfg="admins"]'):null; if(ct){ window.carregarAdmins(); return; }
     });
   })();
 })();
