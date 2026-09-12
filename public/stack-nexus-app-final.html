@@ -1691,10 +1691,10 @@
             <div class="panel-h">Ajustar a reputação de alguém <span class="sub">o corretor humano</span></div>
             <p class="cfgnote" style="margin-bottom:.8rem;">Viu alguém que merece mais do que o sistema deu? Ou alguém inflando o número artificialmente? Ajuste direto.</p>
             <div style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:flex-end;">
-              <div class="cfgfield" style="flex:1;min-width:160px;"><label>membro</label><input placeholder="@handle"></div>
-              <div class="cfgfield"><label>ajuste</label><div class="stepper"><button>−</button><span class="n">50</span><button>+</button></div></div>
-              <div class="cfgfield" style="flex:1;min-width:160px;"><label>motivo (registro interno)</label><input placeholder="ex: contribuição fora da curva"></div>
-              <button class="cfgbtn" style="border-color:var(--ok);color:var(--ok);background:var(--ok-soft);">Aplicar ajuste</button>
+              <div class="cfgfield" style="flex:1;min-width:160px;"><label>membro</label><input id="rep-handle" placeholder="@handle"></div>
+              <div class="cfgfield"><label>ajuste (+/−)</label><input id="rep-delta" type="number" value="10" style="width:96px;box-sizing:border-box;background:var(--surface-2);border:0;border-radius:8px;padding:.55rem .7rem;color:var(--text);outline:none;font-size:.9rem;"></div>
+              <div class="cfgfield" style="flex:1;min-width:160px;"><label>motivo (registro interno)</label><input id="rep-motivo" placeholder="ex: contribuição fora da curva"></div>
+              <button class="cfgbtn" id="rep-apply" style="border-color:var(--ok);color:var(--ok);background:var(--ok-soft);">Aplicar ajuste</button>
             </div>
           </div>
 
@@ -4485,6 +4485,20 @@
       if(rc){ e.preventDefault(); var prova2=rc.closest('.prova'); rc.disabled=true; api('/api/admin/provas/'+encodeURIComponent(rc.getAttribute('data-prova-recusar'))+'/recusar',{method:'POST'}).then(function(r){ rc.disabled=false; if(r.b&&r.b.ok&&prova2){ var pact2=prova2.querySelector('.pact'); if(pact2) pact2.innerHTML='<span class="prova-no">recusada</span>'; } }); return; }
       var cfgt=t.closest?t.closest('[data-cfg="challenges"]'):null;
       if(cfgt){ carregarDesafiosAdmin(); return; }
+    });
+  })();
+  (function(){
+    var btn=document.getElementById('rep-apply'); if(!btn) return;
+    var h=document.getElementById('rep-handle'); if(window.ligarAutocompleteMembros&&h) window.ligarAutocompleteMembros(h);
+    btn.addEventListener('click',function(){
+      var handle=(h&&h.value||'').trim().replace(/^@/,''); var dl=document.getElementById('rep-delta'); var delta=parseInt((dl&&dl.value)||'0',10);
+      if(!handle){ if(window.snFlash) snFlash('Diga o @handle.', false); return; }
+      if(!delta){ if(window.snFlash) snFlash('Coloque um ajuste diferente de zero.', false); return; }
+      btn.disabled=true; var o=btn.textContent; btn.textContent='aplicando\u2026';
+      api('/api/admin/reputacao',{method:'POST',body:{handle:handle,delta:delta}}).then(function(r){ btn.disabled=false; btn.textContent=o;
+        if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Reputa\u00e7\u00e3o de @'+handle+' ajustada ('+(delta>0?'+':'')+delta+') \u2192 agora '+r.b.reputacao, true); if(h) h.value=''; var m=document.getElementById('rep-motivo'); if(m) m.value=''; }
+        else { if(window.snFlash) snFlash(r.s===404?'Membro n\u00e3o encontrado.':'N\u00e3o deu pra ajustar.', false); }
+      });
     });
   })();
 })();

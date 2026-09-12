@@ -21,21 +21,24 @@ async function calcularReputacao(contaId) {
           WHERE (r.alvo_tipo='post'       AND r.alvo_id IN (SELECT id FROM posts       WHERE autor_id=$1))
              OR (r.alvo_tipo='projeto'    AND r.alvo_id IN (SELECT id FROM projetos    WHERE dono_id=$1))
              OR (r.alvo_tipo='comentario' AND r.alvo_id IN (SELECT id FROM comentarios WHERE autor_id=$1))
+             OR (r.alvo_tipo='comentario' AND r.alvo_id IN (SELECT id FROM post_comentarios WHERE autor_id=$1))
        ),0) AS pts_reacoes,
        (SELECT count(*) FROM posts       WHERE autor_id=$1) AS n_posts,
        (SELECT count(*) FROM projetos    WHERE dono_id=$1)  AS n_proj,
        (SELECT count(*) FROM comentarios WHERE autor_id=$1) AS n_com,
+       (SELECT count(*) FROM post_comentarios WHERE autor_id=$1) AS n_postcom,
        GREATEST(
          COALESCE((SELECT max(criado_em) FROM posts       WHERE autor_id=$1), 'epoch'::timestamptz),
          COALESCE((SELECT max(criado_em) FROM projetos    WHERE dono_id=$1),  'epoch'::timestamptz),
          COALESCE((SELECT max(criado_em) FROM comentarios WHERE autor_id=$1), 'epoch'::timestamptz),
+         COALESCE((SELECT max(criado_em) FROM post_comentarios WHERE autor_id=$1), 'epoch'::timestamptz),
          COALESCE((SELECT max(criado_em) FROM grupo_mensagens WHERE autor_id=$1), 'epoch'::timestamptz),
          (SELECT criado_em FROM contas WHERE id=$1)
        ) AS ultima`, [contaId]);
   const r = q.rows[0] || {};
   const ajuste = Number(r.ajuste) || 0;
   const pts = Number(r.pts_reacoes) || 0;
-  const contrib = Math.min((Number(r.n_posts) || 0) + (Number(r.n_proj) || 0) * 3 + (Number(r.n_com) || 0), 60);
+  const contrib = Math.min((Number(r.n_posts) || 0) + (Number(r.n_proj) || 0) * 3 + (Number(r.n_com) || 0) + (Number(r.n_postcom) || 0), 60);
   let decay = 0;
   if (r.ultima) { const dias = Math.floor((Date.now() - new Date(r.ultima).getTime()) / 86400000); if (dias > 14) decay = (dias - 14) * 2; }
   return Math.max(0, Math.round(ajuste + pts + contrib - decay));
