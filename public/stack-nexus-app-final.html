@@ -3884,7 +3884,7 @@
     var genesis=(c.tipo==='genesis')||souSud0;
     var card=ov.querySelector('.cvcard'); card.classList.toggle('genesis',genesis);
     ov.querySelector('.cvtag').textContent=genesis?'♛ GENESIS · direto do Fundador':'Meu convite';
-    ov.querySelector('.cvphrase').innerHTML=genesis?'Sua escolha foi <b>diferenciada</b>.<br>Direto do <b>Fundador</b>.':'Escaneie pra entrar na minha linhagem.';
+    ov.querySelector('.cvphrase').innerHTML=genesis?'Poucos recebem isso da mão do <b>Fundador</b>.<br>Você é um deles.':'Aqui a régua sou eu. E você <b>passou</b>.<br>Escaneia.';
     var saldo=(c.slots_disponiveis!=null?c.slots_disponiveis:0);
     ov.querySelector('.cvsaldo').textContent=saldo+' convite'+(saldo===1?'':'s')+' restante'+(saldo===1?'':'s');
     gerarQR(ov.querySelector('#cvqr'), link, 224);
@@ -3906,7 +3906,7 @@
     }
     ov.setAttribute('data-link',link);
     ov.querySelector('.cvtag').textContent='🎟️ '+ev.nome;
-    ov.querySelector('.cvphrase').innerHTML='Você foi convidado pra uma rede <b>fechada</b> — só entra quem constrói de verdade, de código a kernel.<br>Aponte a câmera e faça parte.';
+    ov.querySelector('.cvphrase').innerHTML='Rede <b>fechada</b>, só por convite. Aqui vale o que você <b>constrói</b> — de código a kernel.<br>Aponte a câmera e prove que é do time.';
     var rest=(ev.disponivel!=null?ev.disponivel:0);
     ov.querySelector('.cvsaldo').textContent=(ev.ativo?(rest+' vaga'+(rest===1?'':'s')+' restante'+(rest===1?'':'s')):'evento fechado');
     gerarQR(ov.querySelector('#evqrbig'), link, 224);
