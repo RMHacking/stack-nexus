@@ -3170,6 +3170,7 @@
     else if(n.tipo==='premiacao'){ var q=(n.dados&&n.dados.quantidade)||1; ic='<div class="nic ni-crown">♛</div>'; txt='O <b>sud0</b> te premiou com <b>'+q+' convite'+(q>1?'s':'')+'</b>.'; }
     else if(n.tipo==='aviso'){ ic='<div class="nic ni-crown">⚠️</div>'; txt='<b>Advertência do sud0.</b> Cuidado com a conduta na rede.'; }
     else if(n.tipo==='admin'){ ic='<div class="nic ni-crown">🛡️</div>'; txt='Você foi nomeado <b>Admin</b> pelo sud0 — guardião da comunidade.'; }
+    else if(n.tipo==='entrada_pendente'){ ic='<div class="nic ni-crown">♛</div>'; txt=nome+' entrou pelo seu convite e <b>aguarda sua aprovação</b>.'; }
     else { ic='<div class="nic"><span class="ndot"></span></div>'; txt='Nova atividade.'; }
     return '<div class="notif'+(n.lida?'':' unread')+'" data-notif="'+esc(n.id)+'" data-ntipo="'+esc(n.tipo)+'" data-nator="'+esc(n.ator_handle||'')+'" data-nref="'+esc(n.ref_id||'')+'" style="cursor:pointer">'+ic+'<div class="nb">'+txt+'<div class="nt">'+tempo(n.criado_em)+'</div></div></div>';
   }
@@ -3204,6 +3205,7 @@
         if(b && b.style.display!=='none'){ var v=(parseInt(b.textContent,10)||1)-1; atualizarBadgeNotif(v); }
       }
       if((tp==='conexao_pedido'||tp==='conexao_aceita') && at){ verPerfil(at); }
+      else if(tp==='entrada_pendente'){ var cfgB=document.querySelector('[data-nav="config"]'); if(cfgB) cfgB.click(); var modT=document.querySelector('.cfgnav button[data-cfg="moderation"]'); if(modT) modT.click(); if(window.carregarPendentes) window.carregarPendentes(); }
       else if(tp==='comentario'){ if(typeof irParaView==='function') irParaView('v-feed'); }
       return;
     }

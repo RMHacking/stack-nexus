@@ -4,6 +4,7 @@
 // =====================================================================
 const crypto = require('crypto');
 const { reservaHoras } = require('../config');
+const { notificar } = require('../notificacoes/notif.service');
 
 function gerarCodigo() {
   return crypto.randomBytes(18).toString('base64url'); // opaco e aleatório
@@ -111,6 +112,10 @@ async function concluirResgate(pool, { resgateId, conta }) {
     const linkNovo = await criarLinkConvite(client, novaContaId, { slots: 3 });
 
     await client.query('COMMIT');
+    if (pendente) {
+      // avisa o Fundador que tem entrada esperando aprovação
+      try { await notificar(pool, { destinatario_id: rr.dono_id, ator_id: novaContaId, tipo: 'entrada_pendente', dados: { handle: conta.handle } }); } catch (_e) {}
+    }
     return { ok: true, conta_id: novaContaId, membro_num: nova.rows[0].membro_num, convite_codigo: linkNovo.codigo, pendente };
   } catch (e) {
     await client.query('ROLLBACK');
