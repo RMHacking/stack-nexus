@@ -128,8 +128,7 @@ router.post('/admin/admins', requerSud0, async (req, res, next) => {
       } catch (_e) {}
       await notificar(pool, { destinatario_id: alvo.id, ator_id: req.user.id, tipo: 'admin', dados: {} });
       if (b.anunciar !== false) {
-        const nom = alvo.nome ? (alvo.nome + ' (@' + alvo.handle + ')') : ('@' + alvo.handle);
-        const corpo = '♛ Comunicado do Fundador\n\n' + nom + ' foi elevado a Admin — guardião do Stack_n3xus.\n\nAqui esse posto não se pede: ele é entregue a quem provou zelo pela rede e visão pra proteger o que a gente constrói junto. A partir de hoje faz parte de quem mantém a régua alta e a comunidade de pé.\n\nRespeito e responsabilidade caminham juntos. Que sirva de exemplo pra quem ainda está subindo. 🖤';
+        const corpo = '♛ @' + alvo.handle + ' agora é Admin — guardião do Stack_n3xus.\n\nEsse posto não se pede: é entregue a quem prova zelo pela rede. Aqui a régua é alta — e agora ele ajuda a mantê-la. Respeito. 🖤';
         try { await pool.query(`INSERT INTO posts (autor_id, corpo, fixado, tipo) VALUES ($1,$2,false,'comunicado')`, [req.user.id, corpo]); } catch (_e) {}
       }
     } else {
