@@ -3293,7 +3293,7 @@
       var _selo=sud0?' <span class="utag" style="color:var(--crown);background:var(--crown-soft);border:1px solid var(--crown)"><span class="ud" style="background:var(--crown)"></span>\u265b Fundador</span>':(d.is_admin?_seloAdm:'');
       var _rep=sud0?'':' <span class="reptag"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block"></span>rep '+(d.reputacao||0)+'</span>';
       pname.innerHTML=esc(nomeExib)+tt+_selo+_rep; }
-    var phl=document.querySelector(P+'.pheadline'); if(phl) phl.textContent=d.bio||(sud0?'entidade fundadora':'membro do Stack_n3xus');
+    var phl=document.querySelector(P+'.pheadline'); if(phl) phl.textContent=d.bio||(sud0?'sud0/fundador':'membro do Stack_n3xus');
     var sobreBio=document.querySelector('#aboutPanel .af-view'); if(sobreBio && sobreBio.tagName==='P') sobreBio.textContent=d.bio||'Sem bio ainda.';
     var sobreMeta=document.querySelector('#aboutPanel .pmeta.af-view');
     if(sobreMeta){ var L=[]; if(d.trilha) L.push('\u25c6 trilha: '+(d.trilha==='both'?'tech + cyber':d.trilha)); L.push('\u25c6 membro #'+(d.membro_num||'\u2014')); L.push('\u25c6 '+(d.origem_handle?('trazido por @'+d.origem_handle):'raiz da rede')); L.push('\u25c6 perfil '+(d.exposicao==='aberto'?'Aberto':'Reservado')); sobreMeta.innerHTML=L.map(function(x){return '<span>'+esc(x)+'</span>';}).join(''); }
@@ -3819,7 +3819,63 @@
   // ---- convite: cartão + QR real em tela cheia (mesmo motor pra todos; sud0 = Genesis) ----
   function linkConvite(codigo){ try{ return new URL('stack-nexus-onboarding.html?c='+encodeURIComponent(codigo), location.href).href; }catch(e){ return 'stack-nexus-onboarding.html?c='+encodeURIComponent(codigo); } }
   function gerarQR(el, texto, tam){ if(!el) return; el.innerHTML=''; try{ if(window.QRCode){ new QRCode(el,{text:texto,width:tam,height:tam,colorDark:'#0a0a0a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M}); } else { el.textContent=texto; } }catch(e){ el.textContent=texto; } }
-  (function(){ var iq=document.getElementById('invqrcode'); if(iq){ api('/api/me/convite').then(function(r){ if(r.b&&r.b.codigo){ iq.innerHTML=''; gerarQR(iq, linkConvite(r.b.codigo), 110); } }); } })();
+  function pintarConvitesReais(me){
+    if(!me) return;
+    var c=me.convite||{}; var sud0=!!me.is_sud0;
+    var dispN=(c.slots_disponiveis!=null?c.slots_disponiveis:0);
+    var disp=dispN;
+    var total=(c.slots_total!=null?c.slots_total:null);
+    var usados=(c.slots_usados!=null?c.slots_usados:0);
+    var link=(c.codigo?linkConvite(c.codigo):null);
+    var nomeCartao=me.nome||('@'+me.handle);
+    var trouxe=(me.trouxe!=null?me.trouxe:0);
+    function pl(n,a,b){ return n===1?a:b; }
+    // ---- aba CONVITES ----
+    var big=document.querySelector('#pf-invites .invhero .big'); if(big) big.textContent=disp;
+    var note=document.querySelector('#pf-invites .invhero .invnote');
+    if(note){ note.innerHTML=sud0
+      ? 'Como <b>Fundador</b>, você distribui os convites da rede — inclusive o Cartão Genesis. Cada pessoa que entra pelo seu QR consome 1.'
+      : 'Você tem <b>'+dispN+'</b> '+pl(dispN,'convite disponível','convites disponíveis')+'. Convites são escassos — são o que mantém a rede fechada e de alta confiança. Traga quem constrói: quem entrega, ganha mais.'; }
+    if(link){ var iq=document.getElementById('invqrcode'); if(iq) gerarQR(iq, link, 110); }
+    var orig=document.querySelector('#pf-invites .origin');
+    if(orig) orig.innerHTML=me.origem_handle
+      ? ('Sua origem: você foi trazido por <b>@'+esc(me.origem_handle)+'</b>.')
+      : 'Sua origem: você é <b>raiz da rede</b>.';
+    var panels=document.querySelectorAll('#pf-invites .panel');
+    if(panels[0]){
+      var h0=panels[0].querySelector('.panel-h'); if(h0) h0.innerHTML='Seu saldo de convites <span class="sub">números reais</span>';
+      var b0=panels[0].querySelector('tbody'); if(b0) b0.innerHTML=
+        '<tr><td>Disponíveis agora</td><td class="mono">—</td><td><span class="prize-b" style="margin:0">'+dispN+'</span></td></tr>'+
+        '<tr><td>Já usados ao convidar</td><td class="mono">—</td><td><span class="perm no">'+usados+'</span></td></tr>'+
+        (total!=null?('<tr><td>Total que você já teve</td><td class="mono">—</td><td class="mono">'+total+'</td></tr>'):'');
+      var n0=panels[0].querySelector('.cfgnote'); if(n0) n0.innerHTML=sud0
+        ? 'Como Fundador, seu saldo é alto de propósito — você é a origem dos convites da rede.'
+        : 'Ganhos entram no seu saldo automaticamente quando o sud0 premia ou você vence um desafio.';
+    }
+    if(panels[1]){
+      var b1=panels[1].querySelector('tbody'); if(b1) b1.innerHTML=trouxe>0
+        ? '<tr><td>Pessoas que entraram pelo seu convite</td><td class="mono">—</td><td><span class="perm yes">'+trouxe+'</span></td></tr>'
+        : '<tr><td colspan="3" class="cfgnote" style="opacity:.7;padding:.8rem">Você ainda não trouxe ninguém. Quando alguém entrar pelo seu QR, aparece aqui.</td></tr>';
+    }
+    // ---- aba CARTÃO ----
+    var owner=document.querySelector('#pf-card .invcard__owner'); if(owner) owner.textContent=nomeCartao;
+    var hand=document.querySelector('#pf-card .invcard__handle'); if(hand) hand.textContent='@'+me.handle;
+    if(link){ var cq=document.getElementById('cardqr'); if(cq) gerarQR(cq, link, 92); }
+    var cc=document.getElementById('cardcount');
+    if(cc) cc.textContent='◆ '+dispN+' '+pl(dispN,'convite disponível','convites disponíveis')+' · '+(dispN>0?'cartão ativo':'cartão inativo');
+    if(!sud0 && dispN<=0){ var ic=document.getElementById('invcard'); if(ic) ic.classList.add('empty'); }
+    var fo=document.querySelector('#cardfull .invcard__owner'); if(fo) fo.textContent=nomeCartao;
+    var fh=document.querySelector('#cardfull .invcard__handle'); if(fh) fh.textContent='@'+me.handle;
+    var tg=document.getElementById('cardtoggle'); if(tg) tg.style.display='none';
+    // rebind dos botões pro link/QR real (remove os handlers do protótipo)
+    function rebind(id){ var b=document.getElementById(id); if(!b) return null; var n=b.cloneNode(true); b.parentNode.replaceChild(n,b); return n; }
+    function copiar(btn,orig){ if(!btn) return; btn.addEventListener('click',function(){ try{ if(link) navigator.clipboard.writeText(link); }catch(e){} var self=this; self.textContent='link copiado ✓'; setTimeout(function(){ self.textContent=orig; },1600); }); }
+    function abrirFull(){ var ov=document.getElementById('cardfull'); var q=document.getElementById('cardfullqr'); if(q&&link) gerarQR(q, link, 200); if(ov) ov.classList.add('show'); }
+    var b1f=rebind('invqrfull'); if(b1f) b1f.addEventListener('click',abrirFull);
+    var b2f=rebind('cardpresent'); if(b2f) b2f.addEventListener('click',function(){ var ic=document.getElementById('invcard'); if(ic&&ic.classList.contains('empty')) return; abrirFull(); });
+    copiar(rebind('invqrcopy'),'Copiar link');
+    copiar(rebind('cardshare'),'Copiar meu link');
+  }
   function mostrarConviteOverlay(c){
     var link=linkConvite(c.codigo);
     var ov=document.getElementById('convite-overlay');
@@ -3881,6 +3937,7 @@
     if(r.s===401){ try{localStorage.removeItem('sn_token');}catch(e){} location.href='stack-nexus-login.html'; return; }
     var me=r.b; if(!me||!me.handle){ carregarFeed(); return; }
     meuHandle=me.handle; meuPerfil=me;
+    try{ pintarConvitesReais(me); }catch(e){}
     try{ if(window.preencherAjustes) preencherAjustes(me); }catch(e){}
     var sud0=!!me.is_sud0; souSud0=sud0; minhaTrilha=me.trilha||null;
     document.body.classList.toggle('view-sud0',sud0);
@@ -3900,7 +3957,7 @@
     if(pname){ var tt=''; if(me.trilha){var cls=trkCls(me.trilha);var lbl=me.trilha==='both'?'tech+cyber':me.trilha; tt=' <span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
       var cb=sud0?' <span class="crownbadge">♛ FUNDADOR</span>':'';
       pname.innerHTML=esc(nomeExib)+tt+cb+(me.is_admin?' <span class="utag" style="color:var(--crown);background:var(--crown-soft);border:1px solid var(--crown)"><span class="ud" style="background:var(--crown)"></span>admin</span>':'')+' <span class="reptag"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block"></span>rep '+(me.reputacao||0)+'</span>'; }
-    var phl=$(P+'.pheadline'); if(phl) phl.textContent=me.bio||(sud0?'entidade fundadora':'membro do Stack_n3xus');
+    var phl=$(P+'.pheadline'); if(phl) phl.textContent=me.bio||(sud0?'sud0/fundador':'membro do Stack_n3xus');
     var ph=$(P+'.pheadinfo .phandle'); if(ph) ph.textContent='@'+me.handle;
     var pm=$(P+'.pheadinfo .pmeta'); if(pm) pm.innerHTML='<span>◆ '+(me.exposicao==='aberto'?'perfil Aberto':'perfil Reservado')+'</span><span>◆ membro #'+(me.membro_num||'—')+'</span><span>◆ '+(me.origem_handle?('trazido por @'+me.origem_handle):'raiz da rede')+'</span>';
     var vs2=$$(P+'.pstats .pstat .v');
