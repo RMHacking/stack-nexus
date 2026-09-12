@@ -1778,7 +1778,7 @@
             <div class="panel-h">Novo comunicado <span class="sub">chega a todos os membros</span></div>
             <div class="cfgfield" style="margin-bottom:.8rem;"><label>mensagem para a rede</label><textarea class="bcast-area" id="bcastinput" placeholder="Fale com toda a rede..."></textarea></div>
             <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
-              <label class="cfgnote"><input type="checkbox" checked style="margin-right:.4rem;">fixar no topo do StackFeed por 24h</label>
+              <label class="cfgnote"><input type="checkbox" id="bcast-fixar" checked style="margin-right:.4rem;">fixar no topo do StackFeed</label>
               <span class="reach">alcance: <b id="bcastReach" style="color:var(--text-dim)">toda a rede</b></span>
               <button class="cfgbtn" style="margin-left:auto;border-color:var(--crown);color:#1a1400;background:var(--crown);" id="bcastsend">Publicar comunicado</button>
             </div>
@@ -1789,7 +1789,7 @@
           </div>
           <div class="panel">
             <div class="panel-h">Comunicados anteriores <span class="sub">histórico</span></div>
-            <div class="feed-item" style="opacity:.6"><span class="fdot"></span>Nenhum comunicado ainda. Quando você falar com a rede, o histórico fica aqui.</div>
+            <div id="bcast-hist"><div class="cfgnote" style="opacity:.7;padding:.4rem">carregando…</div></div>
           </div>
         </div>
 
@@ -2373,12 +2373,6 @@
     bcastinput.addEventListener('input',()=>{
       bcastpreview.textContent=bcastinput.value.trim()||'Sua mensagem aparece assim pra rede toda, com a coroa e o peso do fundador.';
     });
-    $('#bcastsend').addEventListener('click',function(){
-      if(!bcastinput.value.trim()){bcastinput.focus();return;}
-      this.textContent='✓ comunicado enviado';
-      this.disabled=true;
-      setTimeout(()=>{this.textContent='Publicar comunicado';this.disabled=false;bcastinput.value='';bcastpreview.textContent='Sua mensagem aparece assim pra rede toda, com a coroa e o peso do fundador.';},2200);
-    });
   }
 
   // abrir provas de um desafio
@@ -2815,7 +2809,7 @@
     if(a.is_sud0){
       return '<article class="post crown" data-id="'+p.id+'">'+pin+'<div class="head"><span class="av av--crown" style="width:42px;height:42px">♛</span>'+
         '<div class="id"><div class="name"><span class="lnk-perfil" data-perfil="'+esc(a.handle)+'">sud0/n3xus</span> <span class="crowntag">♛ MASTER</span></div><div class="meta">◆ entidade fundadora · '+tempo(p.criado_em)+ed+'</div></div>'+menu+'</div>'+
-        '<div class="body">'+esc(p.corpo)+'</div>'+(p.imagem?'<div class="post-img"><img src="'+p.imagem+'" alt=""></div>':'')+'<div class="post-reac">'+reacBar('post',p.id,p.rx)+'</div>'+(!p.fixado&&window.comentBox?window.comentBox(p):'')+'</article>';
+        '<div class="body">'+esc(p.corpo)+'</div>'+(p.imagem?'<div class="post-img"><img src="'+p.imagem+'" alt=""></div>':'')+'<div class="post-reac">'+reacBar('post',p.id,p.rx)+'</div>'+((!p.fixado&&p.tipo!=='comunicado'&&window.comentBox)?window.comentBox(p):'')+'</article>';
     }
     var nome=a.nome||('@'+a.handle);
     var tt=''; if(a.trilha){var cls=trkCls(a.trilha);var lbl=a.trilha==='both'?'tech+cyber':a.trilha; tt=' <span class="utags"><span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span></span>';}
@@ -4532,6 +4526,37 @@
         }).catch(function(){ send.disabled=false; send.textContent=o; if(window.snFlash) snFlash('Erro de rede.', false); });
       });
     }
+  })();
+  (function(){ var send=document.getElementById('bcastsend'), inp=document.getElementById('bcastinput'); if(!send||!inp) return;
+    send.addEventListener('click',function(){
+      var corpo=(inp.value||'').trim(); if(!corpo){ inp.focus(); return; }
+      var fx=document.getElementById('bcast-fixar'); var fixar=fx?fx.checked:true;
+      send.disabled=true; var o=send.textContent; send.textContent='publicando\u2026';
+      api('/api/admin/comunicado',{method:'POST',body:{corpo:corpo, fixar:fixar}}).then(function(r){ send.disabled=false;
+        if(r.b&&r.b.ok){ send.textContent='\u2713 comunicado enviado'; setTimeout(function(){ send.textContent=o; },1800); inp.value=''; var pv=document.getElementById('bcastpreview'); if(pv) pv.textContent='Sua mensagem aparece assim pra rede toda, com a coroa e o peso do fundador.'; if(typeof carregarFeed==='function') carregarFeed(); if(window.carregarComunicados) window.carregarComunicados(); if(window.snFlash) snFlash('Comunicado publicado na rede.', true); }
+        else { send.textContent=o; if(window.snFlash) snFlash('N\u00e3o deu pra publicar.', false); }
+      }).catch(function(){ send.disabled=false; send.textContent=o; if(window.snFlash) snFlash('Erro de rede.', false); });
+    });
+  })();
+  (function(){
+    function comHTML(c){
+      var txt=(c.corpo||''); if(txt.length>140) txt=txt.slice(0,140)+'…';
+      var badge=c.fixado?' <span class="rtag" style="background:var(--crown-soft);color:var(--crown);border:1px solid var(--crown)">fixado</span>':'';
+      return '<div class="feed-item" style="display:flex;align-items:flex-start;gap:.6rem"><span class="fdot" style="background:var(--crown);margin-top:.4rem"></span><div style="flex:1;min-width:0"><div style="font-size:.85rem;line-height:1.4;color:var(--text)">'+esc(txt)+'</div><div style="font-family:var(--font-mono);font-size:.62rem;color:var(--text-faint);margin-top:.2rem">'+tempo(c.criado_em)+badge+'</div></div><button class="ghost-btn" data-comdel="'+esc(c.id)+'" title="apagar comunicado" style="flex:none;padding:.25rem .55rem">✕</button></div>';
+    }
+    window.carregarComunicados=function(){
+      var box=document.getElementById('bcast-hist'); if(!box) return;
+      api('/api/admin/comunicados').then(function(r){
+        var lst=(r.b&&r.b.ok&&r.b.comunicados)?r.b.comunicados:[];
+        box.innerHTML=lst.length?lst.map(comHTML).join(''):'<div class="feed-item" style="opacity:.6"><span class="fdot"></span>Nenhum comunicado ainda. Quando você falar com a rede, o histórico fica aqui.</div>';
+      });
+    };
+    document.addEventListener('click',function(e){
+      var cd=e.target.closest?e.target.closest('[data-comdel]'):null;
+      if(cd){ e.preventDefault(); var id=cd.getAttribute('data-comdel'); window.snConfirm('Apagar este comunicado? Some do feed e do histórico.', function(){ api('/api/posts/'+encodeURIComponent(id),{method:'DELETE'}).then(function(r){ if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Comunicado apagado.', true); window.carregarComunicados(); if(typeof carregarFeed==='function') carregarFeed(); } }); }, {okText:'apagar'}); return; }
+      var cfgt=e.target.closest?e.target.closest('[data-cfg="broadcast"]'):null;
+      if(cfgt){ window.carregarComunicados(); return; }
+    });
   })();
 })();
 

@@ -66,6 +66,27 @@ router.post('/posts/:id/fixar', requerSud0, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// comunicado do fundador: post do sud0 (coroa) fixado no topo, num passo só
+router.post('/admin/comunicado', requerSud0, async (req, res, next) => {
+  try {
+    const corpo = String((req.body || {}).corpo || '').trim();
+    if (!corpo) return res.status(400).json({ ok: false, erro: 'vazio' });
+    if (corpo.length > 500) return res.status(400).json({ ok: false, erro: 'longo' });
+    const fixar = (req.body && req.body.fixar) !== false;
+    const ins = await pool.query(`INSERT INTO posts (autor_id, corpo, fixado, tipo) VALUES ($1,$2,$3,'comunicado') RETURNING id`, [req.user.id, corpo, fixar]);
+    res.json({ ok: true, id: ins.rows[0].id });
+  } catch (e) { console.error('[comunicado]', e); res.status(500).json({ ok: false, erro: 'srv', detalhe: String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
+});
+
+// histórico de comunicados (só sud0)
+router.get('/admin/comunicados', requerSud0, async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, corpo, fixado, criado_em FROM posts WHERE tipo='comunicado' ORDER BY criado_em DESC LIMIT 50`);
+    res.json({ ok: true, comunicados: rows });
+  } catch (e) { next(e); }
+});
+
 // feed: fixados no topo, depois por recência. Marca o que é seu e o que é editado.
 router.get('/feed', requerLogin, async (req, res, next) => {
   try {
