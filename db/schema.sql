@@ -316,3 +316,21 @@ CREATE TABLE IF NOT EXISTS desafio_provas (
   UNIQUE (desafio_id, autor_id)
 );
 CREATE INDEX IF NOT EXISTS ix_desafio_provas ON desafio_provas (desafio_id, criado_em);
+
+-- ---------- moderação: banimento/suspensão + denúncias ----------
+ALTER TABLE contas ADD COLUMN IF NOT EXISTS banido boolean NOT NULL DEFAULT false;
+ALTER TABLE contas ADD COLUMN IF NOT EXISTS suspenso_ate timestamptz;
+CREATE TABLE IF NOT EXISTS denuncias (
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  denunciante_id uuid REFERENCES contas(id) ON DELETE SET NULL,
+  alvo_tipo      text NOT NULL DEFAULT 'geral' CHECK (alvo_tipo IN ('pessoa','post','comentario','grupo','geral')),
+  alvo_handle    text,
+  alvo_id        uuid,
+  categoria      text,
+  motivo         text CHECK (motivo IS NULL OR char_length(motivo) <= 800),
+  status         text NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente','resolvida','arquivada')),
+  acao           text,
+  criado_em      timestamptz NOT NULL DEFAULT now(),
+  resolvido_em   timestamptz
+);
+CREATE INDEX IF NOT EXISTS ix_denuncias_status ON denuncias (status, criado_em DESC);

@@ -15,6 +15,7 @@ const eventosRoutes = require('./eventos/eventos.routes');
 const conexoesRoutes = require('./conexoes/conexoes.routes');
 const notificacoesRoutes = require('./notificacoes/notificacoes.routes');
 const desafiosRoutes = require('./desafios/desafios.routes');
+const moderacaoRoutes = require('./moderacao/moderacao.routes');
 
 function criarApp() {
   const app = express();
@@ -37,6 +38,7 @@ function criarApp() {
   app.use('/api', conexoesRoutes);
   app.use('/api', notificacoesRoutes);
   app.use('/api', desafiosRoutes);
+  app.use('/api', moderacaoRoutes);
 
   // páginas do front servidas pelo mesmo host da API (uma URL só)
   app.use(express.static(path.join(__dirname, '../public'), {

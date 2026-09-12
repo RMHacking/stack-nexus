@@ -1741,49 +1741,22 @@
           </div>
         </div>
         <div class="cfgpane" id="cf-moderation">
-          <div class="wip-banner">⚠️ <b>Mockup</b> — este painel ainda não tem backend. O visual é o blueprint; os dados abaixo são só exemplo.</div>
           <div class="secbox" style="margin-bottom:1.2rem;"><b>Poder de moderação do Fundador.</b> Só você pode expulsar da rede inteira e remover qualquer conteúdo. É o último recurso pra proteger a comunidade — use com peso, mas sem hesitar quando precisa.</div>
 
           <div class="panel">
-            <div class="panel-h">Denúncias a julgar <span class="sub">3 pendentes</span></div>
-            <p class="cfgnote" style="margin-bottom:.9rem;">Quando um membro denuncia alguém ou um conteúdo, chega aqui pra você decidir. Nada é automático.</p>
-            <div class="report urgent">
-              <span class="av" style="width:38px;height:38px;font-size:.7rem">SP</span>
-              <div class="rbody">
-                <div class="rtop"><b>@spammer_x</b> <span class="rtag hot">3 denúncias</span> <span class="rtag">spam</span></div>
-                <div class="rwhat">Denunciado por @k3rnel, @marina_sec e mais 1 — spam repetido em grupos.</div>
-                <div class="rquote">"compra seguidores baratos: bit.ly/xxxx"</div>
-                <div class="rtime">primeira denúncia há 2h</div>
-              </div>
-              <div class="racts"><button class="danger-btn" data-modact>expulsar da rede</button><button class="warn-btn" data-modact>suspender 7 dias</button><button class="ghost-btn" data-modact>arquivar</button></div>
-            </div>
-            <div class="report">
-              <span class="av" style="width:38px;height:38px;font-size:.7rem">RX</span>
-              <div class="rbody">
-                <div class="rtop"><b>@recruta_x</b> <span class="rtag">1 denúncia</span> <span class="rtag">fora do foco</span></div>
-                <div class="rwhat">Denunciado por @ana_rev — usando a rede só pra recrutar, sem contribuir.</div>
-                <div class="rtime">há 1 dia</div>
-              </div>
-              <div class="racts"><button class="danger-btn" data-modact>expulsar da rede</button><button class="warn-btn" data-modact>advertir</button><button class="ghost-btn" data-modact>arquivar</button></div>
-            </div>
-            <div class="report">
-              <span class="av" style="width:38px;height:38px;font-size:.7rem">??</span>
-              <div class="rbody">
-                <div class="rtop"><b>post em # Rust BR</b> <span class="rtag">1 denúncia</span> <span class="rtag">conteúdo</span></div>
-                <div class="rwhat">Denunciado por @ferris_br — conteúdo ofensivo num comentário.</div>
-                <div class="rtime">há 3h</div>
-              </div>
-              <div class="racts"><button class="danger-btn" data-modact>apagar conteúdo</button><button class="ghost-btn" data-modact>manter</button></div>
-            </div>
+            <div class="panel-h">Denúncias a julgar <span class="sub" id="mod-count">—</span></div>
+            <p class="cfgnote" style="margin-bottom:.9rem;">Quando um membro denuncia alguém ou um conteúdo, chega aqui pra você decidir. Nada é automático — e o denunciante é confidencial.</p>
+            <div id="mod-denuncias"><div class="prova-vazio" style="font-family:var(--font-mono);font-size:.7rem;color:var(--text-faint);padding:.3rem">carregando…</div></div>
           </div>
 
           <div class="panel">
             <div class="panel-h">Ação direta sobre um membro <span class="sub">busca manual</span></div>
             <p class="cfgnote" style="margin-bottom:.8rem;">Precisa agir sobre alguém sem esperar denúncia? Busque e decida.</p>
             <div style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:flex-end;">
-              <div class="cfgfield" style="flex:1;min-width:180px;"><label>membro</label><input placeholder="@handle"></div>
-              <button class="warn-btn" style="padding:.5rem 1rem;">suspender</button>
-              <button class="danger-btn" style="padding:.5rem 1rem;">expulsar da rede</button>
+              <div class="cfgfield" style="flex:1;min-width:180px;"><label>membro</label><input id="mod-dir-handle" placeholder="@handle"></div>
+              <button class="warn-btn" id="mod-dir-advertir" style="padding:.5rem 1rem;">advertir</button>
+              <button class="warn-btn" id="mod-dir-suspender" style="padding:.5rem 1rem;">suspender</button>
+              <button class="danger-btn" id="mod-dir-expulsar" style="padding:.5rem 1rem;">expulsar da rede</button>
             </div>
             <p class="cfgnote" style="margin-top:.7rem;">Expulsar da rede remove o acesso e desliga a conta. A linhagem que a pessoa criou continua — para podá-la, use a aba Árvore.</p>
           </div>
@@ -2073,16 +2046,7 @@
     reportFab.addEventListener('click',()=>reportModal.classList.add('show'));
     $('#reportClose').addEventListener('click',()=>reportModal.classList.remove('show'));
     reportModal.addEventListener('click',e=>{if(e.target===reportModal)reportModal.classList.remove('show');});
-    $('#reportSend').addEventListener('click',function(){
-      this.textContent='✓ reporte enviado';
-      this.classList.add('sent');
-      setTimeout(()=>{
-        reportModal.classList.remove('show');
-        this.textContent='Enviar reporte';
-        this.classList.remove('sent');
-        reportModal.querySelector('textarea').value='';
-      },1400);
-    });
+
   }
 
   // ===== StackChat: janelinhas flutuantes (Messenger) =====
@@ -3213,6 +3177,7 @@
     else if(n.tipo==='comentario_thread'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' também comentou num post que você comentou.'; }
     else if(n.tipo==='resposta'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' respondeu seu comentário.'; }
     else if(n.tipo==='premiacao'){ var q=(n.dados&&n.dados.quantidade)||1; ic='<div class="nic ni-crown">♛</div>'; txt='O <b>sud0</b> te premiou com <b>'+q+' convite'+(q>1?'s':'')+'</b>.'; }
+    else if(n.tipo==='aviso'){ ic='<div class="nic ni-crown">⚠️</div>'; txt='<b>Advertência do sud0.</b> Cuidado com a conduta na rede.'; }
     else { ic='<div class="nic"><span class="ndot"></span></div>'; txt='Nova atividade.'; }
     return '<div class="notif'+(n.lida?'':' unread')+'" data-notif="'+esc(n.id)+'" data-ntipo="'+esc(n.tipo)+'" data-nator="'+esc(n.ator_handle||'')+'" data-nref="'+esc(n.ref_id||'')+'" style="cursor:pointer">'+ic+'<div class="nb">'+txt+'<div class="nt">'+tempo(n.criado_em)+'</div></div></div>';
   }
@@ -4500,6 +4465,73 @@
         else { if(window.snFlash) snFlash(r.s===404?'Membro n\u00e3o encontrado.':'N\u00e3o deu pra ajustar.', false); }
       });
     });
+  })();
+
+  /* ===== MODERAÇÃO (denúncias, julgar, ação direta, reportar) ===== */
+  (function(){
+    function denHTML(d){
+      var alvo = d.alvo_handle ? ('@'+d.alvo_handle) : (d.alvo_tipo==='geral'?'reporte geral':('conteúdo · '+d.alvo_tipo));
+      var ini = d.alvo_handle ? iniciais(d.alvo_handle) : '⚑';
+      var cat = d.categoria?('<span class="rtag">'+esc(d.categoria)+'</span>'):'';
+      var acts;
+      if(d.alvo_handle){ acts='<button class="danger-btn" data-modresolve="'+esc(d.id)+'" data-acao="expulsar">expulsar da rede</button><button class="warn-btn" data-modresolve="'+esc(d.id)+'" data-acao="suspender">suspender 7 dias</button><button class="warn-btn" data-modresolve="'+esc(d.id)+'" data-acao="advertir">advertir</button><button class="ghost-btn" data-modresolve="'+esc(d.id)+'" data-acao="arquivar">arquivar</button>'; }
+      else if(d.alvo_id){ acts='<button class="danger-btn" data-modresolve="'+esc(d.id)+'" data-acao="apagar">apagar conteúdo</button><button class="ghost-btn" data-modresolve="'+esc(d.id)+'" data-acao="arquivar">manter</button>'; }
+      else { acts='<button class="ghost-btn" data-modresolve="'+esc(d.id)+'" data-acao="arquivar">arquivar</button>'; }
+      return '<div class="report" data-den="'+esc(d.id)+'"><span class="av" style="width:38px;height:38px;font-size:.7rem">'+esc(ini)+'</span><div class="rbody"><div class="rtop"><b>'+esc(alvo)+'</b> '+cat+'</div><div class="rwhat">Denunciado por @'+esc(d.denunciante||'?')+' — '+esc(d.motivo||'')+'</div><div class="rtime">'+tempo(d.criado_em)+'</div></div><div class="racts">'+acts+'</div></div>';
+    }
+    function carregarDenuncias(){
+      var box=document.getElementById('mod-denuncias'); if(!box) return;
+      api('/api/admin/denuncias').then(function(r){
+        var lst=(r.b&&r.b.ok&&r.b.denuncias)?r.b.denuncias:[];
+        var cnt=document.getElementById('mod-count'); if(cnt) cnt.textContent=lst.length+' pendente'+(lst.length===1?'':'s');
+        box.innerHTML=lst.length?lst.map(denHTML).join(''):'<div class="cfgnote" style="opacity:.7;padding:.6rem .2rem">Nenhuma denúncia pendente. 🕊️</div>';
+      });
+    }
+    window.carregarDenuncias=carregarDenuncias;
+
+    document.addEventListener('click',function(e){
+      // julgar uma denúncia
+      var mr=e.target.closest?e.target.closest('[data-modresolve]'):null;
+      if(mr){ e.preventDefault(); var id=mr.getAttribute('data-modresolve'); var acao=mr.getAttribute('data-acao');
+        var fn=function(){ mr.disabled=true; api('/api/admin/denuncias/'+encodeURIComponent(id)+'/resolver',{method:'POST',body:{acao:acao}}).then(function(r){
+          if(r.b&&r.b.ok){ if(window.snFlash) snFlash(r.b.detalhe?('✓ '+r.b.detalhe):'Denúncia arquivada.', true); carregarDenuncias(); }
+          else { mr.disabled=false; if(window.snFlash) snFlash(r.b&&r.b.erro==='sud0'?'Não dá pra moderar o sud0.':(r.b&&r.b.erro==='sem_alvo'?'Sem @handle pra agir.':'Não deu pra aplicar.'), false); } }); };
+        if(acao==='expulsar'||acao==='apagar'){ window.snConfirm((acao==='expulsar'?'Expulsar da rede':'Apagar o conteúdo')+'? Ação séria.', fn, {okText:acao==='expulsar'?'expulsar':'apagar'}); }
+        else fn();
+        return; }
+      // recarregar ao abrir a aba Moderação
+      var cfgt=e.target.closest?e.target.closest('[data-cfg="moderation"]'):null;
+      if(cfgt){ carregarDenuncias(); return; }
+    });
+
+    // ação direta sobre um membro (busca manual)
+    ['advertir','suspender','expulsar'].forEach(function(ac){
+      var b=document.getElementById('mod-dir-'+ac); if(!b) return;
+      b.addEventListener('click',function(){
+        var hi=document.getElementById('mod-dir-handle'); var h=(hi&&hi.value||'').trim().replace(/^@/,'');
+        if(!h){ if(window.snFlash) snFlash('Diga o @handle.', false); return; }
+        var go=function(){ b.disabled=true; var o=b.textContent; api('/api/admin/membro/acao',{method:'POST',body:{handle:h,acao:ac}}).then(function(r){ b.disabled=false; b.textContent=o;
+          if(r.b&&r.b.ok){ if(window.snFlash) snFlash('@'+(r.b.handle||h)+' — '+ac+' aplicado.', true); if(hi) hi.value=''; }
+          else { if(window.snFlash) snFlash(r.b&&r.b.erro==='nao_encontrado'?'Membro não encontrado.':(r.b&&r.b.erro==='sud0'?'Não dá pra moderar o sud0.':'Não deu pra aplicar.'), false); } }); };
+        if(ac==='expulsar') window.snConfirm('Expulsar @'+h+' da rede? O acesso é encerrado.', go, {okText:'expulsar'}); else go();
+      });
+    });
+    if(window.ligarAutocompleteMembros){ var mdh=document.getElementById('mod-dir-handle'); if(mdh) window.ligarAutocompleteMembros(mdh); }
+
+    // enviar reporte (botão flutuante ⚑) — agora real e confidencial
+    var send=document.getElementById('reportSend'), modal=document.getElementById('reportModal');
+    if(send&&modal){
+      send.addEventListener('click',function(){
+        var sel=modal.querySelector('select'); var ta=modal.querySelector('textarea');
+        var motivo=(ta&&ta.value||'').trim(); if(!motivo){ if(ta) ta.focus(); return; }
+        var cat=sel?sel.value:''; var mh=motivo.match(/@([A-Za-z0-9_]+)/); var alvo=mh?mh[1]:null;
+        send.disabled=true; var o=send.textContent; send.textContent='enviando…';
+        api('/api/denuncias',{method:'POST',body:{categoria:cat,motivo:motivo,alvo_handle:alvo}}).then(function(r){ send.disabled=false;
+          if(r.b&&r.b.ok){ send.textContent='✓ reporte enviado'; send.classList.add('sent'); setTimeout(function(){ modal.classList.remove('show'); send.textContent=o; send.classList.remove('sent'); if(ta) ta.value=''; },1300); }
+          else { send.textContent=o; if(window.snFlash) snFlash('Não deu pra enviar o reporte.', false); }
+        }).catch(function(){ send.disabled=false; send.textContent=o; if(window.snFlash) snFlash('Erro de rede.', false); });
+      });
+    }
   })();
 })();
 
