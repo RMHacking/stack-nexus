@@ -62,7 +62,7 @@ router.post('/convite/:codigo/reservar', gateLimiter, async (req, res, next) => 
 });
 
 // conclui o cadastro: cria a conta (com senha), consome o slot, grava a origem
-router.post('/onboarding/concluir', async (req, res, next) => {
+router.post('/onboarding/concluir', gateLimiter, async (req, res, next) => {
   try {
     const { resgateId, conta } = req.body || {};
     if (!resgateId || !conta || !conta.handle) return res.status(400).json({ erro: 'dados_incompletos' });
@@ -128,6 +128,7 @@ router.patch('/me/perfil', requerLogin, async (req, res, next) => {
       if (b[campo] !== undefined) {
         const v = b[campo];
         if (v && String(v).length > MAXIMG) return res.status(413).json({ ok:false, erro:'imagem_grande' });
+        if (v && !/^data:image\//i.test(String(v))) return res.status(400).json({ ok:false, erro:'imagem_invalida' });
         sets.push(`${campo} = $${i++}`); vals.push(v || null);
       }
     }

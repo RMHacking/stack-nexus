@@ -34,7 +34,9 @@ router.post('/projetos', requerLogin, async (req, res, next) => {
       const d = await pool.query('SELECT trilha FROM contas WHERE id = $1', [req.user.id]);
       trilha = (d.rows[0] && d.rows[0].trilha) || null;
     }
-    const repo = (b.repo_url || '').trim().slice(0, 300) || null;
+    let repo = (b.repo_url || '').trim().slice(0, 300);
+    if (repo && !/^https?:\/\//i.test(repo)) repo = 'https://' + repo.replace(/^\/+/, '');
+    repo = repo || null;
     const stack = limparStack(b.stack);
     const fase = faseValida(b.fase);
 
@@ -102,7 +104,9 @@ router.patch('/projetos/:id', requerLogin, async (req, res, next) => {
     const descricao = (b.descricao || '').trim();
     if (!titulo || titulo.length > 80) return res.status(400).json({ ok: false, erro: 'titulo' });
     if (!descricao || descricao.length > 500) return res.status(400).json({ ok: false, erro: 'descricao' });
-    const repo = (b.repo_url || '').trim().slice(0, 300) || null;
+    let repo = (b.repo_url || '').trim().slice(0, 300);
+    if (repo && !/^https?:\/\//i.test(repo)) repo = 'https://' + repo.replace(/^\/+/, '');
+    repo = repo || null;
     const stack = limparStack(b.stack);
     const fase = faseValida(b.fase);
     const trilha = trilhaValida(b.trilha);
