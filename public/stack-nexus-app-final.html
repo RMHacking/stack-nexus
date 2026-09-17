@@ -3179,6 +3179,12 @@
     else if(n.tipo==='aviso'){ ic='<div class="nic ni-crown">⚠️</div>'; txt='<b>Advertência do sud0.</b> Cuidado com a conduta na rede.'; }
     else if(n.tipo==='admin'){ ic='<div class="nic ni-crown">🛡️</div>'; txt='Você foi nomeado <b>Admin</b> pelo sud0 — guardião da comunidade.'; }
     else if(n.tipo==='entrada_pendente'){ ic='<div class="nic ni-crown">♛</div>'; txt=nome+' entrou pelo seu convite e <b>aguarda sua aprovação</b>.'; }
+    else if(n.tipo==='post_novo'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' publicou algo novo no feed.'; }
+    else if(n.tipo==='projeto_novo'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' publicou um novo projeto.'; }
+    else if(n.tipo==='grupo_novo'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' criou um novo grupo.'; }
+    else if(n.tipo==='comunicado'){ ic='<div class="nic ni-crown">♛</div>'; txt='<b>Novo comunicado do Fundador.</b>'; }
+    else if(n.tipo==='mencao'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' mencionou você.'; }
+    else if(n.tipo==='dm'){ ic='<div class="nic ni-friend"><span class="ndot"></span></div>'; txt=nome+' te mandou uma mensagem.'; }
     else { ic='<div class="nic"><span class="ndot"></span></div>'; txt='Nova atividade.'; }
     return '<div class="notif'+(n.lida?'':' unread')+'" data-notif="'+esc(n.id)+'" data-ntipo="'+esc(n.tipo)+'" data-nator="'+esc(n.ator_handle||'')+'" data-nref="'+esc(n.ref_id||'')+'" style="cursor:pointer">'+ic+'<div class="nb">'+txt+'<div class="nt">'+tempo(n.criado_em)+'</div></div></div>';
   }
@@ -3214,7 +3220,8 @@
       }
       if((tp==='conexao_pedido'||tp==='conexao_aceita'||tp==='conexao_convite') && at){ verPerfil(at); }
       else if(tp==='entrada_pendente'){ var cfgB=document.querySelector('[data-nav="config"]'); if(cfgB) cfgB.click(); var modT=document.querySelector('.cfgnav button[data-cfg="moderation"]'); if(modT) modT.click(); if(window.carregarPendentes) window.carregarPendentes(); }
-      else if(tp==='comentario'){ if(typeof irParaView==='function') irParaView('v-feed'); }
+      else if(tp==='dm' && at){ verPerfil(at); }
+      else if(tp==='comentario'||tp==='comentario_thread'||tp==='resposta'||tp==='mencao'||tp==='post_novo'||tp==='projeto_novo'||tp==='grupo_novo'||tp==='comunicado'){ if(typeof irParaView==='function') irParaView('v-feed'); }
       return;
     }
   });

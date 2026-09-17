@@ -2,6 +2,7 @@
 const express = require('express');
 const { pool } = require('../db');
 const { requerLogin } = require('../auth/middleware');
+const { notificar } = require('../notificacoes/notif.service');
 
 const router = express.Router();
 
@@ -77,6 +78,7 @@ router.post('/dm/:handle', requerLogin, async (req, res, next) => {
     if (bq.eu_bloqueei || bq.me_bloqueou) return res.status(403).json({ ok: false, motivo: 'bloqueado' });
     const { rows } = await pool.query(
       `INSERT INTO dm_mensagens (de_id, para_id, corpo) VALUES ($1,$2,$3) RETURNING id`, [req.user.id, outro.id, corpo]);
+    notificar(pool, { destinatario_id: outro.id, ator_id: req.user.id, tipo: 'dm' });
     res.json({ ok: true, id: rows[0].id });
   } catch (e) { next(e); }
 });

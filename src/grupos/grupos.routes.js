@@ -3,6 +3,7 @@
 const express = require('express');
 const { pool } = require('../db');
 const { requerLogin } = require('../auth/middleware');
+const { notificarTodos, pushPara } = require('../notificacoes/notif.service');
 
 const router = express.Router();
 const LIMITE = 3;
@@ -56,6 +57,7 @@ router.post('/grupos', requerLogin, async (req, res, next) => {
         [req.user.id, nome.slice(0, 200), g.rows[0].id]
       );
     } catch (_e) { /* best-effort */ }
+    notificarTodos(pool, { ator_id: req.user.id, tipo: 'grupo_novo', ref_id: g.rows[0].id });
     res.json({ ok: true, id: g.rows[0].id });
   } catch (e) { next(e); }
 });
@@ -132,6 +134,17 @@ router.post('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
     const { rows } = await pool.query(
       `INSERT INTO grupo_mensagens (grupo_id, autor_id, corpo) VALUES ($1,$2,$3) RETURNING id`,
       [req.params.id, req.user.id, corpo]);
+    // push pros membros do grupo (menos quem enviou)
+    (async () => {
+      try {
+        const ms = await pool.query('SELECT conta_id FROM grupo_membros WHERE grupo_id=$1 AND conta_id<>$2', [req.params.id, req.user.id]);
+        const gr = await pool.query('SELECT nome FROM grupos WHERE id=$1', [req.params.id]);
+        const me = await pool.query('SELECT nome, handle, exposicao FROM contas WHERE id=$1', [req.user.id]);
+        let nome = 'Alguém'; if (me.rows[0]) nome = (me.rows[0].exposicao === 'aberto' && me.rows[0].nome) ? me.rows[0].nome : ('@' + me.rows[0].handle);
+        const gnome = (gr.rows[0] && gr.rows[0].nome) || 'grupo';
+        pushPara(pool, ms.rows.map(m => m.conta_id), { title: gnome, body: nome + ': ' + corpo.slice(0, 120), url: '/stack-nexus-app-final.html' });
+      } catch (_e) {}
+    })();
     res.json({ ok: true, id: rows[0].id });
   } catch (e) { next(e); }
 });

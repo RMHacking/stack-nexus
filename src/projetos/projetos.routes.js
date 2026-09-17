@@ -3,6 +3,7 @@
 const express = require('express');
 const { pool } = require('../db');
 const { requerLogin } = require('../auth/middleware');
+const { notificarTodos } = require('../notificacoes/notif.service');
 
 const router = express.Router();
 const LIMITE = 5;
@@ -42,6 +43,7 @@ router.post('/projetos', requerLogin, async (req, res, next) => {
        VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
       [req.user.id, titulo, descricao, repo, stack, fase, trilha]
     );
+    notificarTodos(pool, { ator_id: req.user.id, tipo: 'projeto_novo', ref_id: rows[0].id });
     // aviso automático no feed: "fulano publicou um novo projeto"
     try {
       await pool.query(

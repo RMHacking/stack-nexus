@@ -2,7 +2,7 @@
 const express = require('express');
 const { pool } = require('../db');
 const { requerLogin, requerSud0 } = require('../auth/middleware');
-const { notificar } = require('../notificacoes/notif.service');
+const { notificar, notificarTodos, notificarMencoes } = require('../notificacoes/notif.service');
 
 const router = express.Router();
 
@@ -19,6 +19,8 @@ router.post('/posts', requerLogin, async (req, res, next) => {
        RETURNING id, corpo, criado_em`,
       [req.user.id, corpo, imagem]
     );
+    notificarTodos(pool, { ator_id: req.user.id, tipo: 'post_novo', ref_id: rows[0].id });
+    notificarMencoes(pool, corpo, req.user.id, rows[0].id);
     res.json({ ok: true, post: rows[0] });
   } catch (e) { next(e); }
 });
@@ -74,6 +76,7 @@ router.post('/admin/comunicado', requerSud0, async (req, res, next) => {
     if (corpo.length > 500) return res.status(400).json({ ok: false, erro: 'longo' });
     const fixar = (req.body && req.body.fixar) !== false;
     const ins = await pool.query(`INSERT INTO posts (autor_id, corpo, fixado, tipo) VALUES ($1,$2,$3,'comunicado') RETURNING id`, [req.user.id, corpo, fixar]);
+    notificarTodos(pool, { ator_id: req.user.id, tipo: 'comunicado', ref_id: ins.rows[0].id });
     res.json({ ok: true, id: ins.rows[0].id });
   } catch (e) { console.error('[comunicado]', e); res.status(500).json({ ok: false, erro: 'srv', detalhe: String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
 });
