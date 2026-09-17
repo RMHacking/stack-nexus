@@ -103,6 +103,31 @@ router.patch('/admin/eventos/:id', requerSud0, async (req, res, next) => {
 });
 
 // ---------------- membro: info pra compartilhar um evento ----------------
+// ---------------- membro: lista de eventos (aba StackEvents) ----------------
+router.get('/eventos', requerLogin, async (_req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT e.id, e.nome, e.ativo, e.slots_total, e.slots_usados, e.inicio, e.fim, e.criado_em,
+              (e.inicio IS NOT NULL AND CURRENT_DATE < e.inicio) AS antes,
+              (e.fim    IS NOT NULL AND CURRENT_DATE > e.fim)    AS encerrado,
+              (SELECT count(*)::int FROM contas c WHERE c.evento_id = e.id) AS entrantes,
+              ec.handle AS criado_por_handle, ec.is_sud0 AS criado_por_sud0
+         FROM eventos e
+         LEFT JOIN contas ec ON ec.id = e.criado_por
+        ORDER BY (e.ativo AND (e.fim IS NULL OR CURRENT_DATE <= e.fim)) DESC, e.criado_em DESC
+        LIMIT 100`);
+    const eventos = rows.map((e) => ({
+      id: e.id, nome: e.nome, ativo: e.ativo,
+      antes: e.antes, encerrado: e.encerrado,
+      disponivel: e.slots_total - e.slots_usados,
+      slots_total: e.slots_total, entrantes: e.entrantes,
+      inicio: e.inicio, fim: e.fim, criado_em: e.criado_em,
+      criado_por: e.criado_por_sud0 ? 'sud0' : (e.criado_por_handle ? '@' + e.criado_por_handle : null),
+    }));
+    res.json({ ok: true, eventos });
+  } catch (e) { next(e); }
+});
+
 router.get('/eventos/:id', requerLogin, async (req, res, next) => {
   try {
     const { rows } = await pool.query(

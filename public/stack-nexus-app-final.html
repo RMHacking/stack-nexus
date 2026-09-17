@@ -1587,28 +1587,9 @@
         <p class="cfgnote" style="margin-top:.8rem;">Admin apaga msg e expulsa do grupo (no hover da mensagem). Apagar o grupo e expulsar da rede: só o sud0.</p>
       </section>
       <section class="view" id="v-events">
-        <!-- criar evento: só sud0 (e admins se ativado no Config). Usuário comum não vê. -->
-        <div class="locked sud0-only">só o sud0 e admins criam eventos</div>
-        <div class="sud0-only" style="margin-bottom:1.3rem;"><button class="evbtn">+ Criar evento</button></div>
-        <article class="evcard crown">
-          <span class="ev-badge">evento oficial</span>
-          <div class="evtitle">Desafio Mind The Sec 2026</div>
-          <div class="evmeta">criado por sud0 · encerrado · 17 participantes</div>
-          <div class="evdesc">Os 3 primeiros que postaram foto do evento levaram convites. Em 20 minutos os três lugares foram preenchidos.</div>
-          <div class="result">
-            <div class="result-h">Resultado — quem ganhou convites</div>
-            <div class="winner"><span class="av" style="width:34px;height:34px">RF</span><div><div class="wn">Rafael F.</div><div class="wh">@rafa · 1º lugar</div></div><span class="prize-b">+2 convites</span></div>
-            <div class="winner"><span class="av" style="width:34px;height:34px">AN</span><div><div class="wn">Ana N.</div><div class="wh">@ana_rev · 2º lugar</div></div><span class="prize-b">+2 convites</span></div>
-            <div class="winner"><span class="av" style="width:34px;height:34px">KP</span><div><div class="wn">Kernel P.</div><div class="wh">@k3rnel · 3º lugar</div></div><span class="prize-b">+2 convites</span></div>
-          </div>
-          <div class="pfoot" style="margin-top:.9rem;"><span>128 reações</span><span>34 comentários sobre o evento</span></div>
-        </article>
-        <article class="evcard">
-          <div class="evtitle">Roadsec SP 2026</div>
-          <div class="evmeta">criado por sud0 · em 12 dias · 43 confirmados</div>
-          <div class="evdesc">Nosso encontro no Roadsec. Haverá um desafio-surpresa no local. Comente quem vai estar lá.</div>
-          <div class="pfoot" style="margin-top:.9rem;"><span>21 comentários</span><span>confirmar presença</span></div>
-        </article>
+        <div class="secbox" style="margin-bottom:1.2rem;"><b>StackEvents.</b> Encontros e desafios da rede. Abra um evento pra ver e compartilhar o QR de entrada — quem escaneia entra direto na comunidade.</div>
+        <div class="sud0-only secbox" style="margin-bottom:1.2rem;border-color:var(--crown);color:var(--crown);background:var(--crown-soft);">♛ Você cria e gerencia eventos em <b>Config → Eventos</b>.</div>
+        <div id="eventos-lista"><div class="cfgnote" style="opacity:.7;padding:.4rem .2rem">carregando eventos…</div></div>
       </section>
 
       <section class="view" id="v-config">
@@ -2213,6 +2194,7 @@
     if(target) target.classList.add('on');
     $$('.view').forEach(v=>v.classList.remove('on'));
     const el=$('#v-'+b.dataset.nav); if(el) el.classList.add('on');
+    if(b.dataset.nav==='events' && window.carregarEventos) window.carregarEventos();
     $('.col-center').scrollTo({top:0});
   });
 
@@ -2758,8 +2740,7 @@
     '.cvbrand{font-family:var(--font-mono);font-size:.8rem;color:var(--text-dim);}.cvbrand span{color:var(--accent);font-weight:700;}.cvcard.genesis .cvbrand span{color:var(--crown);}';
   document.head.appendChild(st);
   function banner(txt){var d=document.createElement('div');d.className='wip-banner';d.innerHTML='🚧 <span><b>Em construção.</b> '+txt+'</span>';return d;}
-  var wip={'v-events':'O backend de Eventos vem em breve — prévia do design.',
-           'v-saved':'Salvos vem em breve — prévia do design.'};
+  var wip={'v-saved':'Salvos vem em breve — prévia do design.'};
   Object.keys(wip).forEach(function(id){var v=document.getElementById(id); if(v) v.insertBefore(banner(wip[id]),v.firstChild);});
 
   // ---- feed helpers ----
@@ -3946,6 +3927,30 @@
   }
   function abrirConvite(){ api('/api/me/convite').then(function(r){ var c=r.b; if(c&&c.codigo) mostrarConviteOverlay(c); }); }
   function evLinkPub(cod){ try{ return new URL('stack-nexus-onboarding.html?e='+encodeURIComponent(cod), location.href).href; }catch(e){ return 'stack-nexus-onboarding.html?e='+encodeURIComponent(cod); } }
+  function evStatusTxt(ev){
+    if(ev.encerrado || !ev.ativo) return {t:'encerrado', open:false};
+    if(ev.antes) return {t:'em breve', open:false};
+    if(ev.disponivel<=0) return {t:'vagas esgotadas', open:false};
+    return {t:ev.disponivel+' vaga'+(ev.disponivel===1?'':'s')+' restante'+(ev.disponivel===1?'':'s'), open:true};
+  }
+  function evCardHTML(ev){
+    var st=evStatusTxt(ev);
+    return '<article class="evcard'+(st.open?' crown':'')+'" style="margin-bottom:1rem">'+
+      (st.open?'<span class="ev-badge">aberto</span>':'')+
+      '<div class="evtitle">'+esc(ev.nome||'Evento')+'</div>'+
+      '<div class="evmeta">criado por '+esc(ev.criado_por||'sud0')+' · '+st.t+' · '+(ev.entrantes||0)+' participante'+((ev.entrantes===1)?'':'s')+'</div>'+
+      '<div style="margin-top:.85rem"><button class="ev-cta" data-verevento="'+esc(ev.id)+'">🎟️ ver / compartilhar QR</button></div>'+
+    '</article>';
+  }
+  function carregarEventos(){
+    var box=document.getElementById('eventos-lista'); if(!box) return;
+    api('/api/eventos').then(function(r){
+      var lst=(r.b&&r.b.ok&&r.b.eventos)?r.b.eventos:[];
+      if(!lst.length){ box.innerHTML='<div class="cfgnote" style="opacity:.7;padding:.4rem .2rem">Nenhum evento ainda.'+(souSud0?' Crie o primeiro em <b>Config → Eventos</b>.':'')+'</div>'; return; }
+      box.innerHTML=lst.map(evCardHTML).join('');
+    }).catch(function(){ box.innerHTML='<div class="cfgnote" style="opacity:.7">Não deu pra carregar os eventos agora.</div>'; });
+  }
+  window.carregarEventos=carregarEventos;
   function mostrarEventoOverlay(ev){
     var link=evLinkPub(ev.codigo);
     var ov=document.getElementById('evento-overlay');
