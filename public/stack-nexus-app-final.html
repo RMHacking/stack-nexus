@@ -3555,6 +3555,7 @@
   }
   function carregarDM(handle,win){ api('/api/dm/'+encodeURIComponent(handle)).then(function(r){ if(r.b&&r.b.ok) renderDMBody(win,r.b); }); }
   function abrirDM(handle){
+    document.body.classList.remove('drawer-left','drawer-right');
     var dock=document.getElementById('chatDock'); if(!dock||!handle) return; handle=String(handle);
     if(dmAbertas[handle]){ dmAbertas[handle].win.classList.remove('min'); var i0=dmAbertas[handle].win.querySelector('.cw-foot input'); if(i0)i0.focus(); return; }
     var win=document.createElement('div'); win.className='chatwin'; win.setAttribute('data-dm',handle);
