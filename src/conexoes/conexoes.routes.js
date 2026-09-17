@@ -54,11 +54,11 @@ router.post('/conexoes/:handle', requerLogin, async (req, res, next) => {
       if (e.de_id === req.user.id) return res.json({ ok: true, estado: 'enviado' });
       // o outro já tinha me pedido -> aceita
       await pool.query(`UPDATE conexoes SET status='aceita' WHERE de_id=$1 AND para_id=$2`, [alvo.id, req.user.id]);
-      await notificar(pool, { destinatario_id: alvo.id, ator_id: req.user.id, tipo: 'conexao_aceita' });
+      try { await notificar(pool, { destinatario_id: alvo.id, ator_id: req.user.id, tipo: 'conexao_aceita' }); } catch (_e) {}
       return res.json({ ok: true, estado: 'conectado' });
     }
     await pool.query(`INSERT INTO conexoes (de_id, para_id, status) VALUES ($1,$2,'pendente')`, [req.user.id, alvo.id]);
-    await notificar(pool, { destinatario_id: alvo.id, ator_id: req.user.id, tipo: 'conexao_pedido' });
+    try { await notificar(pool, { destinatario_id: alvo.id, ator_id: req.user.id, tipo: 'conexao_pedido' }); } catch (_e) {}
     res.json({ ok: true, estado: 'enviado' });
   } catch (e) { console.error('[conexoes/pedir]', e); res.status(500).json({ ok:false, erro:'srv', detalhe:String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
 });
@@ -73,7 +73,7 @@ router.post('/conexoes/:handle/aceitar', requerLogin, async (req, res, next) => 
         WHERE de_id=$1 AND para_id=$2 AND status='pendente' RETURNING de_id`,
       [r.conta.id, req.user.id]);
     if (!upd.rowCount) return res.status(404).json({ ok: false, erro: 'sem_pedido' });
-    await notificar(pool, { destinatario_id: r.conta.id, ator_id: req.user.id, tipo: 'conexao_aceita' });
+    try { await notificar(pool, { destinatario_id: r.conta.id, ator_id: req.user.id, tipo: 'conexao_aceita' }); } catch (_e) {}
     res.json({ ok: true, estado: 'conectado' });
   } catch (e) { next(e); }
 });

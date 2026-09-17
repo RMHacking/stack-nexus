@@ -115,6 +115,13 @@ async function concluirResgate(pool, { resgateId, conta }) {
     if (pendente) {
       // avisa o Fundador que tem entrada esperando aprovação
       try { await notificar(pool, { destinatario_id: rr.dono_id, ator_id: novaContaId, tipo: 'entrada_pendente', dados: { handle: conta.handle } }); } catch (_e) {}
+    } else {
+      // convite de membro: quem entrou já vira conexão de quem convidou
+      try {
+        await pool.query(`DELETE FROM conexoes WHERE (de_id=$1 AND para_id=$2) OR (de_id=$2 AND para_id=$1)`, [rr.dono_id, novaContaId]);
+        await pool.query(`INSERT INTO conexoes (de_id, para_id, status) VALUES ($1,$2,'aceita')`, [rr.dono_id, novaContaId]);
+        await notificar(pool, { destinatario_id: rr.dono_id, ator_id: novaContaId, tipo: 'conexao_convite', dados: {} });
+      } catch (_e) {}
     }
     return { ok: true, conta_id: novaContaId, membro_num: nova.rows[0].membro_num, convite_codigo: linkNovo.codigo, pendente };
   } catch (e) {

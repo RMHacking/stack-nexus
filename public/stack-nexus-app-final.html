@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0a0a0b">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Stack_n3xus">
 <title>Stack_n3xus — App (prévia)</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -1066,6 +1073,7 @@
       <!-- NOTIFICAÇÕES -->
       <section class="view" id="v-notifs">
         <div class="ntitle" style="display:flex;align-items:center;justify-content:space-between;">Notificações <button id="markAllRead" style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);border:1px solid var(--border);border-radius:7px;padding:.3rem .7rem;font-weight:400;">marcar todas como lidas</button></div>
+        <div id="push-cta" style="display:none;margin-bottom:.7rem;padding:.6rem .85rem;border:1px dashed var(--btn-border);background:var(--btn-hover);border-radius:10px;font-family:var(--font-mono);font-size:.74rem;color:var(--btn-text);line-height:1.5;align-items:center;gap:.6rem;flex-wrap:wrap;">🔔 Receba avisos no celular mesmo com o app fechado. <button id="push-enable" style="margin-left:auto;font-family:var(--font-mono);font-size:.72rem;font-weight:600;background:var(--btn);color:var(--btn-text);border:1px solid var(--btn-border);border-radius:8px;padding:.4rem .9rem;cursor:pointer;">Ativar notificações</button></div>
         <div id="notifList"><div class="placeholder" style="padding:1rem;color:var(--text-faint);font-family:var(--font-mono);font-size:.72rem">Carregando…</div></div>
       </section>
 
@@ -2745,7 +2753,6 @@
   var wip={'v-events':'O backend de Eventos vem em breve — prévia do design.',
            'v-saved':'Salvos vem em breve — prévia do design.'};
   Object.keys(wip).forEach(function(id){var v=document.getElementById(id); if(v) v.insertBefore(banner(wip[id]),v.firstChild);});
-  var cfg=document.getElementById('v-config'); if(cfg) cfg.insertBefore(banner('O painel Config está sendo ligado ao backend aos poucos. Os dados reais da rede já estão na página <b>“a rede”</b> (stack-nexus-rede.html).'),cfg.firstChild);
 
   // ---- feed helpers ----
   function menuPost(p){
@@ -3164,6 +3171,7 @@
     var ic, txt;
     if(n.tipo==='conexao_pedido'){ ic='<div class="nic ni-friend"><span class="ndot"></span></div>'; txt=nome+' quer se conectar com você.'; }
     else if(n.tipo==='conexao_aceita'){ ic='<div class="nic ni-friend"><span class="ndot"></span></div>'; txt=nome+' aceitou sua conexão.'; }
+    else if(n.tipo==='conexao_convite'){ ic='<div class="nic ni-friend"><span class="ndot"></span></div>'; txt=nome+' entrou pelo seu convite e já está conectado a você.'; }
     else if(n.tipo==='comentario'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' comentou no seu post.'; }
     else if(n.tipo==='comentario_thread'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' também comentou num post que você comentou.'; }
     else if(n.tipo==='resposta'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' respondeu seu comentário.'; }
@@ -3204,7 +3212,7 @@
         var b=document.getElementById('notifBadge');
         if(b && b.style.display!=='none'){ var v=(parseInt(b.textContent,10)||1)-1; atualizarBadgeNotif(v); }
       }
-      if((tp==='conexao_pedido'||tp==='conexao_aceita') && at){ verPerfil(at); }
+      if((tp==='conexao_pedido'||tp==='conexao_aceita'||tp==='conexao_convite') && at){ verPerfil(at); }
       else if(tp==='entrada_pendente'){ var cfgB=document.querySelector('[data-nav="config"]'); if(cfgB) cfgB.click(); var modT=document.querySelector('.cfgnav button[data-cfg="moderation"]'); if(modT) modT.click(); if(window.carregarPendentes) window.carregarPendentes(); }
       else if(tp==='comentario'){ if(typeof irParaView==='function') irParaView('v-feed'); }
       return;
@@ -4697,6 +4705,72 @@
       if(rv){ e.preventDefault(); var h=rv.getAttribute('data-adm-revogar'); window.snConfirm('Revogar o Admin de @'+h+'?', function(){ api('/api/admin/admins',{method:'POST',body:{handle:h,conceder:false}}).then(function(r){ if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Admin de @'+h+' revogado.', true); window.carregarAdmins(); } }); }, {okText:'revogar'}); return; }
       var ct=e.target.closest?e.target.closest('[data-cfg="admins"]'):null; if(ct){ window.carregarAdmins(); return; }
     });
+  })();
+
+  /* ===== minimizar / tela cheia em listas que crescem ===== */
+  (function(){
+    var css='.growbox{max-height:340px;overflow:auto;transition:max-height .2s ease;}'
+      +'.growbox.gmin{max-height:0 !important;overflow:hidden;}'
+      +'.growbox.gmax{max-height:80vh;}'
+      +'.gbox-bar{display:flex;justify-content:flex-end;gap:.4rem;margin:0 0 .45rem;}'
+      +'.gbox-bar button{font-family:var(--font-mono);font-size:.66rem;color:var(--text-dim);background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:.25rem .55rem;cursor:pointer;}'
+      +'.gbox-bar button:hover{color:var(--crown);border-color:var(--crown);}';
+    var st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
+    function gbox(el){
+      if(!el || el.__gbox) return; el.__gbox=true; el.classList.add('growbox');
+      var bar=document.createElement('div'); bar.className='gbox-bar';
+      bar.innerHTML='<button type="button" data-gb="min">– minimizar</button><button type="button" data-gb="max">⤢ tela cheia</button>';
+      el.parentNode.insertBefore(bar, el);
+      bar.addEventListener('click',function(e){
+        var b=e.target.closest?e.target.closest('[data-gb]'):null; if(!b) return;
+        if(b.getAttribute('data-gb')==='min'){
+          el.classList.toggle('gmin'); el.classList.remove('gmax');
+          var mn=el.classList.contains('gmin');
+          b.textContent=mn?'+ mostrar':'– minimizar';
+          var mx=bar.querySelector('[data-gb="max"]'); if(mx) mx.style.display=mn?'none':'';
+        } else {
+          el.classList.toggle('gmax'); el.classList.remove('gmin');
+          var mnb=bar.querySelector('[data-gb="min"]'); if(mnb) mnb.style.display='';
+        }
+      });
+    }
+    ['#cf-tree .tree','#mod-pendentes','#mod-denuncias','#admins-list','#bcast-hist'].forEach(function(sel){
+      var e=document.querySelector(sel); if(e) gbox(e);
+    });
+    document.querySelectorAll('#cf-overview .panel, #cf-groups .panel').forEach(function(pan){
+      var h=pan.querySelector('.panel-h'); var ts=pan.querySelector('.table-scroll');
+      if(h && ts && /Novas entradas|Grupos da rede/.test(h.textContent)) gbox(ts);
+    });
+  })();
+
+  /* ===== Web Push (PWA) — notificação no celular ===== */
+  (function(){
+    if(!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.register('/sw.js').catch(function(){});
+    var podePush = ('PushManager' in window) && ('Notification' in window);
+    function urlB64(str){ var pad='='.repeat((4 - str.length % 4) % 4); var b=(str+pad).replace(/-/g,'+').replace(/_/g,'/'); var raw=atob(b); var arr=new Uint8Array(raw.length); for(var i=0;i<raw.length;i++) arr[i]=raw.charCodeAt(i); return arr; }
+    window.ativarPush=async function(fromClick){
+      if(!podePush){ if(fromClick&&window.snFlash) snFlash('Seu navegador não suporta notificações.', false); return; }
+      try{
+        var reg=await navigator.serviceWorker.ready;
+        var perm=Notification.permission;
+        if(perm!=='granted'){ perm=await Notification.requestPermission(); }
+        if(perm!=='granted'){ if(fromClick&&window.snFlash) snFlash('Notificações não permitidas no navegador.', false); return; }
+        var vr=await api('/api/push/vapid'); var pub=vr.b&&vr.b.publicKey;
+        if(!pub){ if(fromClick&&window.snFlash) snFlash('Push ainda não configurado no servidor.', false); return; }
+        var sub=await reg.pushManager.getSubscription();
+        if(!sub){ sub=await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: urlB64(pub) }); }
+        await api('/api/push/inscrever',{ method:'POST', body: sub.toJSON() });
+        var cta=document.getElementById('push-cta'); if(cta) cta.style.display='none';
+        if(fromClick&&window.snFlash) snFlash('Notificações ativadas! 🔔', true);
+      }catch(e){ if(fromClick&&window.snFlash) snFlash('Não deu pra ativar as notificações.', false); }
+    };
+    document.addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('#push-enable'):null; if(b){ e.preventDefault(); window.ativarPush(true); } });
+    setTimeout(function(){
+      if(!podePush) return;
+      if(Notification.permission==='granted'){ window.ativarPush(false); }
+      else if(Notification.permission==='default'){ var cta=document.getElementById('push-cta'); if(cta) cta.style.display='flex'; }
+    }, 2500);
   })();
 })();
 

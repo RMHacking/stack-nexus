@@ -9,6 +9,7 @@ const bcrypt = require('bcryptjs');
 const { pool } = require('../db');
 const svc = require('../convites/convites.service');
 const { requerSud0, requerLogin } = require('../auth/middleware');
+const { notificar } = require('../notificacoes/notif.service');
 
 const router = express.Router();
 const gateLimiter = rateLimit({ windowMs: 60 * 1000, max: 30 });
@@ -199,7 +200,7 @@ router.post('/onboarding/evento', gateLimiter, async (req, res, next) => {
   try {
     await client.query('BEGIN');
     const ev = await client.query(
-      `SELECT id, nome, ativo, slots_total, slots_usados, convite_bonus,
+      `SELECT id, nome, ativo, slots_total, slots_usados, convite_bonus, criado_por,
               (inicio IS NOT NULL AND CURRENT_DATE < inicio) AS antes,
               (fim    IS NOT NULL AND CURRENT_DATE > fim)    AS depois
          FROM eventos WHERE codigo=$1 FOR UPDATE`, [codigo]);
@@ -223,6 +224,14 @@ router.post('/onboarding/evento', gateLimiter, async (req, res, next) => {
     const link = await svc.criarLinkConvite(client, novaId, { slots: 3 + (e.convite_bonus || 0) }); // base 3 (regra 'entra com 3') + bonus do evento
     await client.query(`UPDATE eventos SET slots_usados = slots_usados + 1 WHERE id=$1`, [e.id]);
     await client.query('COMMIT');
+    // quem entra pelo evento já vira conexão de quem criou o evento
+    if (e.criado_por) {
+      try {
+        await pool.query(`DELETE FROM conexoes WHERE (de_id=$1 AND para_id=$2) OR (de_id=$2 AND para_id=$1)`, [e.criado_por, novaId]);
+        await pool.query(`INSERT INTO conexoes (de_id, para_id, status) VALUES ($1,$2,'aceita')`, [e.criado_por, novaId]);
+        await notificar(pool, { destinatario_id: e.criado_por, ator_id: novaId, tipo: 'conexao_convite', dados: { via: 'evento' } });
+      } catch (_e) {}
+    }
     res.json({ ok: true, conta_id: novaId, membro_num: nova.rows[0].membro_num, convite_codigo: link.codigo, evento_nome: e.nome, convite_bonus: e.convite_bonus || 0 });
   } catch (err) {
     await client.query('ROLLBACK');

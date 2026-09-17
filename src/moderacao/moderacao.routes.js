@@ -164,9 +164,18 @@ router.get('/admin/pendentes', requerSud0, async (req, res, next) => {
 router.post('/admin/pendentes/:id/aprovar', requerSud0, async (req, res, next) => {
   try {
     const upd = await pool.query(
-      `UPDATE contas SET pendente_aprovacao = false WHERE id = $1 AND pendente_aprovacao = true RETURNING handle`, [req.params.id]);
+      `UPDATE contas SET pendente_aprovacao = false WHERE id = $1 AND pendente_aprovacao = true RETURNING handle, origem_conta_id`, [req.params.id]);
     if (!upd.rowCount) return res.status(404).json({ ok: false, erro: 'nao_encontrado' });
-    res.json({ ok: true, handle: upd.rows[0].handle });
+    const o = upd.rows[0];
+    if (o.origem_conta_id) {
+      // aprovado já vira conexão de quem o convidou
+      try {
+        await pool.query(`DELETE FROM conexoes WHERE (de_id=$1 AND para_id=$2) OR (de_id=$2 AND para_id=$1)`, [o.origem_conta_id, req.params.id]);
+        await pool.query(`INSERT INTO conexoes (de_id, para_id, status) VALUES ($1,$2,'aceita')`, [o.origem_conta_id, req.params.id]);
+        await notificar(pool, { destinatario_id: o.origem_conta_id, ator_id: req.params.id, tipo: 'conexao_convite', dados: {} });
+      } catch (_e) {}
+    }
+    res.json({ ok: true, handle: o.handle });
   } catch (e) { console.error('[aprovar]', e); res.status(500).json({ ok: false, erro: 'srv', detalhe: String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
 });
 router.post('/admin/pendentes/:id/recusar', requerSud0, async (req, res, next) => {

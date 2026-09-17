@@ -340,3 +340,14 @@ ALTER TABLE contas ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT fa
 
 -- entradas pelo convite do Fundador ficam pendentes de aprovação manual
 ALTER TABLE contas ADD COLUMN IF NOT EXISTS pendente_aprovacao boolean NOT NULL DEFAULT false;
+
+-- inscrições de Web Push (um dispositivo por endpoint)
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  conta_id  uuid NOT NULL REFERENCES contas(id) ON DELETE CASCADE,
+  endpoint  text NOT NULL UNIQUE,
+  p256dh    text NOT NULL,
+  auth      text NOT NULL,
+  criado_em timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS ix_push_conta ON push_subscriptions(conta_id);
