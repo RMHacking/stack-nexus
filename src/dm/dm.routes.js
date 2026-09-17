@@ -22,6 +22,15 @@ async function bloqueioEntre(a, b) {
   r.rows.forEach((x) => { if (x.bloqueador_id === a) eu_bloqueei = true; else me_bloqueou = true; });
   return { eu_bloqueei, me_bloqueou };
 }
+// Fundador anonimo: membro comum NAO inicia DM com o sud0.
+// So pode enviar se o proprio sud0 ja abriu a conversa (ai o membro responde).
+// Trava no servidor (unico ponto onde a msg e criada) — o cliente esconde, o servidor decide.
+async function fundadorNaoRecebeInicio(remetenteId, remetenteIsSud0, outro) {
+  if (!outro || !outro.is_sud0 || remetenteIsSud0) return false;
+  const r = await pool.query(
+    'SELECT 1 FROM dm_mensagens WHERE de_id = $1 AND para_id = $2 LIMIT 1', [outro.id, remetenteId]);
+  return r.rows.length === 0; // bloqueia se o fundador ainda nao mandou nada
+}
 
 // lista de conversas (quem eu já troquei mensagem) + última msg + não lidas
 router.get('/dm', requerLogin, async (req, res, next) => {
@@ -76,6 +85,8 @@ router.post('/dm/:handle', requerLogin, async (req, res, next) => {
     const outro = await acharConta(req.params.handle);
     if (!outro) return res.status(404).json({ ok: false });
     if (outro.id === req.user.id) return res.status(400).json({ ok: false, motivo: 'voce_mesmo' });
+    if (await fundadorNaoRecebeInicio(req.user.id, req.user.is_sud0, outro))
+      return res.status(403).json({ ok: false, motivo: 'fundador', erro: 'O fundador nao recebe mensagens diretas.' });
     const bq = await bloqueioEntre(req.user.id, outro.id);
     if (bq.eu_bloqueei || bq.me_bloqueou) return res.status(403).json({ ok: false, motivo: 'bloqueado' });
     const { rows } = await pool.query(
