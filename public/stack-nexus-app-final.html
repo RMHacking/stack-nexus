@@ -4790,7 +4790,13 @@
         await api('/api/push/inscrever',{ method:'POST', body: sub.toJSON() });
         var cta=document.getElementById('push-cta'); if(cta) cta.style.display='none';
         if(fromClick&&window.snFlash) snFlash('Notificações ativadas! 🔔', true);
-      }catch(e){ if(fromClick&&window.snFlash) snFlash('Não deu pra ativar as notificações.', false); }
+      }catch(e){
+        if(fromClick&&window.snFlash){
+          var msg='Não deu pra ativar as notificações.';
+          try{ if(navigator.brave&&navigator.brave.isBrave&&await navigator.brave.isBrave()) msg='No Brave, ative "Usar serviços do Google para mensagens push" em brave://settings/privacy e reinicie o navegador.'; }catch(_x){}
+          snFlash(msg, false);
+        }
+      }
     };
     document.addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('#push-enable'):null; if(b){ e.preventDefault(); window.ativarPush(true); } });
     setTimeout(function(){
