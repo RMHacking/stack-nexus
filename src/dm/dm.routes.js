@@ -28,6 +28,7 @@ router.get('/dm', requerLogin, async (req, res, next) => {
   try {
     const { rows } = await pool.query(
       `SELECT c.handle, c.nome, c.exposicao, c.trilha, c.is_sud0,
+              (c.visto_em > now() - interval '90 seconds') AS online,
               lm.corpo AS ultima, lm.criado_em AS ultima_em,
               (SELECT count(*)::int FROM dm_mensagens x WHERE x.de_id = c.id AND x.para_id = $1 AND x.lida = false) AS nao_lidas
          FROM (
@@ -43,6 +44,7 @@ router.get('/dm', requerLogin, async (req, res, next) => {
         ORDER BY t.ult DESC LIMIT 100`, [req.user.id]);
     const conversas = rows.map((r) => ({
       handle: r.handle, nome: r.exposicao === 'aberto' ? r.nome : null, trilha: r.trilha, is_sud0: r.is_sud0,
+      online: !!r.online,
       ultima: r.ultima, ultima_em: r.ultima_em, nao_lidas: r.nao_lidas,
     }));
     res.json({ ok: true, conversas });

@@ -142,7 +142,8 @@ router.patch('/me/perfil', requerLogin, async (req, res, next) => {
 router.get('/sugestoes', requerLogin, async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      `SELECT handle, nome, exposicao, trilha, membro_num, foto_url
+      `SELECT handle, nome, exposicao, trilha, membro_num, foto_url,
+              (visto_em > now() - interval '90 seconds') AS online
          FROM contas
         WHERE is_sud0 = false AND pendente_aprovacao = false AND banido = false AND id <> $1
         ORDER BY criado_em DESC
@@ -151,7 +152,7 @@ router.get('/sugestoes', requerLogin, async (req, res, next) => {
     res.json({ ok:true, sugestoes: rows.map((r) => ({
       handle: r.handle,
       nome: r.exposicao === 'aberto' ? r.nome : null,
-      trilha: r.trilha, membro_num: r.membro_num,
+      trilha: r.trilha, membro_num: r.membro_num, online: !!r.online,
       foto_url: r.exposicao === 'aberto' ? r.foto_url : null,
     })) });
   } catch (e) { next(e); }

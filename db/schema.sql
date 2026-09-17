@@ -39,6 +39,8 @@ CREATE TABLE IF NOT EXISTS contas (
   criado_em     timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE contas ADD COLUMN IF NOT EXISTS capa_url text;
+ALTER TABLE contas ADD COLUMN IF NOT EXISTS visto_em timestamptz;  -- presenca: ultima atividade
+CREATE INDEX IF NOT EXISTS ix_contas_visto ON contas(visto_em);
 CREATE INDEX IF NOT EXISTS ix_contas_origem ON contas(origem_conta_id);
 
 -- ---------- convite_links (QR fixo permanente + saldo) ----------
