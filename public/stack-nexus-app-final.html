@@ -366,6 +366,8 @@
   .contact:hover{background:var(--hover);cursor:pointer;}
   .contact .cn{font-size:.85rem;flex:1;color:var(--text-dim);}
   .contact:hover .cn{color:var(--text);}
+  .contact .conv-del{flex:none;opacity:.35;padding:.15rem .35rem;font-size:.8rem;border-radius:6px;cursor:pointer;transition:opacity .15s,color .15s;}
+  .contact .conv-del:hover{opacity:1;color:var(--danger);}
   /* indicador de trilha: bolinha apagada que acende no hover */
   .tdot{width:8px;height:8px;border-radius:50%;background:var(--surface-2);flex:none;transition:background .18s,box-shadow .18s;}
   .tdot.tech{background:var(--accent);box-shadow:0 0 6px rgba(24,119,242,.5);}
@@ -3476,7 +3478,7 @@
     var nome=c.is_sud0?'sud0/n3xus':(c.nome||('@'+c.handle));
     var ini=c.is_sud0?'♛':iniciais(c.nome||c.handle);
     var tt=c.trilha?('<span class="tdot '+trkCls(c.trilha)+'"></span>'):'';
-    return '<div class="contact'+(c.nao_lidas>0?' has-msg':'')+'" data-dm="'+esc(c.handle)+'" style="cursor:pointer"><span class="avwrap"><span class="av'+(c.is_sud0?' av--crown':' cav')+'" style="width:34px;height:34px">'+esc(ini)+'</span>'+(c.is_sud0?'':'<span class="pdot'+(c.online?' on':'')+'"></span>')+'</span><span class="msg-badge">'+(c.nao_lidas>0?c.nao_lidas:'')+'</span><span class="cn">'+esc(nome)+'</span>'+tt+'</div>';
+    return '<div class="contact'+(c.nao_lidas>0?' has-msg':'')+'" data-dm="'+esc(c.handle)+'" style="cursor:pointer"><span class="avwrap"><span class="av'+(c.is_sud0?' av--crown':' cav')+'" style="width:34px;height:34px">'+esc(ini)+'</span>'+(c.is_sud0?'':'<span class="pdot'+(c.online?' on':'')+'"></span>')+'</span><span class="msg-badge">'+(c.nao_lidas>0?c.nao_lidas:'')+'</span><span class="cn">'+esc(nome)+'</span>'+tt+'<span class="conv-del" data-convdel="'+esc(c.handle)+'" title="apagar conversa">🗑</span></div>';
   }
   function achaBlocoConversas(){ var alvo=null; $$('#colRight .rblock').forEach(function(b){ var h=b.querySelector('.h span'); if(h && /Contatos|Conversas/i.test(h.textContent)) alvo=b; }); return alvo; }
   function renderConversas(conversas){
@@ -3557,7 +3559,16 @@
   }
   document.addEventListener('click',function(e){
     var d=e.target.closest?e.target.closest('[data-dm]'):null;
-    if(!d) return; e.preventDefault(); abrirDM(d.getAttribute('data-dm'));
+    if(!d) return; if(e.target.closest&&e.target.closest('[data-convdel]')) return; e.preventDefault(); abrirDM(d.getAttribute('data-dm'));
+  });
+  document.addEventListener('click',function(e){
+    var x=e.target.closest?e.target.closest('[data-convdel]'):null; if(!x) return; e.preventDefault(); e.stopPropagation();
+    var h=x.getAttribute('data-convdel'); if(!h) return;
+    window.snConfirm('Apagar toda a conversa com @'+h+'? As mensagens somem para os dois.', function(){
+      api('/api/dm/'+encodeURIComponent(h)+'/limpar',{method:'POST'}).then(function(r){
+        if(r.b&&r.b.ok){ if(dmAbertas[h]){ try{ clearInterval(dmAbertas[h].timer); dmAbertas[h].win.remove(); }catch(_e){} delete dmAbertas[h]; } carregarConversas(); }
+      });
+    }, {okText:'apagar'});
   });
   document.addEventListener('click',function(e){
     var x=e.target.closest?e.target.closest('.cwmsg-x'):null; if(!x) return; e.stopPropagation();
