@@ -193,7 +193,7 @@ router.get('/evento/:codigo', gateLimiter, async (req, res, next) => {
 router.post('/onboarding/evento', gateLimiter, async (req, res, next) => {
   const b = req.body || {};
   const codigo = String(b.codigo || '');
-  const handle = String(b.handle || '').trim();
+  const handle = String(b.handle || '').trim().replace(/^@+/, '').replace(/[^A-Za-z0-9_]/g, '').slice(0, 32);
   if (!codigo || !handle || !b.email || !b.senha) return res.status(400).json({ ok: false, erro: 'dados_incompletos' });
   const senha_hash = await bcrypt.hash(String(b.senha), 10);
   const client = await pool.connect();

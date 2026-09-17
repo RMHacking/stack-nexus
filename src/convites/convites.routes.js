@@ -66,6 +66,8 @@ router.post('/onboarding/concluir', async (req, res, next) => {
   try {
     const { resgateId, conta } = req.body || {};
     if (!resgateId || !conta || !conta.handle) return res.status(400).json({ erro: 'dados_incompletos' });
+    conta.handle = String(conta.handle).replace(/^@+/, '').replace(/[^A-Za-z0-9_]/g, '').slice(0, 32);
+    if (!conta.handle) return res.status(400).json({ erro: 'handle_invalido' });
     const senha_hash = conta.senha ? await bcrypt.hash(conta.senha, 10) : null;
     const r = await svc.concluirResgate(pool, {
       resgateId,
