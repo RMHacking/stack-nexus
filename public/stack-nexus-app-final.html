@@ -3523,13 +3523,15 @@
   function setupDM(){ carregarConversas(); if(!dmPollOn){ dmPollOn=true; setInterval(carregarConversas,12000); } }
   // ===== Talvez você conheça: membros reais =====
   function sugHTML(s){
-    var nome=s.nome||('@'+s.handle);
-    var ini=iniciais(s.nome||s.handle);
+    var h=(s.handle||'').replace(/^@/,'');
+    var nome=s.nome||('@'+h);
+    var ini=iniciais(s.nome||h);
     var tcls=trkCls(s.trilha);
     var av=s.foto_url?('<span class="av" style="width:38px;height:38px;font-size:.7rem;background-image:url('+s.foto_url+');background-size:cover;background-position:center"></span>'):('<span class="av" style="width:38px;height:38px;font-size:.7rem">'+esc(ini)+'</span>');
-    return '<div class="suggest" data-perfil="'+esc(s.handle)+'" style="cursor:pointer">'+av+
-      '<div class="sg-info"><div class="sg-name">'+esc(nome)+' <span class="sg-tdot '+tcls+'"></span></div><div class="sg-why">'+(s.membro_num?('membro #'+s.membro_num):('@'+esc(s.handle)))+'</div></div>'+
-      '<button class="sg-connect" data-perfil="'+esc(s.handle)+'">ver perfil</button></div>';
+    return '<div class="suggest">'+
+      '<span data-perfil="'+esc(h)+'" style="cursor:pointer;display:flex">'+av+'</span>'+
+      '<div class="sg-info" data-perfil="'+esc(h)+'" style="cursor:pointer"><div class="sg-name">'+esc(nome)+' <span class="sg-tdot '+tcls+'"></span></div><div class="sg-why">membro #'+(s.membro_num||'—')+'</div></div>'+
+      '<button class="sg-connect" data-dm="'+esc(h)+'">💬 Mensagem</button></div>';
   }
   function carregarSugestoes(){
     var body=document.getElementById('sugBody'); if(!body) return;
