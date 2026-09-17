@@ -83,6 +83,25 @@ router.post('/dm/:handle', requerLogin, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// apagar UMA mensagem (qualquer um dos dois lados apaga — some pros dois)
+router.post('/dm/msg/:mid/apagar', requerLogin, async (req, res) => {
+  try {
+    const del = await pool.query('DELETE FROM dm_mensagens WHERE id=$1 AND (de_id=$2 OR para_id=$2) RETURNING id', [req.params.mid, req.user.id]);
+    if (!del.rowCount) return res.status(404).json({ ok: false });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ ok: false }); }
+});
+
+// limpar a conversa inteira com alguém
+router.post('/dm/:handle/limpar', requerLogin, async (req, res) => {
+  try {
+    const outro = await acharConta(req.params.handle);
+    if (!outro) return res.status(404).json({ ok: false });
+    await pool.query('DELETE FROM dm_mensagens WHERE (de_id=$1 AND para_id=$2) OR (de_id=$2 AND para_id=$1)', [req.user.id, outro.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ ok: false }); }
+});
+
 // bloquear
 router.post('/dm/:handle/bloquear', requerLogin, async (req, res, next) => {
   try {

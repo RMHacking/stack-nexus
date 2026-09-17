@@ -88,6 +88,11 @@
   .cwmsg{max-width:78%;padding:.45rem .7rem;border-radius:12px;font-size:.83rem;line-height:1.4;}
   .cwmsg.them{background:var(--surface-2);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;}
   .cwmsg.me{background:var(--btn);color:var(--btn-text);align-self:flex-end;border-bottom-right-radius:4px;}
+  .cwmsg{position:relative;}
+  .cwmsg-x{position:absolute;top:-7px;width:17px;height:17px;border-radius:50%;background:var(--surface);border:1px solid var(--border);color:var(--text-faint);font-size:.6rem;line-height:15px;text-align:center;cursor:pointer;opacity:0;transition:opacity .15s;z-index:2;}
+  .cwmsg.me .cwmsg-x{left:-7px;} .cwmsg.them .cwmsg-x{right:-7px;}
+  .cwmsg:hover .cwmsg-x{opacity:1;} .cwmsg-x:hover{color:var(--danger);border-color:var(--danger);}
+  @media (hover:none){ .cwmsg-x{opacity:.55;} }
   .cw-foot{display:flex;align-items:center;gap:.3rem;padding:.5rem .6rem;border-top:1px solid var(--border);}
   .cw-foot input{flex:1;background:var(--surface-2);border:0;border-radius:16px;padding:.5rem .8rem;color:var(--text);font-size:.83rem;outline:none;}
   .cw-clip{width:28px;height:28px;border-radius:6px;color:var(--text-faint);display:grid;place-items:center;cursor:pointer;flex:none;}
@@ -3538,7 +3543,7 @@
     var av=win.querySelector('.cw-name .av'); if(av) av.textContent=o.is_sud0?'♛':iniciais(o.nome||o.handle||'');
     var who=win.querySelector('.cw-who'); if(who){ if(o.is_sud0){ who.textContent='sud0/n3xus'; } else { who.innerHTML='<span class="lnk-perfil" data-perfil="'+esc(o.handle||'')+'">'+esc(o.nome||('@'+(o.handle||'')))+'</span>'; } }
     var body=win.querySelector('.cw-body'); if(body){
-      body.innerHTML=(data.mensagens&&data.mensagens.length)?data.mensagens.map(function(m){ return '<div class="cwmsg '+(m.meu?'me':'them')+'">'+esc(m.corpo)+'</div>'; }).join(''):'<div style="text-align:center;color:var(--text-faint);font-family:var(--font-mono);font-size:.66rem;padding:.5rem">Sem mensagens ainda.</div>';
+      body.innerHTML=(data.mensagens&&data.mensagens.length)?data.mensagens.map(function(m){ return '<div class="cwmsg '+(m.meu?'me':'them')+'" data-dmid="'+esc(m.id)+'"><span class="cwmsg-x" title="apagar">\u2715</span>'+esc(m.corpo)+'</div>'; }).join(''):'<div style="text-align:center;color:var(--text-faint);font-family:var(--font-mono);font-size:.66rem;padding:.5rem">Sem mensagens ainda.</div>';
       body.scrollTop=body.scrollHeight;
     }
     var b=data.bloqueio||{}; var note=win.querySelector('.cw-blocked-note'); var blk=win.querySelector('.cw-block');
@@ -3557,7 +3562,7 @@
         '<button class="cw-abtn cw-menu-btn" title="mais">⋯</button>'+
         '<button class="cw-abtn cw-min" title="minimizar">▁</button>'+
         '<button class="cw-abtn cw-close" title="fechar">✕</button>'+
-        '<div class="cw-menu" hidden><button class="cw-block danger">⊗ bloquear</button></div>'+
+        '<div class="cw-menu" hidden><button class="cw-block danger">⊗ bloquear</button><button class="cw-limpar danger">🗑 limpar conversa</button></div>'+
       '</span></div>'+
       '<div class="cw-body"></div>'+
       '<div class="cw-blocked-note"></div>'+
@@ -3571,6 +3576,7 @@
     var menuBtn=win.querySelector('.cw-menu-btn'), menu=win.querySelector('.cw-menu');
     menuBtn.addEventListener('click',function(e){ e.stopPropagation(); menu.hidden=!menu.hidden; });
     win.querySelector('.cw-block').addEventListener('click',function(e){ e.stopPropagation(); menu.hidden=true; var eubloq=win.getAttribute('data-eubloq')==='1'; api('/api/dm/'+encodeURIComponent(handle)+(eubloq?'/desbloquear':'/bloquear'),{method:'POST'}).then(function(){ carregarDM(handle,win); }); });
+    var limpBtn=win.querySelector('.cw-limpar'); if(limpBtn) limpBtn.addEventListener('click',function(e){ e.stopPropagation(); menu.hidden=true; window.snConfirm('Limpar toda a conversa com @'+handle+'? As mensagens somem para os dois.', function(){ api('/api/dm/'+encodeURIComponent(handle)+'/limpar',{method:'POST'}).then(function(r){ if(r.b&&r.b.ok){ carregarDM(handle,win); carregarConversas(); } }); }, {okText:'limpar'}); });
     var input=win.querySelector('.cw-foot input');
     function envia(){ var t=(input&&input.value||'').trim(); if(!t)return; api('/api/dm/'+encodeURIComponent(handle),{method:'POST',body:{corpo:t}}).then(function(r){ if(r.b&&r.b.ok){ if(input)input.value=''; carregarDM(handle,win); carregarConversas(); } else if(r.b&&r.b.motivo==='bloqueado'){ carregarDM(handle,win); } }); }
     win.querySelector('.cw-send').addEventListener('click',envia);
@@ -3580,6 +3586,11 @@
   document.addEventListener('click',function(e){
     var d=e.target.closest?e.target.closest('[data-dm]'):null;
     if(!d) return; e.preventDefault(); abrirDM(d.getAttribute('data-dm'));
+  });
+  document.addEventListener('click',function(e){
+    var x=e.target.closest?e.target.closest('.cwmsg-x'):null; if(!x) return; e.stopPropagation();
+    var bolha=x.closest('.cwmsg'); var mid=bolha&&bolha.getAttribute('data-dmid'); if(!mid) return;
+    api('/api/dm/msg/'+encodeURIComponent(mid)+'/apagar',{method:'POST'}).then(function(r){ if(r.b&&r.b.ok){ if(bolha) bolha.remove(); if(typeof carregarConversas==='function') carregarConversas(); } });
   });
 
   // ---- reações (❤️/🔥) em posts e projetos ----
