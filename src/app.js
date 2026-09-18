@@ -44,6 +44,9 @@ function criarApp() {
   app.use('/api', pushRoutes);
   app.use('/api', presencaRoutes);
 
+  // health check leve (keep-alive/uptime ping — nao toca no banco)
+  app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
+
   // páginas do front servidas pelo mesmo host da API (uma URL só)
   app.use(express.static(path.join(__dirname, '../public'), {
     setHeaders: (res, filePath) => {
