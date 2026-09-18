@@ -3435,8 +3435,14 @@
     var tt=''; if(a.trilha){var cls=trkCls(a.trilha);var lbl=a.trilha==='both'?'tech+cyber':a.trilha; tt=' <span class="utag '+cls+'"><span class="ud"></span>'+lbl+'</span>';}
     var adm=a.papel==='admin'?' <span class="badge-adm">ADMIN</span>':'';
     var crown=a.is_sud0?' <span class="crowntag">♛ MASTER</span>':'';
-    var mod=(souAdmin && !a.is_sud0 && a.handle)?'<div class="mmod"><button class="mmodbtn" data-modapagar>apagar</button><button class="mmodbtn" data-modexpulsar>expulsar</button></div>':'';
-    return '<div class="m" data-mid="'+m.id+'" data-autor="'+esc(a.id||'')+'"><span class="av'+(a.is_sud0?' av--crown':'')+'" style="width:32px;height:32px">'+(a.is_sud0?'♛':iniciais(a.nome||a.handle))+'</span><div class="mb"><div class="mh"><b class="lnk-perfil" data-perfil="'+esc(a.handle||'')+'">'+esc(nome)+'</b>'+tt+adm+crown+' <span class="mhandle">@'+esc(a.handle||'')+'</span><span class="mtime">'+hhmm(m.criado_em)+'</span></div><div class="mtext">'+esc(m.corpo)+'</div></div>'+mod+'</div>';
+    var rep=''; if(m.responde_a){ var rc=m.responde_a.corpo; var rct=(rc==null)?'mensagem removida':(rc.length>80?(rc.slice(0,80)+'…'):rc); rep='<div class="mreply" data-pin-jump="'+esc(m.responde_a.id)+'" style="border-left:2px solid var(--border);padding:.05rem .5rem;margin:0 0 .2rem;font-size:.66rem;color:var(--text-faint);cursor:pointer;line-height:1.4;">↩ <b>'+esc(m.responde_a.autor||'')+'</b> '+esc(rct)+'</div>'; }
+    var edt=m.editada?'<span class="mtime" style="opacity:.55;margin-left:.3rem">· editado</span>':'';
+    var acts='';
+    if(a.handle){ acts+='<button class="mmodbtn" data-responder="'+m.id+'" title="responder">responder</button>'; }
+    if(m.meu){ acts+='<button class="mmodbtn" data-editar="'+m.id+'" title="editar">editar</button><button class="mmodbtn" data-selfdel="'+m.id+'" title="apagar">apagar</button>'; }
+    if(souAdmin){ acts+='<button class="mmodbtn" data-modfixar="'+m.id+'" title="fixar no topo">📌</button>'; if(!a.is_sud0 && a.handle && !m.meu){ acts+='<button class="mmodbtn" data-modapagar>apagar (mod)</button><button class="mmodbtn" data-modexpulsar>expulsar</button>'; } }
+    var mod=acts?'<div class="mmod">'+acts+'</div>':'';
+    return '<div class="m" data-mid="'+m.id+'" data-autor="'+esc(a.id||'')+'"><span class="av'+(a.is_sud0?' av--crown':'')+'" style="width:32px;height:32px">'+(a.is_sud0?'♛':iniciais(a.nome||a.handle))+'</span><div class="mb"><div class="mh"><b class="lnk-perfil" data-perfil="'+esc(a.handle||'')+'">'+esc(nome)+'</b>'+tt+adm+crown+' <span class="mhandle">@'+esc(a.handle||'')+'</span><span class="mtime">'+hhmm(m.criado_em)+'</span>'+edt+'</div>'+rep+'<div class="mtext">'+esc(m.corpo)+'</div></div>'+mod+'</div>';
   }
   function renderChat(data){
     var g=data.grupo, souAdmin=data.sou_admin, souSud=data.sou_sud0;
@@ -3445,7 +3451,9 @@
       var del=top.querySelector('.mono'); if(del){ if(souSud){ del.textContent='🗑 apagar grupo'; del.style.cursor='pointer'; del.style.color='var(--danger)'; del.setAttribute('data-apagargrupo',g.id); } else { del.textContent='apagar grupo: só sud0'; del.style.cursor=''; del.style.color=''; del.removeAttribute('data-apagargrupo'); } } }
     var mb=document.querySelector('#v-chat .modbar b'); if(mb) mb.textContent=g.nome;
     var body=document.querySelector('#v-chat .cbody');
-    if(body){ body.innerHTML=(data.mensagens&&data.mensagens.length)?data.mensagens.map(function(m){return msgHTML(m,souAdmin);}).join(''):'<div style="text-align:center;color:var(--text-faint);font-family:var(--font-mono);font-size:.72rem;padding:1.2rem">Sem mensagens ainda. Comece a conversa.</div>'; body.scrollTop=body.scrollHeight; }
+    var pin='';
+    if(data.fixada){ var fc=(data.fixada.corpo||''); var corte=fc.length>160?(fc.slice(0,160)+'…'):fc; pin='<div class="chat-pin" data-pin-jump="'+esc(data.fixada.id)+'" style="border:1px solid var(--crown);background:var(--crown-soft);border-radius:9px;padding:.55rem .75rem;margin-bottom:.7rem;font-size:.76rem;color:var(--text-dim);line-height:1.5;cursor:pointer;position:relative;">📌 <b style="color:var(--crown)">'+esc(data.fixada.autor||'')+'</b> <span style="color:var(--text)">'+esc(corte)+'</span>'+(souAdmin?'<span class="chat-unpin" data-modfixar="'+esc(data.fixada.id)+'" title="desafixar" style="position:absolute;top:.4rem;right:.5rem;cursor:pointer;color:var(--text-faint);font-size:.8rem;padding:0 .2rem">✕</span>':'')+'</div>'; }
+    if(body){ body.innerHTML=pin+((data.mensagens&&data.mensagens.length)?data.mensagens.map(function(m){return msgHTML(m,souAdmin);}).join(''):'<div style="text-align:center;color:var(--text-faint);font-family:var(--font-mono);font-size:.72rem;padding:1.2rem">Sem mensagens ainda. Comece a conversa.</div>'); body.scrollTop=body.scrollHeight; }
     var foot=document.querySelector('#v-chat .cfoot input:not([type=file])'); if(foot) foot.placeholder='Mensagem para '+g.nome+'...';
   }
   function abrirGrupo(id, silencioso){
@@ -3458,11 +3466,57 @@
   function setupChat(){
     if(chatPronto) return; var cfoot=document.querySelector('#v-chat .cfoot'); if(!cfoot) return; chatPronto=true;
     var inp=cfoot.querySelector('input:not([type=file])'); var btn=cfoot.querySelector('.gbtn.pri')||cfoot.querySelector('button');
-    function envia(){ var t=(inp&&inp.value||'').trim(); if(!t||!grupoAtual) return; if(btn)btn.disabled=true; api('/api/grupos/'+grupoAtual+'/mensagens',{method:'POST',body:{corpo:t}}).then(function(r){ if(btn)btn.disabled=false; if(r.b&&r.b.ok){ if(inp)inp.value=''; abrirGrupo(grupoAtual,true); } }); }
+    function envia(){ var t=(inp&&inp.value||'').trim(); if(!t||!grupoAtual) return; if(btn)btn.disabled=true; var rid=(window.__respMsg&&window.__respMsg.id)||null; api('/api/grupos/'+grupoAtual+'/mensagens',{method:'POST',body:{corpo:t,responde_a:rid}}).then(function(r){ if(btn)btn.disabled=false; if(r.b&&r.b.ok){ if(inp)inp.value=''; if(window.__clearReply)window.__clearReply(); abrirGrupo(grupoAtual,true); } }); }
     if(btn) btn.addEventListener('click',envia);
     if(inp) inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); envia(); } });
     var atl=cfoot.querySelector('.attach'); if(atl){ atl.title='Anexar arquivo (envio real em breve)'; var afi=atl.querySelector('input[type=file]'); var clip=atl.querySelector('.clip'); if(afi&&clip) afi.addEventListener('change',function(){ var tem=afi.files&&afi.files[0]; clip.style.color=tem?'var(--accent)':''; atl.title=tem?('anexo pronto: '+afi.files[0].name+' \u00b7 envio real em breve'):'Anexar arquivo (envio real em breve)'; }); }
   }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('[data-modfixar]'):null; if(!b) return; e.preventDefault(); e.stopPropagation();
+    var mid=b.getAttribute('data-modfixar'); if(!mid||!grupoAtual) return;
+    api('/api/grupos/'+grupoAtual+'/mensagens/'+mid+'/fixar',{method:'POST'}).then(function(){ abrirGrupo(grupoAtual,true); });
+  });
+  document.addEventListener('click',function(e){
+    var p=e.target.closest?e.target.closest('[data-pin-jump]'):null; if(!p) return; if(e.target.closest('[data-modfixar]')) return;
+    var mid=p.getAttribute('data-pin-jump'); var alvo=document.querySelector('#v-chat .m[data-mid="'+mid+'"]'); if(alvo&&alvo.scrollIntoView){ alvo.scrollIntoView({behavior:'smooth',block:'center'}); alvo.classList.add('proj-highlight'); setTimeout(function(){alvo.classList.remove('proj-highlight');},1600); }
+  });
+  window.__respMsg=null;
+  window.__clearReply=function(){ window.__respMsg=null; var bar=document.getElementById('chat-reply-bar'); if(bar) bar.remove(); };
+  function setReplyBar(mid,autor,corpo){
+    window.__respMsg={id:mid,autor:autor,corpo:corpo};
+    var foot=document.querySelector('#v-chat .cfoot'); if(!foot) return;
+    var bar=document.getElementById('chat-reply-bar');
+    if(!bar){ bar=document.createElement('div'); bar.id='chat-reply-bar'; bar.style.cssText='display:flex;align-items:center;gap:.5rem;background:var(--surface-2);border-left:2px solid var(--accent);border-radius:6px;padding:.4rem .6rem;margin-bottom:.4rem;font-family:var(--font-mono);font-size:.7rem;color:var(--text-dim);'; foot.parentNode.insertBefore(bar,foot); }
+    var prev=(corpo||'').slice(0,60)+((corpo||'').length>60?'…':'');
+    bar.innerHTML='↩ respondendo <b style="color:var(--text)">'+esc(autor||'')+'</b>: '+esc(prev)+' <span id="chat-reply-x" style="margin-left:auto;cursor:pointer;color:var(--text-faint);padding:0 .3rem">✕</span>';
+    var x=document.getElementById('chat-reply-x'); if(x) x.onclick=function(){ window.__clearReply(); };
+    var inp=document.querySelector('#v-chat .cfoot input:not([type=file])'); if(inp) inp.focus();
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('[data-responder]'):null; if(!b) return; e.preventDefault(); e.stopPropagation();
+    var row=b.closest('.m'); if(!row) return; var mid=b.getAttribute('data-responder');
+    var au=row.querySelector('.mh b'); var autor=au?au.textContent:''; var tx=row.querySelector('.mtext'); var corpo=tx?tx.textContent:'';
+    setReplyBar(mid,autor,corpo);
+  });
+  document.addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('[data-selfdel]'):null; if(!b) return; e.preventDefault(); e.stopPropagation();
+    var mid=b.getAttribute('data-selfdel'); if(!mid||!grupoAtual) return;
+    window.snConfirm('Apagar sua mensagem?', function(){ api('/api/grupos/'+grupoAtual+'/mensagens/'+mid+'/remover',{method:'POST'}).then(function(){ abrirGrupo(grupoAtual,true); }); }, {okText:'apagar'});
+  });
+  document.addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('[data-editar]'):null; if(!b) return; e.preventDefault(); e.stopPropagation();
+    var row=b.closest('.m'); if(!row) return; var mid=b.getAttribute('data-editar'); var tx=row.querySelector('.mtext'); if(!tx||row.querySelector('.medit')) return;
+    var atual=tx.textContent;
+    var box=document.createElement('div'); box.className='medit'; box.style.cssText='margin-top:.25rem;display:flex;gap:.4rem;flex-wrap:wrap;';
+    box.innerHTML='<input class="medit-inp" maxlength="1000" style="flex:1;min-width:160px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.35rem .55rem;font-size:.8rem;outline:none"><button class="mmodbtn medit-ok">salvar</button><button class="mmodbtn medit-cancel">cancelar</button>';
+    tx.style.display='none'; tx.parentNode.insertBefore(box,tx.nextSibling);
+    var inp=box.querySelector('.medit-inp'); inp.value=atual; inp.focus();
+    function fim(){ box.remove(); tx.style.display=''; }
+    box.querySelector('.medit-cancel').onclick=fim;
+    function salva(){ var v=(inp.value||'').trim(); if(!v){ fim(); return; } api('/api/grupos/'+grupoAtual+'/mensagens/'+mid,{method:'PATCH',body:{corpo:v}}).then(function(r){ if(r.b&&r.b.ok){ abrirGrupo(grupoAtual,true); } else { fim(); if(window.snFlash) snFlash('Não deu pra editar.', false); } }); }
+    box.querySelector('.medit-ok').onclick=salva;
+    inp.addEventListener('keydown',function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); salva(); } if(ev.key==='Escape'){ fim(); } });
+  });
   function abrirModMotivo(mrow){
     if(!mrow) return; var mid=mrow.getAttribute('data-mid'); var mmod=mrow.querySelector('.mmod'); if(!mmod) return;
     mmod.innerHTML='<input class="mod-motivo" placeholder="motivo (ex: spam)" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.25rem .5rem;font-size:.72rem;outline:none;width:130px"><button class="mmodbtn mod-ok">remover</button>';

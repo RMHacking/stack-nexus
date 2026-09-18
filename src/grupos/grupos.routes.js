@@ -91,31 +91,38 @@ router.post('/grupos/:id/sair', requerLogin, async (req, res, next) => {
 router.get('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
   try {
     const g = await pool.query(
-      `SELECT g.id, g.nome, g.descricao, g.trilha, g.criador_id, c.handle AS criador_handle,
+      `SELECT g.id, g.nome, g.descricao, g.trilha, g.criador_id, g.mensagem_fixada_id, c.handle AS criador_handle,
               (SELECT count(*)::int FROM grupo_membros m WHERE m.grupo_id = g.id) AS membros
          FROM grupos g JOIN contas c ON c.id = g.criador_id WHERE g.id = $1`, [req.params.id]);
     if (!g.rows.length) return res.status(404).json({ ok: false });
     const papel = await papelDe(req.params.id, req.user.id);
     if (!papel && !req.user.is_sud0) return res.status(403).json({ ok: false, motivo: 'nao_e_membro' });
     const { rows } = await pool.query(
-      `SELECT msg.id, msg.corpo, msg.criado_em, msg.removida, msg.removida_motivo, msg.autor_id,
+      `SELECT msg.id, msg.corpo, msg.criado_em, msg.removida, msg.removida_motivo, msg.autor_id, msg.editada,
               c.handle, c.nome, c.exposicao, c.trilha, c.is_sud0,
-              gm.papel AS autor_papel, rp.handle AS removida_por_handle
+              gm.papel AS autor_papel, rp.handle AS removida_por_handle,
+              msg.responde_a, rmsg.corpo AS resp_corpo, rc.handle AS resp_handle, rc.is_sud0 AS resp_sud0, rmsg.removida AS resp_removida
          FROM grupo_mensagens msg
          LEFT JOIN contas c ON c.id = msg.autor_id
          LEFT JOIN grupo_membros gm ON gm.grupo_id = msg.grupo_id AND gm.conta_id = msg.autor_id
          LEFT JOIN contas rp ON rp.id = msg.removida_por
+         LEFT JOIN grupo_mensagens rmsg ON rmsg.id = msg.responde_a
+         LEFT JOIN contas rc ON rc.id = rmsg.autor_id
         WHERE msg.grupo_id = $1 ORDER BY msg.criado_em ASC LIMIT 300`, [req.params.id]);
     const mensagens = rows.map((r) => ({
-      id: r.id, criado_em: r.criado_em, removida: r.removida,
+      id: r.id, criado_em: r.criado_em, removida: r.removida, editada: r.editada,
       corpo: r.removida ? null : r.corpo,
       removida_motivo: r.removida_motivo, removida_por: r.removida_por_handle,
       meu: r.autor_id === req.user.id,
+      responde_a: r.responde_a ? { id: r.responde_a, autor: r.resp_sud0 ? 'sud0' : ('@' + (r.resp_handle || '?')), corpo: r.resp_removida ? null : r.resp_corpo } : null,
       autor: r.removida ? null : {
         id: r.autor_id, handle: r.handle, nome: r.exposicao === 'aberto' ? r.nome : null,
         trilha: r.trilha, is_sud0: r.is_sud0, papel: r.autor_papel,
       },
     }));
+    const fxId = g.rows[0].mensagem_fixada_id;
+    const fxRow = fxId ? rows.find((r) => r.id === fxId && !r.removida) : null;
+    const fixada = fxRow ? { id: fxRow.id, corpo: fxRow.corpo, autor: fxRow.is_sud0 ? 'sud0' : ('@' + (fxRow.handle || '')) } : null;
     res.json({
       ok: true,
       grupo: {
@@ -123,6 +130,7 @@ router.get('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
         trilha: g.rows[0].trilha, criador_handle: g.rows[0].criador_handle, membros: g.rows[0].membros,
       },
       meu_papel: papel, sou_admin: podeModerar(papel, req.user.is_sud0), sou_sud0: !!req.user.is_sud0,
+      fixada,
       mensagens,
     });
   } catch (e) { next(e); }
@@ -135,9 +143,14 @@ router.post('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
     if (!corpo) return res.status(400).json({ ok: false, erro: 'vazio' });
     if (corpo.length > 1000) return res.status(400).json({ ok: false, erro: 'muito_longo' });
     if (!(await papelDe(req.params.id, req.user.id))) return res.status(403).json({ ok: false, motivo: 'nao_e_membro' });
+    let respondeA = null;
+    if (req.body && req.body.responde_a) {
+      const rr = await pool.query('SELECT 1 FROM grupo_mensagens WHERE id = $1 AND grupo_id = $2 AND removida = false', [req.body.responde_a, req.params.id]);
+      if (rr.rows.length) respondeA = req.body.responde_a;
+    }
     const { rows } = await pool.query(
-      `INSERT INTO grupo_mensagens (grupo_id, autor_id, corpo) VALUES ($1,$2,$3) RETURNING id`,
-      [req.params.id, req.user.id, corpo]);
+`INSERT INTO grupo_mensagens (grupo_id, autor_id, corpo, responde_a) VALUES ($1,$2,$3,$4) RETURNING id`,
+      [req.params.id, req.user.id, corpo, respondeA]);
     // push pros membros do grupo (menos quem enviou)
     (async () => {
       try {
@@ -156,14 +169,52 @@ router.post('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
 // remover (soft) uma mensagem: admin do grupo ou sud0
 router.post('/grupos/:id/mensagens/:mid/remover', requerLogin, async (req, res, next) => {
   try {
+    const alvo = await pool.query('SELECT autor_id FROM grupo_mensagens WHERE id = $1 AND grupo_id = $2 AND removida = false', [req.params.mid, req.params.id]);
+    if (!alvo.rows.length) return res.status(404).json({ ok: false });
+    const souAutor = alvo.rows[0].autor_id === req.user.id;
     const papel = await papelDe(req.params.id, req.user.id);
-    if (!podeModerar(papel, req.user.is_sud0) && !(await ehAdminGlobal(req.user.id))) return res.status(403).json({ ok: false });
-    const motivo = ((req.body && req.body.motivo) || '').trim().slice(0, 80) || 'moderação';
+    const podeMod = podeModerar(papel, req.user.is_sud0) || (await ehAdminGlobal(req.user.id));
+    if (!souAutor && !podeMod) return res.status(403).json({ ok: false });
+    const motivo = (souAutor && !podeMod) ? 'apagada pelo autor' : (((req.body && req.body.motivo) || '').trim().slice(0, 80) || 'moderação');
     const { rows } = await pool.query(
       `UPDATE grupo_mensagens SET removida = true, removida_por = $1, removida_motivo = $2
         WHERE id = $3 AND grupo_id = $4 AND removida = false RETURNING id`,
       [req.user.id, motivo, req.params.mid, req.params.id]);
     if (!rows.length) return res.status(404).json({ ok: false });
+    res.json({ ok: true });
+  } catch (e) { next(e); }
+});
+
+// fixar / desafixar uma mensagem no topo (uma por grupo): admin do grupo ou sud0
+router.post('/grupos/:id/mensagens/:mid/fixar', requerLogin, async (req, res, next) => {
+  try {
+    const papel = await papelDe(req.params.id, req.user.id);
+    if (!podeModerar(papel, req.user.is_sud0) && !(await ehAdminGlobal(req.user.id))) return res.status(403).json({ ok: false });
+    const cur = await pool.query('SELECT mensagem_fixada_id FROM grupos WHERE id = $1', [req.params.id]);
+    if (!cur.rows.length) return res.status(404).json({ ok: false });
+    const jaFixada = cur.rows[0].mensagem_fixada_id === req.params.mid;
+    let nova = null;
+    if (!jaFixada) {
+      const ex = await pool.query('SELECT 1 FROM grupo_mensagens WHERE id = $1 AND grupo_id = $2 AND removida = false', [req.params.mid, req.params.id]);
+      if (!ex.rows.length) return res.status(404).json({ ok: false });
+      nova = req.params.mid;
+    }
+    await pool.query('UPDATE grupos SET mensagem_fixada_id = $1 WHERE id = $2', [nova, req.params.id]);
+    res.json({ ok: true, fixada: nova });
+  } catch (e) { next(e); }
+});
+
+// editar a PROPRIA mensagem (só o autor — trava no servidor via autor_id na cláusula)
+router.patch('/grupos/:id/mensagens/:mid', requerLogin, async (req, res, next) => {
+  try {
+    const corpo = ((req.body && req.body.corpo) || '').trim();
+    if (!corpo) return res.status(400).json({ ok: false, erro: 'vazio' });
+    if (corpo.length > 1000) return res.status(400).json({ ok: false, erro: 'muito_longo' });
+    const upd = await pool.query(
+      `UPDATE grupo_mensagens SET corpo = $1, editada = true
+        WHERE id = $2 AND grupo_id = $3 AND autor_id = $4 AND removida = false RETURNING id`,
+      [corpo, req.params.mid, req.params.id, req.user.id]);
+    if (!upd.rows.length) return res.status(403).json({ ok: false }); // não é o autor / não existe
     res.json({ ok: true });
   } catch (e) { next(e); }
 });

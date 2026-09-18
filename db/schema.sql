@@ -176,6 +176,11 @@ CREATE TABLE IF NOT EXISTS grupo_mensagens (
   removida_motivo text,
   criado_em      timestamptz NOT NULL DEFAULT now()
 );
+
+-- extras de grupo_mensagens / grupos (depois da tabela existir)
+ALTER TABLE grupos ADD COLUMN IF NOT EXISTS mensagem_fixada_id uuid REFERENCES grupo_mensagens(id) ON DELETE SET NULL;
+ALTER TABLE grupo_mensagens ADD COLUMN IF NOT EXISTS responde_a uuid REFERENCES grupo_mensagens(id) ON DELETE SET NULL;
+ALTER TABLE grupo_mensagens ADD COLUMN IF NOT EXISTS editada boolean NOT NULL DEFAULT false;
 CREATE INDEX IF NOT EXISTS ix_grupo_msg ON grupo_mensagens (grupo_id, criado_em);
 
 -- ---------- StackChat 1-a-1 (DM) ----------
