@@ -413,6 +413,7 @@
   .onb-foot{text-align:right;margin-top:.4rem;}
   .onb-foot span{font-family:var(--font-mono);font-size:.66rem;color:var(--text-faint);cursor:pointer;}
   .onb-foot span:hover{color:var(--text-dim);}
+  @keyframes onbfall{to{transform:translateY(108vh) rotate(540deg);opacity:0;}}
   .notif{display:flex;gap:.8rem;align-items:flex-start;padding:.7rem;border-radius:10px;margin-bottom:.2rem;}
   .notif:hover{background:var(--hover);cursor:pointer;}
   .notif.unread{background:var(--accent-soft);}
@@ -2870,13 +2871,38 @@
       pf.appendChild(d2);
     }
   }
+  function festejarOnboarding(){
+    if(document.getElementById('onb-fest')) return;
+    var ov=document.createElement('div'); ov.id='onb-fest';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:100002;display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow:hidden;';
+    ov.innerHTML='<div style="position:relative;max-width:430px;text-align:center;z-index:2">'
+      +'<div style="font-size:2.6rem;line-height:1;margin-bottom:.5rem;filter:drop-shadow(0 0 14px var(--accent))">◆</div>'
+      +'<div style="font-family:var(--font-mono);font-size:1.35rem;font-weight:800;color:var(--text);letter-spacing:-.01em;margin-bottom:.7rem">Você é da rede agora.</div>'
+      +'<div style="font-size:.9rem;color:var(--text-dim);line-height:1.65;margin-bottom:1.3rem">Perfil montado, trabalho no ar, apresentado e conectado. Você não entrou só por convite — <b style="color:var(--text)">você provou</b>. Bem-vindo ao <b style="font-family:var(--font-mono)">Stack_<span style="color:var(--accent)">n3xus</span></b>.<br><span style="font-family:var(--font-mono);font-size:.76rem;color:var(--text-faint)">— sud0</span></div>'
+      +'<button id="onb-fest-x" style="font-family:var(--font-mono);font-size:.8rem;font-weight:600;background:var(--btn);color:var(--btn-text);border:1px solid var(--btn-border);border-radius:9px;padding:.6rem 1.5rem;cursor:pointer">entrar de vez</button>'
+    +'</div>';
+    document.body.appendChild(ov);
+    var cores=['var(--accent)','var(--crown)','var(--cyber)','var(--investig)'];
+    for(var i=0;i<44;i++){ var p=document.createElement('div'); var c=cores[i%4]; var left=Math.random()*100; var dur=2.2+Math.random()*2.2; var delay=Math.random()*.7; var size=5+Math.random()*6;
+      p.style.cssText='position:absolute;top:-24px;left:'+left+'%;width:'+size+'px;height:'+size+'px;background:'+c+';opacity:.9;border-radius:'+(Math.random()<.5?'50%':'2px')+';animation:onbfall '+dur+'s linear '+delay+'s forwards;z-index:1';
+      ov.appendChild(p); }
+    function fecha(){ ov.remove(); }
+    ov.querySelector('#onb-fest-x').addEventListener('click',fecha);
+    ov.addEventListener('click',function(e){ if(e.target===ov) fecha(); });
+  }
   function carregarOnboarding(){
     var card=document.getElementById('onboardCard'); if(!card) return;
     if(souSud0){ card.style.display='none'; return; }
-    var disp=false; try{ disp=localStorage.getItem('sn_onb_dispensado')==='1'; }catch(e){}
-    if(disp){ card.style.display='none'; return; }
     api('/api/me/onboarding').then(function(r){
-      if(!(r.b&&r.b.ok)||r.b.concluido){ card.style.display='none'; return; }
+      if(!(r.b&&r.b.ok)){ card.style.display='none'; return; }
+      if(r.b.concluido){
+        card.style.display='none';
+        try{ if(localStorage.getItem('sn_onb_seen')==='1' && localStorage.getItem('sn_onb_festejado')!=='1'){ localStorage.setItem('sn_onb_festejado','1'); festejarOnboarding(); } }catch(_e){}
+        return;
+      }
+      var disp=false; try{ disp=localStorage.getItem('sn_onb_dispensado')==='1'; }catch(e){}
+      if(disp){ card.style.display='none'; return; }
+      try{ localStorage.setItem('sn_onb_seen','1'); }catch(_e){}
       var it=r.b.itens;
       var linhas=[
         {done:it.perfil, txt:'Complete seu perfil (foto, frase, trilha)', act:'perfil', cta:'completar'},
