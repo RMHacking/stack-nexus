@@ -5,6 +5,7 @@ const { requerLogin } = require('../auth/middleware');
 const { notificar } = require('../notificacoes/notif.service');
 
 const router = express.Router();
+function imgChat(v){ if(!v) return null; v=String(v); if(!/^data:image\//i.test(v)) return null; if(v.length > 900000) return null; return v; }
 
 async function acharConta(handle) {
   const r = await pool.query(
@@ -68,10 +69,10 @@ router.get('/dm/:handle', requerLogin, async (req, res, next) => {
     if (outro.id === req.user.id) return res.status(400).json({ ok: false, motivo: 'voce_mesmo' });
     await pool.query('UPDATE dm_mensagens SET lida = true WHERE de_id = $1 AND para_id = $2 AND lida = false', [outro.id, req.user.id]);
     const { rows } = await pool.query(
-      `SELECT id, de_id, corpo, criado_em FROM dm_mensagens
+      `SELECT id, de_id, corpo, imagem, criado_em FROM dm_mensagens
         WHERE (de_id = $1 AND para_id = $2) OR (de_id = $2 AND para_id = $1)
         ORDER BY criado_em ASC LIMIT 500`, [req.user.id, outro.id]);
-    const mensagens = rows.map((r) => ({ id: r.id, corpo: r.corpo, meu: r.de_id === req.user.id, criado_em: r.criado_em }));
+    const mensagens = rows.map((r) => ({ id: r.id, corpo: r.corpo, imagem: r.imagem, meu: r.de_id === req.user.id, criado_em: r.criado_em }));
     res.json({ ok: true, outro: pub(outro), bloqueio: await bloqueioEntre(req.user.id, outro.id), mensagens });
   } catch (e) { next(e); }
 });
@@ -80,7 +81,8 @@ router.get('/dm/:handle', requerLogin, async (req, res, next) => {
 router.post('/dm/:handle', requerLogin, async (req, res, next) => {
   try {
     const corpo = ((req.body && req.body.corpo) || '').trim();
-    if (!corpo) return res.status(400).json({ ok: false, erro: 'vazio' });
+    const imagem = imgChat(req.body && req.body.imagem);
+    if (!corpo && !imagem) return res.status(400).json({ ok: false, erro: 'vazio' });
     if (corpo.length > 1000) return res.status(400).json({ ok: false, erro: 'muito_longo' });
     const outro = await acharConta(req.params.handle);
     if (!outro) return res.status(404).json({ ok: false });
@@ -90,7 +92,7 @@ router.post('/dm/:handle', requerLogin, async (req, res, next) => {
     const bq = await bloqueioEntre(req.user.id, outro.id);
     if (bq.eu_bloqueei || bq.me_bloqueou) return res.status(403).json({ ok: false, motivo: 'bloqueado' });
     const { rows } = await pool.query(
-      `INSERT INTO dm_mensagens (de_id, para_id, corpo) VALUES ($1,$2,$3) RETURNING id`, [req.user.id, outro.id, corpo]);
+      `INSERT INTO dm_mensagens (de_id, para_id, corpo, imagem) VALUES ($1,$2,$3,$4) RETURNING id`, [req.user.id, outro.id, corpo, imagem]);
     notificar(pool, { destinatario_id: outro.id, ator_id: req.user.id, tipo: 'dm' });
     res.json({ ok: true, id: rows[0].id });
   } catch (e) { next(e); }

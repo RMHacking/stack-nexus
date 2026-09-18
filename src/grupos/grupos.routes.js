@@ -6,6 +6,7 @@ const { requerLogin } = require('../auth/middleware');
 const { notificarTodos, pushPara } = require('../notificacoes/notif.service');
 
 const router = express.Router();
+function imgChat(v){ if(!v) return null; v=String(v); if(!/^data:image\//i.test(v)) return null; if(v.length > 900000) return null; return v; }
 const LIMITE = 3;
 
 function trilhaValida(t) { return (t === 'tech' || t === 'cyber' || t === 'investig' || t === 'both') ? t : null; }
@@ -98,7 +99,7 @@ router.get('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
     const papel = await papelDe(req.params.id, req.user.id);
     if (!papel && !req.user.is_sud0) return res.status(403).json({ ok: false, motivo: 'nao_e_membro' });
     const { rows } = await pool.query(
-      `SELECT msg.id, msg.corpo, msg.criado_em, msg.removida, msg.removida_motivo, msg.autor_id, msg.editada,
+      `SELECT msg.id, msg.corpo, msg.imagem, msg.criado_em, msg.removida, msg.removida_motivo, msg.autor_id, msg.editada,
               c.handle, c.nome, c.exposicao, c.trilha, c.is_sud0,
               gm.papel AS autor_papel, rp.handle AS removida_por_handle,
               msg.responde_a, rmsg.corpo AS resp_corpo, rc.handle AS resp_handle, rc.is_sud0 AS resp_sud0, rmsg.removida AS resp_removida
@@ -112,6 +113,7 @@ router.get('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
     const mensagens = rows.map((r) => ({
       id: r.id, criado_em: r.criado_em, removida: r.removida, editada: r.editada,
       corpo: r.removida ? null : r.corpo,
+      imagem: r.removida ? null : r.imagem,
       removida_motivo: r.removida_motivo, removida_por: r.removida_por_handle,
       meu: r.autor_id === req.user.id,
       responde_a: r.responde_a ? { id: r.responde_a, autor: r.resp_sud0 ? 'sud0' : ('@' + (r.resp_handle || '?')), corpo: r.resp_removida ? null : r.resp_corpo } : null,
@@ -138,7 +140,8 @@ router.get('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
 router.post('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
   try {
     const corpo = ((req.body && req.body.corpo) || '').trim();
-    if (!corpo) return res.status(400).json({ ok: false, erro: 'vazio' });
+    const imagem = imgChat(req.body && req.body.imagem);
+    if (!corpo && !imagem) return res.status(400).json({ ok: false, erro: 'vazio' });
     if (corpo.length > 1000) return res.status(400).json({ ok: false, erro: 'muito_longo' });
     if (!(await papelDe(req.params.id, req.user.id))) return res.status(403).json({ ok: false, motivo: 'nao_e_membro' });
     let respondeA = null;
@@ -147,8 +150,8 @@ router.post('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
       if (rr.rows.length) respondeA = req.body.responde_a;
     }
     const { rows } = await pool.query(
-`INSERT INTO grupo_mensagens (grupo_id, autor_id, corpo, responde_a) VALUES ($1,$2,$3,$4) RETURNING id`,
-      [req.params.id, req.user.id, corpo, respondeA]);
+`INSERT INTO grupo_mensagens (grupo_id, autor_id, corpo, responde_a, imagem) VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+      [req.params.id, req.user.id, corpo, respondeA, imagem]);
     // push pros membros do grupo (menos quem enviou)
     (async () => {
       try {
@@ -157,7 +160,7 @@ router.post('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
         const me = await pool.query('SELECT nome, handle, exposicao FROM contas WHERE id=$1', [req.user.id]);
         let nome = 'Alguém'; if (me.rows[0]) nome = (me.rows[0].exposicao === 'aberto' && me.rows[0].nome) ? me.rows[0].nome : ('@' + me.rows[0].handle);
         const gnome = (gr.rows[0] && gr.rows[0].nome) || 'grupo';
-        pushPara(pool, ms.rows.map(m => m.conta_id), { title: gnome, body: nome + ': ' + corpo.slice(0, 120), url: '/stack-nexus-app-final.html' });
+        pushPara(pool, ms.rows.map(m => m.conta_id), { title: gnome, body: nome + ': ' + (corpo ? corpo.slice(0, 120) : '📷 imagem'), url: '/stack-nexus-app-final.html' });
       } catch (_e) {}
     })();
     res.json({ ok: true, id: rows[0].id });

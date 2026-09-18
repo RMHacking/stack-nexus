@@ -363,3 +363,15 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
   criado_em timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS ix_push_conta ON push_subscriptions(conta_id);
+
+-- imagens em chat (grupo + DM); corpo passa a ser opcional quando há imagem
+ALTER TABLE grupo_mensagens ADD COLUMN IF NOT EXISTS imagem text;
+ALTER TABLE grupo_mensagens ALTER COLUMN corpo SET DEFAULT '';
+ALTER TABLE grupo_mensagens DROP CONSTRAINT IF EXISTS grupo_mensagens_corpo_check;
+ALTER TABLE grupo_mensagens DROP CONSTRAINT IF EXISTS grupo_mensagens_corpo_len;
+ALTER TABLE grupo_mensagens ADD CONSTRAINT grupo_mensagens_corpo_len CHECK (char_length(corpo) <= 1000);
+ALTER TABLE dm_mensagens ADD COLUMN IF NOT EXISTS imagem text;
+ALTER TABLE dm_mensagens ALTER COLUMN corpo SET DEFAULT '';
+ALTER TABLE dm_mensagens DROP CONSTRAINT IF EXISTS dm_mensagens_corpo_check;
+ALTER TABLE dm_mensagens DROP CONSTRAINT IF EXISTS dm_mensagens_corpo_len;
+ALTER TABLE dm_mensagens ADD CONSTRAINT dm_mensagens_corpo_len CHECK (char_length(corpo) <= 1000);
