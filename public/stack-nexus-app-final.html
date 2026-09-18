@@ -3428,7 +3428,7 @@
         else if(r.b&&r.b.motivo==='limite_atingido'){ setGrpMsg('Você atingiu o limite de '+(r.b.limite||3)+' grupos.'); }
         else { setGrpMsg('Não deu pra criar agora.'); } }); }); }
   }
-  function msgHTML(m, souAdmin){
+  function msgHTML(m, souAdmin, souSud){
     if(m.removida){ return '<div class="m del"><span class="av" style="width:32px;height:32px">—</span><div class="mb"><div class="mh"><span class="mhandle">mensagem removida</span></div><div class="mtext">removida por @'+esc(m.removida_por||'?')+' · '+esc(m.removida_motivo||'')+'</div></div></div>'; }
     var a=m.autor||{};
     var nome=a.is_sud0?'sud0/n3xus':(a.nome||('@'+(a.handle||'')));
@@ -3440,7 +3440,8 @@
     var acts='';
     if(a.handle){ acts+='<button class="mmodbtn" data-responder="'+m.id+'" title="responder">responder</button>'; }
     if(m.meu){ acts+='<button class="mmodbtn" data-editar="'+m.id+'" title="editar">editar</button><button class="mmodbtn" data-selfdel="'+m.id+'" title="apagar">apagar</button>'; }
-    if(souAdmin){ acts+='<button class="mmodbtn" data-modfixar="'+m.id+'" title="fixar no topo">📌</button>'; if(!a.is_sud0 && a.handle && !m.meu){ acts+='<button class="mmodbtn" data-modapagar>apagar (mod)</button><button class="mmodbtn" data-modexpulsar>expulsar</button>'; } }
+    if(souSud){ acts+='<button class="mmodbtn" data-modfixar="'+m.id+'" title="fixar no topo">📌</button>'; }
+    if(souAdmin && !a.is_sud0 && a.handle && !m.meu){ acts+='<button class="mmodbtn" data-modapagar>apagar (mod)</button><button class="mmodbtn" data-modexpulsar>expulsar</button>'; }
     var mod=acts?'<div class="mmod">'+acts+'</div>':'';
     return '<div class="m" data-mid="'+m.id+'" data-autor="'+esc(a.id||'')+'"><span class="av'+(a.is_sud0?' av--crown':'')+'" style="width:32px;height:32px">'+(a.is_sud0?'♛':iniciais(a.nome||a.handle))+'</span><div class="mb"><div class="mh"><b class="lnk-perfil" data-perfil="'+esc(a.handle||'')+'">'+esc(nome)+'</b>'+tt+adm+crown+' <span class="mhandle">@'+esc(a.handle||'')+'</span><span class="mtime">'+hhmm(m.criado_em)+'</span>'+edt+'</div>'+rep+'<div class="mtext">'+esc(m.corpo)+'</div></div>'+mod+'</div>';
   }
@@ -3452,8 +3453,8 @@
     var mb=document.querySelector('#v-chat .modbar b'); if(mb) mb.textContent=g.nome;
     var body=document.querySelector('#v-chat .cbody');
     var pin='';
-    if(data.fixada){ var fc=(data.fixada.corpo||''); var corte=fc.length>160?(fc.slice(0,160)+'…'):fc; pin='<div class="chat-pin" data-pin-jump="'+esc(data.fixada.id)+'" style="border:1px solid var(--crown);background:var(--crown-soft);border-radius:9px;padding:.55rem .75rem;margin-bottom:.7rem;font-size:.76rem;color:var(--text-dim);line-height:1.5;cursor:pointer;position:relative;">📌 <b style="color:var(--crown)">'+esc(data.fixada.autor||'')+'</b> <span style="color:var(--text)">'+esc(corte)+'</span>'+(souAdmin?'<span class="chat-unpin" data-modfixar="'+esc(data.fixada.id)+'" title="desafixar" style="position:absolute;top:.4rem;right:.5rem;cursor:pointer;color:var(--text-faint);font-size:.8rem;padding:0 .2rem">✕</span>':'')+'</div>'; }
-    if(body){ body.innerHTML=pin+((data.mensagens&&data.mensagens.length)?data.mensagens.map(function(m){return msgHTML(m,souAdmin);}).join(''):'<div style="text-align:center;color:var(--text-faint);font-family:var(--font-mono);font-size:.72rem;padding:1.2rem">Sem mensagens ainda. Comece a conversa.</div>'); body.scrollTop=body.scrollHeight; }
+    if(data.fixada){ pin='<div class="chat-pin" style="border:1px solid var(--crown);background:var(--crown-soft);border-radius:9px;padding:.55rem 1.7rem .6rem .8rem;margin-bottom:.7rem;font-size:.76rem;color:var(--text-dim);line-height:1.55;position:relative;max-height:11rem;overflow:auto;white-space:pre-line;word-break:break-word;">📌 <b style="color:var(--crown)">'+esc(data.fixada.autor||'')+'</b> <span style="color:var(--text)">'+esc(data.fixada.corpo||'')+'</span>'+(souSud?'<span data-desafixar="'+esc(g.id)+'" title="desafixar" style="position:absolute;top:.35rem;right:.4rem;cursor:pointer;color:var(--text-faint);font-size:.85rem;padding:0 .25rem;background:var(--crown-soft);border-radius:4px;">✕</span>':'')+'</div>'; }
+    if(body){ body.innerHTML=pin+((data.mensagens&&data.mensagens.length)?data.mensagens.map(function(m){return msgHTML(m,souAdmin,souSud);}).join(''):'<div style="text-align:center;color:var(--text-faint);font-family:var(--font-mono);font-size:.72rem;padding:1.2rem">Sem mensagens ainda. Comece a conversa.</div>'); body.scrollTop=body.scrollHeight; }
     var foot=document.querySelector('#v-chat .cfoot input:not([type=file])'); if(foot) foot.placeholder='Mensagem para '+g.nome+'...';
   }
   function abrirGrupo(id, silencioso){
@@ -3479,6 +3480,11 @@
   document.addEventListener('click',function(e){
     var p=e.target.closest?e.target.closest('[data-pin-jump]'):null; if(!p) return; if(e.target.closest('[data-modfixar]')) return;
     var mid=p.getAttribute('data-pin-jump'); var alvo=document.querySelector('#v-chat .m[data-mid="'+mid+'"]'); if(alvo&&alvo.scrollIntoView){ alvo.scrollIntoView({behavior:'smooth',block:'center'}); alvo.classList.add('proj-highlight'); setTimeout(function(){alvo.classList.remove('proj-highlight');},1600); }
+  });
+  document.addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('[data-desafixar]'):null; if(!b) return; e.preventDefault(); e.stopPropagation();
+    var gid=b.getAttribute('data-desafixar')||grupoAtual; if(!gid) return;
+    api('/api/grupos/'+gid+'/desafixar',{method:'POST'}).then(function(){ abrirGrupo(grupoAtual,true); });
   });
   window.__respMsg=null;
   window.__clearReply=function(){ window.__respMsg=null; var bar=document.getElementById('chat-reply-bar'); if(bar) bar.remove(); };

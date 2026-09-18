@@ -91,7 +91,7 @@ router.post('/grupos/:id/sair', requerLogin, async (req, res, next) => {
 router.get('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
   try {
     const g = await pool.query(
-      `SELECT g.id, g.nome, g.descricao, g.trilha, g.criador_id, g.mensagem_fixada_id, c.handle AS criador_handle,
+      `SELECT g.id, g.nome, g.descricao, g.trilha, g.criador_id, g.mensagem_fixada_id, g.mensagem_fixada_texto, g.mensagem_fixada_autor, c.handle AS criador_handle,
               (SELECT count(*)::int FROM grupo_membros m WHERE m.grupo_id = g.id) AS membros
          FROM grupos g JOIN contas c ON c.id = g.criador_id WHERE g.id = $1`, [req.params.id]);
     if (!g.rows.length) return res.status(404).json({ ok: false });
@@ -120,9 +120,7 @@ router.get('/grupos/:id/mensagens', requerLogin, async (req, res, next) => {
         trilha: r.trilha, is_sud0: r.is_sud0, papel: r.autor_papel,
       },
     }));
-    const fxId = g.rows[0].mensagem_fixada_id;
-    const fxRow = fxId ? rows.find((r) => r.id === fxId && !r.removida) : null;
-    const fixada = fxRow ? { id: fxRow.id, corpo: fxRow.corpo, autor: fxRow.is_sud0 ? 'sud0' : ('@' + (fxRow.handle || '')) } : null;
+    const fixada = g.rows[0].mensagem_fixada_texto ? { id: g.rows[0].mensagem_fixada_id, corpo: g.rows[0].mensagem_fixada_texto, autor: g.rows[0].mensagem_fixada_autor || '' } : null;
     res.json({
       ok: true,
       grupo: {
@@ -175,7 +173,11 @@ router.post('/grupos/:id/mensagens/:mid/remover', requerLogin, async (req, res, 
     const papel = await papelDe(req.params.id, req.user.id);
     const podeMod = podeModerar(papel, req.user.is_sud0) || (await ehAdminGlobal(req.user.id));
     if (!souAutor && !podeMod) return res.status(403).json({ ok: false });
-    const motivo = (souAutor && !podeMod) ? 'apagada pelo autor' : (((req.body && req.body.motivo) || '').trim().slice(0, 80) || 'moderação');
+    if (souAutor) { // autor apaga a propria: some de vez, sem deixar "mensagem removida"
+      await pool.query('DELETE FROM grupo_mensagens WHERE id = $1 AND grupo_id = $2', [req.params.mid, req.params.id]);
+      return res.json({ ok: true, apagada: true });
+    }
+    const motivo = (((req.body && req.body.motivo) || '').trim().slice(0, 80) || 'moderação'); // moderacao de terceiro: soft, com placeholder
     const { rows } = await pool.query(
       `UPDATE grupo_mensagens SET removida = true, removida_por = $1, removida_motivo = $2
         WHERE id = $3 AND grupo_id = $4 AND removida = false RETURNING id`,
@@ -188,19 +190,27 @@ router.post('/grupos/:id/mensagens/:mid/remover', requerLogin, async (req, res, 
 // fixar / desafixar uma mensagem no topo (uma por grupo): admin do grupo ou sud0
 router.post('/grupos/:id/mensagens/:mid/fixar', requerLogin, async (req, res, next) => {
   try {
-    const papel = await papelDe(req.params.id, req.user.id);
-    if (!podeModerar(papel, req.user.is_sud0) && !(await ehAdminGlobal(req.user.id))) return res.status(403).json({ ok: false });
+    if (!req.user.is_sud0) return res.status(403).json({ ok: false });
     const cur = await pool.query('SELECT mensagem_fixada_id FROM grupos WHERE id = $1', [req.params.id]);
     if (!cur.rows.length) return res.status(404).json({ ok: false });
-    const jaFixada = cur.rows[0].mensagem_fixada_id === req.params.mid;
-    let nova = null;
-    if (!jaFixada) {
-      const ex = await pool.query('SELECT 1 FROM grupo_mensagens WHERE id = $1 AND grupo_id = $2 AND removida = false', [req.params.mid, req.params.id]);
-      if (!ex.rows.length) return res.status(404).json({ ok: false });
-      nova = req.params.mid;
+    if (cur.rows[0].mensagem_fixada_id === req.params.mid) {
+      await pool.query('UPDATE grupos SET mensagem_fixada_id = NULL, mensagem_fixada_texto = NULL, mensagem_fixada_autor = NULL WHERE id = $1', [req.params.id]);
+      return res.json({ ok: true, fixada: null });
     }
-    await pool.query('UPDATE grupos SET mensagem_fixada_id = $1 WHERE id = $2', [nova, req.params.id]);
-    res.json({ ok: true, fixada: nova });
+    const mm = await pool.query('SELECT msg.corpo, c.handle, c.is_sud0 FROM grupo_mensagens msg LEFT JOIN contas c ON c.id = msg.autor_id WHERE msg.id = $1 AND msg.grupo_id = $2 AND msg.removida = false', [req.params.mid, req.params.id]);
+    if (!mm.rows.length) return res.status(404).json({ ok: false });
+    const autorFx = mm.rows[0].is_sud0 ? 'sud0' : ('@' + (mm.rows[0].handle || '?'));
+    await pool.query('UPDATE grupos SET mensagem_fixada_id = $1, mensagem_fixada_texto = $2, mensagem_fixada_autor = $3 WHERE id = $4', [req.params.mid, mm.rows[0].corpo, autorFx, req.params.id]);
+    res.json({ ok: true, fixada: req.params.mid });
+  } catch (e) { next(e); }
+});
+
+// desafixar (sud0) — limpa o recado fixado
+router.post('/grupos/:id/desafixar', requerLogin, async (req, res, next) => {
+  try {
+    if (!req.user.is_sud0) return res.status(403).json({ ok: false });
+    await pool.query('UPDATE grupos SET mensagem_fixada_id = NULL, mensagem_fixada_texto = NULL, mensagem_fixada_autor = NULL WHERE id = $1', [req.params.id]);
+    res.json({ ok: true });
   } catch (e) { next(e); }
 });
 
