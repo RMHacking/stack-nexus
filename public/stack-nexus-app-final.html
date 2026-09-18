@@ -3402,8 +3402,8 @@
     gruposCache=data.grupos||[];
     var list=v.querySelector('.grouplist');
     if(list){ list.innerHTML=gruposCache.length?gruposCache.map(grpHTML).join(''):'<div class="placeholder">Nenhum grupo ainda. Crie o primeiro.</div>'; }
-    var meus=(data.meus!=null?data.meus:0), limite=data.limite||3;
-    var q=v.querySelector('.quota'); if(q){ var b=q.querySelector('b'); if(b) b.textContent=meus+' de '+limite; var qf=q.querySelector('.qfill'); if(qf) qf.style.width=Math.round(meus/limite*100)+'%'; }
+    var ilimitado=(data.limite==null); var meus=(data.meus!=null?data.meus:0), limite=data.limite||3;
+    var q=v.querySelector('.quota'); if(q){ var b=q.querySelector('b'); if(b) b.textContent=ilimitado?(meus+' · sem limite'):(meus+' de '+limite); var qf=q.querySelector('.qfill'); if(qf) qf.style.width=(ilimitado?100:Math.round(meus/limite*100))+'%'; var lbl=q.querySelector('.mono'); if(lbl) lbl.textContent=ilimitado?'fundador · ilimitado':'limite: '+limite+' por pessoa'; }
     var cont={all:gruposCache.length,tech:0,cyber:0,investig:0}; gruposCache.forEach(function(g){ if(g.trilha==='tech'||g.trilha==='both')cont.tech++; if(g.trilha==='cyber'||g.trilha==='both')cont.cyber++; if(g.trilha==='investig')cont.investig++; });
     $$('.track[data-scope="grp"]').forEach(function(t){var k=t.dataset.tk;var c=t.querySelector('.tkcount'); if(c) c.textContent='· '+(cont[k]!=null?cont[k]:0);});
     var ativo=$('.track[data-scope="grp"].on'); var tk=ativo?ativo.dataset.tk:'all';

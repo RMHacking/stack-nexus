@@ -34,7 +34,7 @@ router.get('/grupos', requerLogin, async (req, res, next) => {
       sou_membro: !!r.meu_papel, meu_papel: r.meu_papel,
     }));
     const meus = grupos.filter((g) => g.sou_membro).length;
-    res.json({ ok: true, grupos, meus, limite: LIMITE });
+    res.json({ ok: true, grupos, meus, limite: req.user.is_sud0 ? null : LIMITE });
   } catch (e) { next(e); }
 });
 
@@ -50,7 +50,7 @@ router.post('/grupos', requerLogin, async (req, res, next) => {
     const nivel = nivelValido(b.nivel);
     const tipo = tipoValido(b.tipo) || 'discussao';
     const cnt = await pool.query('SELECT count(*)::int AS n FROM grupo_membros WHERE conta_id = $1', [req.user.id]);
-    if (cnt.rows[0].n >= LIMITE) return res.status(409).json({ ok: false, motivo: 'limite_atingido', limite: LIMITE });
+    if (!req.user.is_sud0 && cnt.rows[0].n >= LIMITE) return res.status(409).json({ ok: false, motivo: 'limite_atingido', limite: LIMITE });
     const g = await pool.query(
       `INSERT INTO grupos (nome, descricao, trilha, nivel, tipo, criador_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
       [nome, descricao, trilha, nivel, tipo, req.user.id]);
@@ -74,7 +74,7 @@ router.post('/grupos/:id/entrar', requerLogin, async (req, res, next) => {
     if (!ex.rows.length) return res.status(404).json({ ok: false });
     if (await papelDe(req.params.id, req.user.id)) return res.json({ ok: true, ja: true });
     const cnt = await pool.query('SELECT count(*)::int AS n FROM grupo_membros WHERE conta_id = $1', [req.user.id]);
-    if (cnt.rows[0].n >= LIMITE) return res.status(409).json({ ok: false, motivo: 'limite_atingido', limite: LIMITE });
+    if (!req.user.is_sud0 && cnt.rows[0].n >= LIMITE) return res.status(409).json({ ok: false, motivo: 'limite_atingido', limite: LIMITE });
     await pool.query(`INSERT INTO grupo_membros (grupo_id, conta_id, papel) VALUES ($1,$2,'membro') ON CONFLICT DO NOTHING`, [req.params.id, req.user.id]);
     res.json({ ok: true });
   } catch (e) { next(e); }
