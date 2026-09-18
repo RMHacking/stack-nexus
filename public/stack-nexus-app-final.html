@@ -398,6 +398,21 @@
 
   /* ===== NOTIFICAÇÕES ===== */
   .ntitle{font-size:1.3rem;font-weight:700;margin-bottom:1rem;}
+  .onb{border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;margin-bottom:1rem;background:linear-gradient(180deg,var(--surface),transparent);}
+  .onb-h{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:.8rem;font-weight:700;color:var(--text);}
+  .onb-prog{color:var(--accent);font-size:.72rem;font-weight:600;}
+  .onb-bar{height:5px;background:var(--surface-2);border-radius:4px;margin:.6rem 0 .7rem;overflow:hidden;}
+  .onb-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .4s;}
+  .onb-item{display:flex;align-items:center;gap:.6rem;padding:.42rem .2rem;border-radius:8px;cursor:pointer;}
+  .onb-item:hover{background:var(--hover);}
+  .onb-ck{width:20px;height:20px;border-radius:50%;border:1px solid var(--border);display:grid;place-items:center;font-size:.7rem;color:var(--accent);flex:none;}
+  .onb-item.done .onb-ck{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .onb-txt{flex:1;font-size:.83rem;color:var(--text-dim);}
+  .onb-item.done .onb-txt{color:var(--text-faint);text-decoration:line-through;}
+  .onb-cta{font-family:var(--font-mono);font-size:.66rem;color:var(--accent);flex:none;}
+  .onb-foot{text-align:right;margin-top:.4rem;}
+  .onb-foot span{font-family:var(--font-mono);font-size:.66rem;color:var(--text-faint);cursor:pointer;}
+  .onb-foot span:hover{color:var(--text-dim);}
   .notif{display:flex;gap:.8rem;align-items:flex-start;padding:.7rem;border-radius:10px;margin-bottom:.2rem;}
   .notif:hover{background:var(--hover);cursor:pointer;}
   .notif.unread{background:var(--accent-soft);}
@@ -983,6 +998,7 @@
     <div class="center-wrap">
       <!-- FEED -->
       <section class="view on" id="v-feed">
+        <div id="onboardCard" class="onb" style="display:none"></div>
         <!-- COMPOSER: duas versões, uma por visão -->
         <div class="composer crown sud0-only">
           <div class="as">publicando como <b>♛ sud0</b> — aparição pública</div>
@@ -2854,7 +2870,40 @@
       pf.appendChild(d2);
     }
   }
-  function carregarFeed(){ api('/api/feed').then(function(r){ renderFeed(Array.isArray(r.b)?r.b:[]); atualizarEventosFeed(); }); }
+  function carregarOnboarding(){
+    var card=document.getElementById('onboardCard'); if(!card) return;
+    if(souSud0){ card.style.display='none'; return; }
+    var disp=false; try{ disp=localStorage.getItem('sn_onb_dispensado')==='1'; }catch(e){}
+    if(disp){ card.style.display='none'; return; }
+    api('/api/me/onboarding').then(function(r){
+      if(!(r.b&&r.b.ok)||r.b.concluido){ card.style.display='none'; return; }
+      var it=r.b.itens;
+      var linhas=[
+        {done:it.perfil, txt:'Complete seu perfil (foto, frase, trilha)', act:'perfil', cta:'completar'},
+        {done:it.publicou, txt:'Publique seu primeiro post ou projeto', act:'feed', cta:'publicar'},
+        {done:it.grupo, txt:'Apresente-se num grupo (ex: whoami)', act:'groups', cta:'ir aos grupos'},
+        {done:it.conexao, txt:'Faça sua primeira conexão', act:'conexao', cta:'ver pessoas'}
+      ];
+      var h='<div class="onb-h"><span>🚀 Primeiros passos</span><span class="onb-prog">'+r.b.feito+' de '+r.b.total+'</span></div>';
+      h+='<div class="onb-bar"><div class="onb-fill" style="width:'+Math.round(r.b.feito/r.b.total*100)+'%"></div></div>';
+      h+=linhas.map(function(l){ return '<div class="onb-item'+(l.done?' done':'')+'"'+(l.done?'':' data-onb="'+l.act+'"')+'><span class="onb-ck">'+(l.done?'✓':'')+'</span><span class="onb-txt">'+esc(l.txt)+'</span>'+(l.done?'':'<span class="onb-cta">'+esc(l.cta)+' →</span>')+'</div>'; }).join('');
+      h+='<div class="onb-foot"><span data-onbdismiss>dispensar</span></div>';
+      card.innerHTML=h; card.style.display='';
+    }).catch(function(){ card.style.display='none'; });
+  }
+  window.carregarOnboarding=carregarOnboarding;
+  document.addEventListener('click',function(e){
+    var d=e.target.closest?e.target.closest('[data-onb]'):null;
+    if(d){ e.preventDefault(); var a=d.getAttribute('data-onb');
+      if(a==='perfil'){ var b=document.querySelector('[data-nav="profile"]'); if(b) b.click(); }
+      else if(a==='groups'){ var g=document.querySelector('.navitem[data-nav="groups"]'); if(g) g.click(); }
+      else if(a==='feed'){ var fb=document.querySelector('[data-nav="feed"]'); if(fb) fb.click(); var ta=document.querySelector('#v-feed .composer.user-only .composer-area'); if(ta){ ta.focus(); if(ta.scrollIntoView) ta.scrollIntoView({behavior:'smooth',block:'center'}); } }
+      else if(a==='conexao'){ try{ if(window.innerWidth<=900) document.body.classList.add('drawer-right'); }catch(_e){} var sg=document.getElementById('sugBody'); if(sg&&sg.scrollIntoView) sg.scrollIntoView({behavior:'smooth',block:'center'}); }
+      return; }
+    var dd=e.target.closest?e.target.closest('[data-onbdismiss]'):null;
+    if(dd){ e.preventDefault(); try{ localStorage.setItem('sn_onb_dispensado','1'); }catch(_e){} var c=document.getElementById('onboardCard'); if(c) c.style.display='none'; return; }
+  });
+  function carregarFeed(){ api('/api/feed').then(function(r){ renderFeed(Array.isArray(r.b)?r.b:[]); atualizarEventosFeed(); }); if(typeof carregarOnboarding==='function') carregarOnboarding(); }
   function atualizarEventosFeed(){
     document.querySelectorAll('.post-evento').forEach(function(card){
       var cta=card.querySelector('[data-verevento]'); if(!cta) return;

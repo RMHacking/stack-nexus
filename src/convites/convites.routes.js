@@ -139,6 +139,24 @@ router.patch('/me/perfil', requerLogin, async (req, res, next) => {
   } catch (e) { console.error('[perfil]', e); res.status(500).json({ ok:false, erro:'srv', detalhe:String(e.code||'')+' '+String(e.message||'').slice(0,120) }); }
 });
 
+// onboarding: 4 metas de ativacao do novo membro (dados reais)
+router.get('/me/onboarding', requerLogin, async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT
+         (c.foto_url IS NOT NULL OR c.frase IS NOT NULL OR c.bio IS NOT NULL) AS perfil,
+         EXISTS(SELECT 1 FROM conexoes x WHERE (x.de_id = $1 OR x.para_id = $1) AND x.status = 'aceita') AS conexao,
+         (EXISTS(SELECT 1 FROM posts p WHERE p.autor_id = $1 AND p.tipo = 'normal')
+           OR EXISTS(SELECT 1 FROM projetos pr WHERE pr.dono_id = $1)) AS publicou,
+         EXISTS(SELECT 1 FROM grupo_mensagens gm WHERE gm.autor_id = $1 AND gm.removida = false) AS grupo
+       FROM contas c WHERE c.id = $1`, [req.user.id]);
+    const r = rows[0] || {};
+    const itens = { perfil: !!r.perfil, publicou: !!r.publicou, grupo: !!r.grupo, conexao: !!r.conexao };
+    const feito = Object.values(itens).filter(Boolean).length;
+    res.json({ ok: true, itens, feito, total: 4, concluido: feito >= 4 });
+  } catch (e) { next(e); }
+});
+
 // sugestoes de conexao: membros reais (mais novos primeiro), fora o sud0 e voce
 router.get('/sugestoes', requerLogin, async (req, res, next) => {
   try {
