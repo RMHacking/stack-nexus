@@ -1082,6 +1082,12 @@
       <section class="view" id="v-notifs">
         <div class="ntitle" style="display:flex;align-items:center;justify-content:space-between;">Notificações <button id="markAllRead" style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-faint);border:1px solid var(--border);border-radius:7px;padding:.3rem .7rem;font-weight:400;">marcar todas como lidas</button></div>
         <div id="push-cta" style="display:none;margin-bottom:.7rem;padding:.6rem .85rem;border:1px dashed var(--btn-border);background:var(--btn-hover);border-radius:10px;font-family:var(--font-mono);font-size:.74rem;color:var(--btn-text);line-height:1.5;align-items:center;gap:.6rem;flex-wrap:wrap;">🔔 Receba avisos no celular mesmo com o app fechado. <button id="push-enable" style="margin-left:auto;font-family:var(--font-mono);font-size:.72rem;font-weight:600;background:var(--btn);color:var(--btn-text);border:1px solid var(--btn-border);border-radius:8px;padding:.4rem .9rem;cursor:pointer;">Ativar notificações</button></div>
+        <div id="push-on" style="display:none;margin-bottom:.7rem;font-family:var(--font-mono);font-size:.72rem;color:var(--ok);">🔔 Notificações ativadas neste aparelho.</div>
+        <div id="push-help" style="margin-bottom:1rem;border:1px solid var(--border);border-radius:10px;padding:.65rem .9rem;font-family:var(--font-mono);font-size:.72rem;color:var(--text-dim);line-height:1.6;background:var(--btn-hover);">
+          <div style="font-weight:600;color:var(--text);margin-bottom:.35rem;">🔔 Ative as notificações</div>
+          Seja avisado <b>no seu aparelho</b> — mensagens, menções, novas conexões e novidades da rede — <b>mesmo com o app fechado</b>. Toque em <b>“Ativar notificações”</b> acima e aceite o pedido do navegador. É <b>uma vez em cada aparelho</b>.
+          <div style="margin-top:.45rem;opacity:.9;">• <b>iPhone:</b> primeiro adicione o app à Tela de Início, depois ative.<br>• <b>Brave:</b> ligue “serviços do Google para mensagens push” em brave://settings/privacy e reinicie.</div>
+        </div>
         <div id="notifList"><div class="placeholder" style="padding:1rem;color:var(--text-faint);font-family:var(--font-mono);font-size:.72rem">Carregando…</div></div>
       </section>
 
@@ -4813,7 +4819,7 @@
     document.addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('#push-enable'):null; if(b){ e.preventDefault(); window.ativarPush(true); } });
     setTimeout(function(){
       if(!podePush) return;
-      if(Notification.permission==='granted'){ window.ativarPush(false); }
+      if(Notification.permission==='granted'){ window.ativarPush(false); var on=document.getElementById('push-on'); if(on) on.style.display='block'; var hl=document.getElementById('push-help'); if(hl) hl.style.display='none'; }
       else if(Notification.permission==='default'){ var cta=document.getElementById('push-cta'); if(cta) cta.style.display='flex'; }
     }, 2500);
   })();
