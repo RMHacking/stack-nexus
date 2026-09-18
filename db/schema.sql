@@ -154,6 +154,9 @@ CREATE TABLE IF NOT EXISTS grupos (
   criado_em  timestamptz NOT NULL DEFAULT now()
 );
 
+ALTER TABLE grupos ADD COLUMN IF NOT EXISTS nivel text CHECK (nivel IN ('iniciante','intermediario','avancado'));
+ALTER TABLE grupos ADD COLUMN IF NOT EXISTS tipo  text CHECK (tipo IN ('discussao','duvidas','vagas','estudo','projeto'));
+
 CREATE TABLE IF NOT EXISTS grupo_membros (
   grupo_id  uuid NOT NULL REFERENCES grupos(id) ON DELETE CASCADE,
   conta_id  uuid NOT NULL REFERENCES contas(id) ON DELETE CASCADE,

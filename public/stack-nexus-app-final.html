@@ -3377,12 +3377,20 @@
   // ===================== StackGroups + chat de grupo (real) =====================
   var gruposCache=[], grupoAtual=null, grpComposerPronto=false, chatPronto=false;
   function hhmm(iso){ try{ var d=new Date(iso); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }catch(e){ return ''; } }
+  var GRP_NIV={iniciante:'iniciante',intermediario:'intermediário',avancado:'avançado'};
+  var GRP_TIP={discussao:'discussão',duvidas:'dúvidas',vagas:'vagas',estudo:'estudo',projeto:'projeto'};
   function grpHTML(g){
     var trilhas=(g.trilha==='both')?['tech','cyber']:(g.trilha?[g.trilha]:[]);
     var trk=trilhas.map(function(t){return '<span class="ptk '+t+'"><span class="d"></span>'+t+'</span>';}).join('');
+    var tagBase='display:inline-flex;align-items:center;font-family:var(--font-mono);font-size:.58rem;letter-spacing:.02em;color:var(--text-dim);background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:.08rem .5rem;margin-left:.35rem;';
+    var extra='';
+    if(!trilhas.length){ extra+='<span style="'+tagBase+'">👥 todos</span>'; }
+    if(g.nivel){ extra+='<span style="'+tagBase+'">'+esc(GRP_NIV[g.nivel]||g.nivel)+'</span>'; }
+    if(g.tipo && g.tipo!=='discussao'){ var cor=(g.tipo==='vagas')?'color:var(--ok);border-color:var(--ok);':(g.tipo==='duvidas'?'color:var(--btn-text);border-color:var(--btn-border);':''); extra+='<span style="'+tagBase+cor+'">'+esc(GRP_TIP[g.tipo]||g.tipo)+'</span>'; }
     var btn=g.sou_membro?'<button class="gbtn pri" data-abrirgrupo="'+g.id+'">Abrir</button>':'<button class="gbtn" data-entrargrupo="'+g.id+'">Entrar</button>';
     var nome=(g.nome.charAt(0)==='#')?g.nome:('# '+g.nome);
-    return '<div class="gcard" data-id="'+g.id+'" data-tracks="'+trilhas.join(' ')+'"><div class="ginfo"><div class="gtop"><span class="gname">'+esc(nome)+'</span><span class="gtrk">'+trk+'</span><span class="gmeta">'+g.membros+' membro'+(g.membros===1?'':'s')+'</span></div><div class="gdesc">'+esc(g.descricao||'')+'</div></div><span class="gown">@'+esc(g.criador_handle||'')+'</span>'+btn+'</div>';
+    var tracks=trilhas.length?trilhas.join(' '):'tech cyber investig';
+    return '<div class="gcard" data-id="'+g.id+'" data-tracks="'+tracks+'"><div class="ginfo"><div class="gtop"><span class="gname">'+esc(nome)+'</span><span class="gtrk">'+trk+extra+'</span><span class="gmeta">'+g.membros+' membro'+(g.membros===1?'':'s')+'</span></div><div class="gdesc">'+esc(g.descricao||'')+'</div></div><span class="gown">@'+esc(g.criador_handle||'')+'</span>'+btn+'</div>';
   }
   function renderGrupos(data){
     var v=document.getElementById('v-groups'); if(!v) return;
@@ -3410,12 +3418,12 @@
     var nome=comp.querySelector('input'); var btn=comp.querySelector('button');
     var row=document.createElement('div'); row.style.cssText='display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;';
     var fi='background:var(--surface-2);border:0;border-radius:8px;padding:.5rem .7rem;color:var(--text);outline:none;font-size:.82rem;';
-    row.innerHTML='<input class="grp-desc" placeholder="descrição curta (opcional)" style="flex:1;min-width:160px;'+fi+'"><select class="grp-trilha" style="'+fi+'font-family:var(--font-mono)"><option value="tech">tech</option><option value="cyber">cyber</option><option value="investig">investigação</option></select>';
+    row.innerHTML='<input class="grp-desc" placeholder="descrição curta (opcional)" style="flex:1;min-width:160px;'+fi+'">'+'<select class="grp-trilha" title="público" style="'+fi+'font-family:var(--font-mono)"><option value="">público: todos</option><option value="tech">tech</option><option value="cyber">cyber</option><option value="investig">investigação</option></select>'+'<select class="grp-nivel" title="nível" style="'+fi+'font-family:var(--font-mono)"><option value="">nível: todos</option><option value="iniciante">iniciante</option><option value="intermediario">intermediário</option><option value="avancado">avançado</option></select>'+'<select class="grp-tipo" title="tipo" style="'+fi+'font-family:var(--font-mono)"><option value="discussao">discussão</option><option value="duvidas">dúvidas</option><option value="vagas">vagas</option><option value="estudo">estudo</option><option value="projeto">projeto</option></select>';
     var note=comp.querySelector('.cfgnote'); if(note) comp.insertBefore(row,note); else comp.appendChild(row);
     var trSel=row.querySelector('.grp-trilha'); if(minhaTrilha&&trSel) trSel.value=minhaTrilha;
     var msg=document.createElement('div'); msg.className='grp-msg'; msg.style.cssText='font-size:.72rem;color:var(--danger);margin-top:.4rem;min-height:1em;font-family:var(--font-mono)'; comp.appendChild(msg);
     if(btn){ btn.addEventListener('click',function(){ var t=(nome&&nome.value||'').trim(); setGrpMsg(''); if(!t){ if(nome)nome.focus(); return; } btn.disabled=true; var o=btn.textContent; btn.textContent='criando…';
-      api('/api/grupos',{method:'POST',body:{nome:t,descricao:row.querySelector('.grp-desc').value.trim(),trilha:row.querySelector('.grp-trilha').value}}).then(function(r){ btn.disabled=false; btn.textContent=o;
+      api('/api/grupos',{method:'POST',body:{nome:t,descricao:row.querySelector('.grp-desc').value.trim(),trilha:row.querySelector('.grp-trilha').value,nivel:(row.querySelector('.grp-nivel')||{}).value||'',tipo:(row.querySelector('.grp-tipo')||{}).value||'discussao'}}).then(function(r){ btn.disabled=false; btn.textContent=o;
         if(r.b&&r.b.ok){ if(nome)nome.value=''; row.querySelector('.grp-desc').value=''; carregarGrupos(); abrirGrupo(r.b.id); }
         else if(r.b&&r.b.motivo==='limite_atingido'){ setGrpMsg('Você atingiu o limite de '+(r.b.limite||3)+' grupos.'); }
         else { setGrpMsg('Não deu pra criar agora.'); } }); }); }

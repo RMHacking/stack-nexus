@@ -9,6 +9,8 @@ const router = express.Router();
 const LIMITE = 3;
 
 function trilhaValida(t) { return (t === 'tech' || t === 'cyber' || t === 'investig' || t === 'both') ? t : null; }
+function nivelValido(n){ return ['iniciante','intermediario','avancado'].includes(n) ? n : null; }
+function tipoValido(t){ return ['discussao','duvidas','vagas','estudo','projeto'].includes(t) ? t : null; }
 async function papelDe(grupoId, contaId) {
   const r = await pool.query('SELECT papel FROM grupo_membros WHERE grupo_id = $1 AND conta_id = $2', [grupoId, contaId]);
   return r.rows.length ? r.rows[0].papel : null;
@@ -20,13 +22,13 @@ async function ehAdminGlobal(contaId) { const r = await pool.query('SELECT is_ad
 router.get('/grupos', requerLogin, async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      `SELECT g.id, g.nome, g.descricao, g.trilha, g.criado_em, c.handle AS criador_handle,
+      `SELECT g.id, g.nome, g.descricao, g.trilha, g.nivel, g.tipo, g.criado_em, c.handle AS criador_handle,
               (SELECT count(*)::int FROM grupo_membros m WHERE m.grupo_id = g.id) AS membros,
               (SELECT papel FROM grupo_membros m WHERE m.grupo_id = g.id AND m.conta_id = $1) AS meu_papel
          FROM grupos g JOIN contas c ON c.id = g.criador_id
         ORDER BY g.criado_em DESC LIMIT 200`, [req.user.id]);
     const grupos = rows.map((r) => ({
-      id: r.id, nome: r.nome, descricao: r.descricao, trilha: r.trilha,
+      id: r.id, nome: r.nome, descricao: r.descricao, trilha: r.trilha, nivel: r.nivel, tipo: r.tipo,
       criador_handle: r.criador_handle, membros: r.membros,
       sou_membro: !!r.meu_papel, meu_papel: r.meu_papel,
     }));
@@ -44,11 +46,13 @@ router.post('/grupos', requerLogin, async (req, res, next) => {
     if (nome.length > 60) return res.status(400).json({ ok: false, erro: 'nome_longo' });
     const descricao = (b.descricao || '').trim().slice(0, 200) || null;
     const trilha = trilhaValida(b.trilha);
+    const nivel = nivelValido(b.nivel);
+    const tipo = tipoValido(b.tipo) || 'discussao';
     const cnt = await pool.query('SELECT count(*)::int AS n FROM grupo_membros WHERE conta_id = $1', [req.user.id]);
     if (cnt.rows[0].n >= LIMITE) return res.status(409).json({ ok: false, motivo: 'limite_atingido', limite: LIMITE });
     const g = await pool.query(
-      `INSERT INTO grupos (nome, descricao, trilha, criador_id) VALUES ($1,$2,$3,$4) RETURNING id`,
-      [nome, descricao, trilha, req.user.id]);
+      `INSERT INTO grupos (nome, descricao, trilha, nivel, tipo, criador_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
+      [nome, descricao, trilha, nivel, tipo, req.user.id]);
     await pool.query(`INSERT INTO grupo_membros (grupo_id, conta_id, papel) VALUES ($1,$2,'admin')`, [g.rows[0].id, req.user.id]);
     // aviso automático no feed: "fulano criou um novo grupo"
     try {
