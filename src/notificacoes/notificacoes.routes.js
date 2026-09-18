@@ -9,7 +9,8 @@ router.get('/notificacoes', requerLogin, async (req, res, next) => {
   try {
     const { rows } = await pool.query(
       `SELECT n.id, n.tipo, n.ref_id, n.dados, n.lida, n.criado_em,
-              a.handle AS ator_handle, a.nome AS ator_nome, a.exposicao AS ator_exposicao, a.is_sud0 AS ator_sud0
+              a.handle AS ator_handle, a.nome AS ator_nome, a.exposicao AS ator_exposicao, a.is_sud0 AS ator_sud0,
+              a.foto_url AS ator_foto, a.trilha AS ator_trilha, (a.visto_em > now() - interval '90 seconds') AS ator_online
          FROM notificacoes n
          LEFT JOIN contas a ON a.id = n.ator_id
         WHERE n.destinatario_id = $1
@@ -21,6 +22,9 @@ router.get('/notificacoes', requerLogin, async (req, res, next) => {
       id: r.id, tipo: r.tipo, ref_id: r.ref_id, dados: r.dados, lida: r.lida, criado_em: r.criado_em,
       ator_handle: r.ator_sud0 ? null : r.ator_handle,
       ator_nome: (r.ator_sud0 || r.ator_exposicao !== 'aberto') ? null : r.ator_nome,
+      ator_foto: (r.ator_sud0 || r.ator_exposicao !== 'aberto') ? null : r.ator_foto,
+      ator_trilha: r.ator_sud0 ? null : r.ator_trilha,
+      ator_online: !!r.ator_online,
       ator_sud0: !!r.ator_sud0,
     })) });
   } catch (e) { next(e); }

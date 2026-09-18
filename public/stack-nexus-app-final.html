@@ -415,6 +415,16 @@
   .notif:hover .ni-group .ndot{background:var(--cyber);box-shadow:0 0 7px var(--cyber);}
   .notif .nb{flex:1;font-size:.87rem;line-height:1.4;}.notif .nb b{font-weight:600;}
   .notif .nt{font-family:var(--font-mono);font-size:.64rem;color:var(--text-faint);margin-top:.2rem;}
+  .n-avwrap{position:relative;flex:none;width:44px;height:44px;}
+  .n-av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-mono);font-weight:600;font-size:.85rem;background:var(--surface-2);color:var(--text-dim);overflow:hidden;box-sizing:border-box;}
+  .n-badge{position:absolute;right:-3px;bottom:-3px;width:19px;height:19px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;font-size:.58rem;color:var(--text-dim);line-height:1;}
+  .notif.unread .n-badge{border-color:var(--accent-soft);}
+  .n-badge-crown{color:var(--crown);}
+  .n-online{position:absolute;right:0;top:-1px;width:11px;height:11px;border-radius:50%;background:#2ecc71;border:2px solid var(--bg);}
+  .n-acts{display:flex;gap:.4rem;margin-top:.5rem;}
+  .n-btn{font-family:var(--font-mono);font-size:.66rem;font-weight:600;padding:.32rem .75rem;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;transition:.15s;}
+  .n-btn.n-ok{background:var(--btn);color:var(--btn-text);border-color:var(--btn-border);}
+  .n-btn:hover{color:var(--text);border-color:var(--btn-border);}
   .placeholder{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;text-align:center;color:var(--text-faint);font-family:var(--font-mono);font-size:.82rem;line-height:1.6;}
 
   /* ===== PERFIL ===== */
@@ -3151,7 +3161,7 @@
   // ===== NOTIFICAÇÕES (direcionadas a você) =====
   function nomeAtor(n){ if(n.ator_sud0) return 'sud0'; return n.ator_nome || ('@'+(n.ator_handle||'')); }
   function notifHTML(n){
-    var nome='<b>'+esc(nomeAtor(n))+'</b>';
+    var nome='<b'+(n.ator_handle?(' class="lnk-perfil" data-perfil="'+esc(n.ator_handle)+'" style="cursor:pointer"'):'')+'>'+esc(nomeAtor(n))+'</b>';
     var ic, txt;
     if(n.tipo==='conexao_pedido'){ ic='<div class="nic ni-friend"><span class="ndot"></span></div>'; txt=nome+' quer se conectar com você.'; }
     else if(n.tipo==='conexao_aceita'){ ic='<div class="nic ni-friend"><span class="ndot"></span></div>'; txt=nome+' aceitou sua conexão.'; }
@@ -3170,7 +3180,18 @@
     else if(n.tipo==='mencao'){ ic='<div class="nic ni-post"><span class="ndot"></span></div>'; txt=nome+' mencionou você.'; }
     else if(n.tipo==='dm'){ ic='<div class="nic ni-friend"><span class="ndot"></span></div>'; txt=nome+' te mandou uma mensagem.'; }
     else { ic='<div class="nic"><span class="ndot"></span></div>'; txt='Nova atividade.'; }
-    return '<div class="notif'+(n.lida?'':' unread')+'" data-notif="'+esc(n.id)+'" data-ntipo="'+esc(n.tipo)+'" data-nator="'+esc(n.ator_handle||'')+'" data-nref="'+esc(n.ref_id||'')+'" style="cursor:pointer">'+ic+'<div class="nb">'+txt+'<div class="nt">'+tempo(n.criado_em)+'</div></div></div>';
+    var avINI=iniciais(n.ator_nome||n.ator_handle||'?');
+    var ringCol=n.ator_sud0?'var(--crown)':(n.ator_trilha==='cyber'?'var(--cyber)':n.ator_trilha==='investig'?'var(--investig)':n.ator_trilha?'var(--accent)':'var(--border)');
+    var avStyle='border:2px solid '+ringCol+(n.ator_sud0?';background:var(--crown-soft);color:var(--crown)':(n.ator_foto?(';background-image:url('+n.ator_foto+');background-size:cover;background-position:center'):''));
+    var avatar='<span class="n-av" style="'+avStyle+'">'+(n.ator_sud0?'♛':(n.ator_foto?'':esc(avINI)))+'</span>';
+    var BADGES={conexao_pedido:'🤝',conexao_aceita:'🤝',conexao_convite:'🤝',comentario:'💬',comentario_thread:'💬',resposta:'💬',mencao:'@',dm:'✉',post_novo:'✦',projeto_novo:'✦',grupo_novo:'✦',premiacao:'♛',aviso:'⚠',admin:'🛡',entrada_pendente:'♛',comunicado:'♛'};
+    var crownB=(n.tipo==='premiacao'||n.tipo==='comunicado'||n.tipo==='aviso'||n.tipo==='admin'||n.tipo==='entrada_pendente');
+    var badge='<span class="n-badge'+(crownB?' n-badge-crown':'')+'">'+(BADGES[n.tipo]||'•')+'</span>';
+    var pres=n.ator_online?'<span class="n-online" title="online"></span>':'';
+    var acts='';
+    if(n.tipo==='conexao_pedido' && n.ator_handle){ acts='<div class="n-acts"><button class="n-btn n-ok" data-aceitar="'+esc(n.ator_handle)+'">conectar</button><button class="n-btn" data-ignorar="'+esc(n.ator_handle)+'">recusar</button></div>'; }
+    else if(n.tipo==='dm' && n.ator_handle){ acts='<div class="n-acts"><button class="n-btn n-ok" data-dm="'+esc(n.ator_handle)+'">responder</button></div>'; }
+    return '<div class="notif'+(n.lida?'':' unread')+'" data-notif="'+esc(n.id)+'" data-ntipo="'+esc(n.tipo)+'" data-nator="'+esc(n.ator_handle||'')+'" data-nref="'+esc(n.ref_id||'')+'"><div class="n-avwrap">'+avatar+badge+pres+'</div><div class="nb">'+txt+'<div class="nt">'+tempo(n.criado_em)+'</div>'+acts+'</div></div>';
   }
   function atualizarBadgeNotif(nao){
     var b=document.getElementById('notifBadge'); if(!b) return;
@@ -3195,6 +3216,7 @@
     // clicar numa notificacao: marca lida + navega
     var nel=e.target.closest?e.target.closest('[data-notif]'):null;
     if(nel){
+      if(e.target.closest('button')||e.target.closest('[data-perfil]')) return;
       var id=nel.getAttribute('data-notif'), tp=nel.getAttribute('data-ntipo'), at=nel.getAttribute('data-nator');
       if(nel.classList.contains('unread')){
         api('/api/notificacoes/'+encodeURIComponent(id)+'/lida',{method:'POST'});
@@ -3281,11 +3303,11 @@
     var ac=e.target.closest?e.target.closest('[data-aceitar]'):null;
     if(ac){ e.preventDefault(); var h=ac.getAttribute('data-aceitar'); ac.disabled=true;
       api('/api/conexoes/'+encodeURIComponent(h)+'/aceitar',{method:'POST'}).then(function(r){
-        if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Conexão com @'+h+' aceita! ✅', true); carregarPedidos(); carregarMinhasConexoes(); }
+        if(r.b&&r.b.ok){ if(window.snFlash) snFlash('Conexão com @'+h+' aceita! ✅', true); carregarPedidos(); carregarMinhasConexoes(); if(typeof carregarNotificacoes==='function') carregarNotificacoes(); }
         else { ac.disabled=false; if(window.snFlash) snFlash('Não deu para aceitar.', false); } }); return; }
     var ig=e.target.closest?e.target.closest('[data-ignorar]'):null;
     if(ig){ e.preventDefault(); var h2=ig.getAttribute('data-ignorar'); ig.disabled=true;
-      api('/api/conexoes/'+encodeURIComponent(h2),{method:'DELETE'}).then(function(r){ carregarPedidos(); }); return; }
+      api('/api/conexoes/'+encodeURIComponent(h2),{method:'DELETE'}).then(function(r){ carregarPedidos(); if(typeof carregarNotificacoes==='function') carregarNotificacoes(); }); return; }
     var ct=e.target.closest?e.target.closest('[data-ptab="pf-conns"]'):null;
     if(ct){ carregarMinhasConexoes(); return; }
   });
