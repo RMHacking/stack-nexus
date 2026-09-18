@@ -797,14 +797,16 @@
   .m .mh{font-size:.82rem;display:flex;align-items:center;gap:.4rem;}
   .m .mh b{font-weight:600;}.m .mh .mhandle{font-family:var(--font-mono);font-size:.66rem;color:var(--text-faint);}
   .m .mh .mtime{font-family:var(--font-mono);font-size:.62rem;color:var(--text-faint);margin-left:auto;}
-  .m .mtext{font-size:.87rem;color:var(--text-dim);margin-top:.2rem;line-height:1.5;}
+  .m .mtext{font-size:.87rem;color:var(--text-dim);margin-top:.2rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
   .badge-adm{font-family:var(--font-mono);font-size:.56rem;background:var(--surface-2);color:var(--ok);padding:.05rem .4rem;border-radius:20px;}
   .mmod{opacity:0;display:flex;gap:.3rem;position:absolute;right:0;top:0;transition:opacity .15s;}
   .m:hover .mmod{opacity:1;}
   .mmodbtn{font-family:var(--font-mono);font-size:.62rem;border:1px solid var(--border);background:var(--bg);color:var(--text-faint);border-radius:6px;padding:.1rem .4rem;}
   .mmodbtn:hover{color:var(--danger);border-color:var(--danger);}
   .m.del .mtext{font-style:italic;color:var(--text-faint);}
-  .cfoot{display:flex;gap:.5rem;padding:.8rem 1rem;border-top:1px solid var(--border);}
+  .cfoot{display:flex;gap:.5rem;padding:.8rem 1rem;border-top:1px solid var(--border);align-items:flex-end;}
+  .cfoot textarea{flex:1;background:var(--surface-2);border:0;border-radius:18px;padding:.55rem .9rem;color:var(--text);font-size:.87rem;outline:none;resize:none;font-family:inherit;line-height:1.4;min-height:38px;max-height:140px;overflow-y:auto;}
+  .cfoot .gbtn.pri{flex:none;}
   .cfoot input{flex:1;background:var(--surface-2);border:0;border-radius:20px;padding:.55rem .9rem;color:var(--text);font-size:.87rem;outline:none;}
 
   /* eventos */
@@ -1572,7 +1574,7 @@
             <div class="m"><span class="av" style="width:32px;height:32px">SP</span><div class="mb"><div class="mh"><b>spammer_x</b><span class="mhandle">@spammer_x</span><span class="mtime">14:06</span></div><div class="mtext">compra seguidores baratos: bit.ly/xxxx</div></div><div class="mmod"><button class="mmodbtn">apagar</button><button class="mmodbtn">expulsar</button></div></div>
             <div class="m del"><span class="av" style="width:32px;height:32px">—</span><div class="mb"><div class="mh"><span class="mhandle">mensagem removida</span></div><div class="mtext">removida por @diego_mod (admin) · spam</div></div></div>
           </div>
-          <div class="cfoot"><label class="attach" style="border:0;padding:.4rem;"><span class="clip">⎘</span><input type="file"></label><input placeholder="Mensagem para # Segurança Ofensiva..."><button class="gbtn pri">Enviar</button></div>
+          <div class="cfoot"><label class="attach" style="border:0;padding:.4rem;"><span class="clip">⎘</span><input type="file"></label><textarea class="chat-ta" rows="1" placeholder="Mensagem para # Segurança Ofensiva..."></textarea><button class="gbtn pri">Enviar</button></div>
         </div>
         <p class="cfgnote" style="margin-top:.8rem;">Admin apaga msg e expulsa do grupo (no hover da mensagem). Apagar o grupo e expulsar da rede: só o sud0.</p>
       </section>
@@ -3455,7 +3457,7 @@
     var pin='';
     if(data.fixada){ pin='<div class="chat-pin" style="border:1px solid var(--crown);background:var(--crown-soft);border-radius:9px;padding:.55rem 1.7rem .6rem .8rem;margin-bottom:.7rem;font-size:.76rem;color:var(--text-dim);line-height:1.55;position:relative;max-height:11rem;overflow:auto;white-space:pre-line;word-break:break-word;">📌 <b style="color:var(--crown)">'+esc(data.fixada.autor||'')+'</b> <span style="color:var(--text)">'+esc(data.fixada.corpo||'')+'</span>'+(souSud?'<span data-desafixar="'+esc(g.id)+'" title="desafixar" style="position:absolute;top:.35rem;right:.4rem;cursor:pointer;color:var(--text-faint);font-size:.85rem;padding:0 .25rem;background:var(--crown-soft);border-radius:4px;">✕</span>':'')+'</div>'; }
     if(body){ body.innerHTML=pin+((data.mensagens&&data.mensagens.length)?data.mensagens.map(function(m){return msgHTML(m,souAdmin,souSud);}).join(''):'<div style="text-align:center;color:var(--text-faint);font-family:var(--font-mono);font-size:.72rem;padding:1.2rem">Sem mensagens ainda. Comece a conversa.</div>'); body.scrollTop=body.scrollHeight; }
-    var foot=document.querySelector('#v-chat .cfoot input:not([type=file])'); if(foot) foot.placeholder='Mensagem para '+g.nome+'...';
+    var foot=document.querySelector('#v-chat .cfoot textarea'); if(foot) foot.placeholder='Mensagem para '+g.nome+'...';
   }
   function abrirGrupo(id, silencioso){
     grupoAtual=id;
@@ -3466,10 +3468,11 @@
   }
   function setupChat(){
     if(chatPronto) return; var cfoot=document.querySelector('#v-chat .cfoot'); if(!cfoot) return; chatPronto=true;
-    var inp=cfoot.querySelector('input:not([type=file])'); var btn=cfoot.querySelector('.gbtn.pri')||cfoot.querySelector('button');
-    function envia(){ var t=(inp&&inp.value||'').trim(); if(!t||!grupoAtual) return; if(btn)btn.disabled=true; var rid=(window.__respMsg&&window.__respMsg.id)||null; api('/api/grupos/'+grupoAtual+'/mensagens',{method:'POST',body:{corpo:t,responde_a:rid}}).then(function(r){ if(btn)btn.disabled=false; if(r.b&&r.b.ok){ if(inp)inp.value=''; if(window.__clearReply)window.__clearReply(); abrirGrupo(grupoAtual,true); } }); }
+    var inp=cfoot.querySelector('textarea'); var btn=cfoot.querySelector('.gbtn.pri')||cfoot.querySelector('button');
+    function autoGrow(){ if(!inp)return; inp.style.height='auto'; inp.style.height=Math.min(inp.scrollHeight,140)+'px'; }
+    function envia(){ var t=(inp&&inp.value||'').trim(); if(!t||!grupoAtual) return; if(btn)btn.disabled=true; var rid=(window.__respMsg&&window.__respMsg.id)||null; api('/api/grupos/'+grupoAtual+'/mensagens',{method:'POST',body:{corpo:t,responde_a:rid}}).then(function(r){ if(btn)btn.disabled=false; if(r.b&&r.b.ok){ if(inp){inp.value='';inp.style.height='';} if(window.__clearReply)window.__clearReply(); abrirGrupo(grupoAtual,true); } }); }
     if(btn) btn.addEventListener('click',envia);
-    if(inp) inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); envia(); } });
+    if(inp){ inp.addEventListener('input',autoGrow); inp.addEventListener('keydown',function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); envia(); } }); }
     var atl=cfoot.querySelector('.attach'); if(atl){ atl.title='Anexar arquivo (envio real em breve)'; var afi=atl.querySelector('input[type=file]'); var clip=atl.querySelector('.clip'); if(afi&&clip) afi.addEventListener('change',function(){ var tem=afi.files&&afi.files[0]; clip.style.color=tem?'var(--accent)':''; atl.title=tem?('anexo pronto: '+afi.files[0].name+' \u00b7 envio real em breve'):'Anexar arquivo (envio real em breve)'; }); }
   }
   document.addEventListener('click',function(e){
@@ -3496,7 +3499,7 @@
     var prev=(corpo||'').slice(0,60)+((corpo||'').length>60?'…':'');
     bar.innerHTML='↩ respondendo <b style="color:var(--text)">'+esc(autor||'')+'</b>: '+esc(prev)+' <span id="chat-reply-x" style="margin-left:auto;cursor:pointer;color:var(--text-faint);padding:0 .3rem">✕</span>';
     var x=document.getElementById('chat-reply-x'); if(x) x.onclick=function(){ window.__clearReply(); };
-    var inp=document.querySelector('#v-chat .cfoot input:not([type=file])'); if(inp) inp.focus();
+    var inp=document.querySelector('#v-chat .cfoot textarea'); if(inp) inp.focus();
   }
   document.addEventListener('click',function(e){
     var b=e.target.closest?e.target.closest('[data-responder]'):null; if(!b) return; e.preventDefault(); e.stopPropagation();
