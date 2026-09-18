@@ -98,7 +98,7 @@ router.get('/feed', requerLogin, async (req, res, next) => {
     const { rows } = await pool.query(
       `SELECT p.id, p.corpo, p.imagem, p.criado_em, p.editado_em, p.fixado, p.tipo, p.ref_id, p.autor_id,
               c.handle, c.nome, c.exposicao, c.trilha, c.is_sud0, c.membro_num,
-              rx.rocket, rx.brain, rx.bolt, rx.minha,
+              rx.rocket, rx.brain, rx.bolt, rx.minha, rx.total, rx.quem,
               (SELECT count(*)::int FROM post_comentarios pc WHERE pc.post_id = p.id) AS n_com,
               (SELECT COALESCE(json_agg(t ORDER BY t.criado_em), '[]'::json) FROM (
                  SELECT pc.corpo, pc.criado_em, c2.handle,
@@ -112,7 +112,16 @@ router.get('/feed', requerLogin, async (req, res, next) => {
            SELECT count(*) FILTER (WHERE tipo='rocket')::int AS rocket,
                   count(*) FILTER (WHERE tipo='brain')::int  AS brain,
                   count(*) FILTER (WHERE tipo='bolt')::int   AS bolt,
-                  max(tipo) FILTER (WHERE autor_id = $1)     AS minha
+                  count(*)::int AS total,
+                  max(tipo) FILTER (WHERE autor_id = $1)     AS minha,
+                  (SELECT json_agg(q) FROM (
+                     SELECT rc.is_sud0, rc.handle,
+                            (CASE WHEN rc.exposicao='aberto' THEN rc.nome ELSE NULL END) AS nome,
+                            (CASE WHEN rc.exposicao='aberto' THEN rc.foto_url ELSE NULL END) AS foto
+                       FROM reacoes r2 JOIN contas rc ON rc.id = r2.autor_id
+                      WHERE r2.alvo_tipo='post' AND r2.alvo_id = p.id
+                      ORDER BY r2.criado_em DESC LIMIT 3
+                   ) q) AS quem
              FROM reacoes r WHERE r.alvo_tipo='post' AND r.alvo_id = p.id
          ) rx ON true
         ORDER BY p.fixado DESC, p.criado_em DESC LIMIT 100`, [req.user.id]
@@ -121,7 +130,7 @@ router.get('/feed', requerLogin, async (req, res, next) => {
       id: r.id, corpo: r.corpo, imagem: r.imagem, criado_em: r.criado_em,
       fixado: r.fixado, editado: !!r.editado_em, tipo: r.tipo, ref_id: r.ref_id,
       meu: r.autor_id === req.user.id,
-      rx: { rocket: r.rocket || 0, brain: r.brain || 0, bolt: r.bolt || 0, minha: r.minha || null },
+      rx: { rocket: r.rocket || 0, brain: r.brain || 0, bolt: r.bolt || 0, minha: r.minha || null, total: r.total || 0, quem: (r.quem || []).map((q) => ({ is_sud0: q.is_sud0, handle: q.is_sud0 ? null : q.handle, nome: q.is_sud0 ? null : q.nome, foto: q.is_sud0 ? null : q.foto })) },
       coment: r.n_com || 0,
       ultimas: r.ultimas_com || [],
       autor: {

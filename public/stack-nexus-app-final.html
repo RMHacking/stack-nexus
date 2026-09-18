@@ -962,6 +962,16 @@
   .ev-cta:active,.n-btn.n-ok:active{transform:scale(.96);}
   .placeholder{border-style:dashed;}
   .placeholder::before{content:"~$ ";color:var(--accent);}
+  /* ===== motivo terminal + prova social ===== */
+  @keyframes termblink{0%,49%{opacity:1}50%,100%{opacity:0}}
+  .brand::after,.mt-brand::after{content:"_";color:var(--accent);font-weight:700;margin-left:1px;animation:termblink 1.1s step-end infinite;}
+  .ntitle::before{content:"> ";color:var(--accent);font-family:var(--font-mono);}
+  .nav-happening-h::before{content:"~/ ";color:var(--accent);}
+  .reac-quem{display:inline-flex;align-items:center;margin-left:.55rem;}
+  .reac-av{width:22px;height:22px;border-radius:50%;background:var(--surface-2);color:var(--text-dim);border:2px solid var(--bg);display:inline-grid;place-items:center;font-family:var(--font-mono);font-size:.5rem;font-weight:600;margin-left:-7px;overflow:hidden;box-sizing:border-box;background-size:cover;background-position:center;}
+  .reac-av:first-child{margin-left:0;}
+  .reac-av--crown{background:var(--crown-soft);color:var(--crown);}
+  .reac-quem-n{font-family:var(--font-mono);font-size:.66rem;color:var(--text-faint);margin-left:.45rem;}
 </style>
 </head>
 <body class="view-user">
@@ -1020,7 +1030,7 @@
         <!-- COMPOSER: duas versões, uma por visão -->
         <div class="composer crown sud0-only">
           <div class="as">publicando como <b>♛ sud0</b> — aparição pública</div>
-          <div class="top"><span class="av av--crown" style="width:44px;height:44px;">♛</span><textarea class="composer-area" maxlength="500" data-count="500" placeholder="Começar publicação..."></textarea></div>
+          <div class="top"><span class="av av--crown" style="width:44px;height:44px;">♛</span><textarea class="composer-area" maxlength="500" data-count="500" placeholder="~/ o que você está construindo?"></textarea></div>
           <div class="charcount" data-for-count>0 / 500</div>
           <div class="acts">
             <button data-foto><svg class="cim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Foto</button>
@@ -1031,7 +1041,7 @@
         </div>
 
         <div class="composer user-only">
-          <div class="top"><span class="av" style="width:44px;height:44px;">RF</span><textarea class="composer-area" maxlength="500" data-count="500" placeholder="Começar publicação..."></textarea></div>
+          <div class="top"><span class="av" style="width:44px;height:44px;">RF</span><textarea class="composer-area" maxlength="500" data-count="500" placeholder="~/ o que você está construindo?"></textarea></div>
           <div class="charcount" data-for-count>0 / 500</div>
           <div class="acts">
             <button data-foto><svg class="cim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Foto</button>
@@ -3789,7 +3799,9 @@
   function reacBar(alvo,id,rx){
     rx=rx||{}; var minha=rx.minha||''; var titulos={rocket:'impulso',brain:'insight',bolt:'impacto'};
     function b(t,emoji){ var nn=rx[t]||0; return '<button class="reacbtn'+(minha===t?' on':'')+'" data-react="'+t+'" title="'+titulos[t]+'">'+emoji+'<span class="rc">'+(nn||'')+'</span></button>'; }
-    return '<div class="reacbar" data-ralvo="'+alvo+'" data-rid="'+id+'">'+b('rocket','🚀')+b('brain','🧠')+b('bolt','⚡')+'</div>';
+    var social=''; var quem=rx.quem||[], total=rx.total||0;
+    if(quem.length){ var avs=quem.map(function(q){ if(q.is_sud0) return '<span class="reac-av reac-av--crown">♛</span>'; var ini=iniciais(q.nome||q.handle||'?'); var st=q.foto?('background-image:url('+q.foto+');background-size:cover;background-position:center'):''; return '<span class="reac-av" style="'+st+'">'+(q.foto?'':esc(ini))+'</span>'; }).join(''); social='<span class="reac-quem" title="'+total+' reação'+(total===1?'':'es')+'">'+avs+'<span class="reac-quem-n">'+total+'</span></span>'; }
+    return '<div class="reacbar" data-ralvo="'+alvo+'" data-rid="'+id+'">'+b('rocket','🚀')+b('brain','🧠')+b('bolt','⚡')+social+'</div>';
   }
   function atualizarReac(bar,rx){
     ['rocket','brain','bolt'].forEach(function(t){ var btn=bar.querySelector('[data-react="'+t+'"]'); if(btn){ btn.querySelector('.rc').textContent=rx[t]||''; btn.classList.toggle('on',rx.minha===t); } });
