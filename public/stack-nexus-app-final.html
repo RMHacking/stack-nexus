@@ -945,6 +945,23 @@
   .rewardbtn.done{background:var(--ok-soft);color:var(--ok);border-color:var(--ok);}
   .skipbtn{font-family:var(--font-mono);font-size:.7rem;color:var(--text-faint);border:1px solid var(--border);border-radius:6px;padding:.3rem .8rem;}
   .skipbtn:hover{color:var(--text-dim);}
+  /* ===== polimento visual: skeleton, micro-interacoes, vazios ===== */
+  @keyframes skelsh{0%{background-position:-260px 0}100%{background-position:calc(260px + 100%) 0}}
+  .skel{background:linear-gradient(90deg,var(--surface-2) 25%,var(--hover) 40%,var(--surface-2) 60%);background-size:520px 100%;animation:skelsh 1.3s ease-in-out infinite;border-radius:8px;}
+  .skel-card{border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:.9rem;}
+  .skel-row{display:flex;align-items:center;gap:.7rem;margin-bottom:.85rem;}
+  .skel-av{width:42px;height:42px;border-radius:50%;flex:none;}
+  .skel-line{height:11px;border-radius:6px;}
+  @keyframes snfade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  #feed-real>.post{animation:snfade .28s ease both;}
+  .pcard,.gcard,.evcard,.conn,.suggest{transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;}
+  .pcard:hover,.gcard:hover,.evcard:hover,.conn:hover,.suggest:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.28);}
+  .gbtn,.cfgbtn,.sg-connect,.n-btn,.evbtn,.mmodbtn,.givebtn{transition:transform .1s ease,background .15s ease,border-color .15s ease,color .15s ease;}
+  .gbtn:active,.cfgbtn:active,.sg-connect:active,.n-btn:active,.mmodbtn:active{transform:scale(.95);}
+  .ev-cta,.n-btn.n-ok{transition:transform .1s ease,filter .15s ease;}
+  .ev-cta:active,.n-btn.n-ok:active{transform:scale(.96);}
+  .placeholder{border-style:dashed;}
+  .placeholder::before{content:"~$ ";color:var(--accent);}
 </style>
 </head>
 <body class="view-user">
@@ -2858,6 +2875,7 @@
     var fv=document.getElementById('v-feed');
     if(fv){ $$('#v-feed > article.post').forEach(function(e){e.remove();});
       var old=document.getElementById('feed-real'); if(old) old.remove();
+      var sk=document.getElementById('feed-skel'); if(sk) sk.remove();
       var d=document.createElement('div'); d.id='feed-real';
       d.innerHTML=feed.length?feed.map(postHTML).join(''):'<div class="placeholder">Ainda não tem nada no feed. Seja o primeiro a publicar.</div>';
       fv.appendChild(d);
@@ -2929,7 +2947,8 @@
     var dd=e.target.closest?e.target.closest('[data-onbdismiss]'):null;
     if(dd){ e.preventDefault(); try{ localStorage.setItem('sn_onb_dispensado','1'); }catch(_e){} var c=document.getElementById('onboardCard'); if(c) c.style.display='none'; return; }
   });
-  function carregarFeed(){ api('/api/feed').then(function(r){ renderFeed(Array.isArray(r.b)?r.b:[]); atualizarEventosFeed(); }); if(typeof carregarOnboarding==='function') carregarOnboarding(); }
+  function feedSkeleton(){ var fv=document.getElementById('v-feed'); if(!fv||document.getElementById('feed-real')||document.getElementById('feed-skel')) return; var one='<div class="skel-card"><div class="skel-row"><div class="skel skel-av"></div><div style="flex:1"><div class="skel skel-line" style="width:38%;margin-bottom:.5rem"></div><div class="skel skel-line" style="width:22%;height:9px"></div></div></div><div class="skel skel-line" style="width:92%;margin-bottom:.5rem"></div><div class="skel skel-line" style="width:68%"></div></div>'; var sk=document.createElement('div'); sk.id='feed-skel'; sk.innerHTML=one+one+one; fv.appendChild(sk); }
+  function carregarFeed(){ feedSkeleton(); api('/api/feed').then(function(r){ renderFeed(Array.isArray(r.b)?r.b:[]); atualizarEventosFeed(); }); if(typeof carregarOnboarding==='function') carregarOnboarding(); }
   function atualizarEventosFeed(){
     document.querySelectorAll('.post-evento').forEach(function(card){
       var cta=card.querySelector('[data-verevento]'); if(!cta) return;
