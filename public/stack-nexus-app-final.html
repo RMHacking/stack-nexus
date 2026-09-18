@@ -34,7 +34,7 @@
   [hidden]{display:none !important;}
 
   /* ===== LAYOUT: viewport fixo, 3 colunas que rolam independentes ===== */
-  .app{display:flex;height:100vh;width:100%;overflow:hidden;}
+  .app{display:flex;height:100vh;width:100%;max-width:1320px;margin:0 auto;overflow:hidden;}
   .col-left{width:250px;flex:none;border-right:1px solid var(--border);overflow-y:auto;padding:1rem .8rem;}
   .col-center{flex:1;overflow-y:auto;padding:1.2rem;}
   .col-right{width:300px;flex:none;border-left:1px solid var(--border);overflow-y:auto;padding:0 .8rem 1rem;position:relative;transition:width .28s ease,padding .28s ease;}
@@ -114,7 +114,7 @@
   @keyframes winpulse{0%,100%{box-shadow:0 -4px 24px rgba(0,0,0,.4);}50%{box-shadow:0 0 0 2px var(--accent),0 -4px 24px rgba(24,119,242,.5);}}
   .chatwin.min .cw-head .newdot{display:inline-block;}
   .cw-head .newdot{display:none;width:7px;height:7px;border-radius:50%;background:var(--danger);margin-left:.3rem;flex:none;}
-  .center-wrap{max-width:600px;margin:0 auto;}
+  .center-wrap{max-width:680px;margin:0 auto;}
   @media(min-width:901px) and (max-width:1150px){.col-left{width:210px;}.col-right{width:270px;}}
   .mobtop{display:none;}
   .drawer-backdrop{display:none;}
