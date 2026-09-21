@@ -2918,12 +2918,55 @@
     ov.querySelector('#onb-fest-x').addEventListener('click',fecha);
     ov.addEventListener('click',function(e){ if(e.target===ov) fecha(); });
   }
+  function agendarPushNudge(){
+    if(window.__pushNudgeTried) return; window.__pushNudgeTried=true;
+    setTimeout(mostrarPushNudge, 6000);
+  }
+  function mostrarPushNudge(){
+    try{
+      if(!('Notification' in window)) return;
+      if(Notification.permission!=='default') return;
+      if(localStorage.getItem('sn_push_nudge')==='1') return;
+    }catch(_e){ return; }
+    if(document.getElementById('push-nudge')) return;
+    try{ localStorage.setItem('sn_push_nudge','1'); }catch(_e){}
+    var n=document.createElement('div'); n.id='push-nudge';
+    n.style.cssText='position:fixed;left:16px;bottom:16px;z-index:99990;width:min(300px,calc(100% - 32px));background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.85rem .95rem;box-shadow:0 14px 40px rgba(0,0,0,.5);font-family:var(--font-mono);animation:snfade .3s ease;';
+    n.innerHTML='<div style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:.4rem">🔔 Ative as notificações</div>'
+      +'<div style="font-size:.74rem;color:var(--text-dim);line-height:1.55;margin-bottom:.7rem">Saiba na hora quando alguém falar com você, te mencionar ou se conectar — mesmo com o app fechado. É uma vez neste aparelho.</div>'
+      +'<div style="display:flex;gap:.5rem;justify-content:flex-end">'
+      +'<button data-pushnudge="nao" style="font-family:var(--font-mono);font-size:.72rem;background:transparent;color:var(--text-faint);border:none;cursor:pointer;padding:.4rem .6rem">agora não</button>'
+      +'<button data-pushnudge="sim" style="font-family:var(--font-mono);font-size:.72rem;font-weight:600;background:var(--btn);color:var(--btn-text);border:1px solid var(--btn-border);border-radius:8px;padding:.42rem .95rem;cursor:pointer">Ativar</button>'
+      +'</div>';
+    document.body.appendChild(n);
+    n.addEventListener('click',function(e){
+      var b=e.target.closest?e.target.closest('[data-pushnudge]'):null; if(!b) return;
+      e.preventDefault();
+      if(b.getAttribute('data-pushnudge')==='sim' && window.ativarPush){ Promise.resolve(window.ativarPush(true)).then(function(){ if(window.carregarOnboarding) window.carregarOnboarding(); }); }
+      n.remove();
+    });
+  }
   function carregarOnboarding(){
     var card=document.getElementById('onboardCard'); if(!card) return;
     if(souSud0){ card.style.display='none'; return; }
     api('/api/me/onboarding').then(function(r){
       if(!(r.b&&r.b.ok)){ card.style.display='none'; return; }
-      if(r.b.concluido){
+      var it=r.b.itens||{};
+      var linhas=[
+        {done:!!it.perfil, txt:'Complete seu perfil (foto, frase, trilha)', act:'perfil', cta:'completar'},
+        {done:!!it.publicou, txt:'Publique seu primeiro post ou projeto', act:'feed', cta:'publicar'},
+        {done:!!it.grupo, txt:'Apresente-se num grupo (ex: whoami)', act:'groups', cta:'ir aos grupos'},
+        {done:!!it.conexao, txt:'Faça sua primeira conexão', act:'conexao', cta:'ver pessoas'}
+      ];
+      var notifSup=('Notification' in window);
+      var notifPerm=notifSup?Notification.permission:'unsupported';
+      if(notifSup && notifPerm!=='denied'){
+        linhas.push({done:notifPerm==='granted', txt:'Ative as notificações pra não perder nada', act:'notif', cta:'ativar'});
+      }
+      var total=linhas.length;
+      var feito=linhas.filter(function(l){return l.done;}).length;
+      var concluido=feito>=total;
+      if(concluido){
         card.style.display='none';
         try{ if(localStorage.getItem('sn_onb_seen')==='1' && localStorage.getItem('sn_onb_festejado')!=='1'){ localStorage.setItem('sn_onb_festejado','1'); festejarOnboarding(); } }catch(_e){}
         return;
@@ -2931,15 +2974,8 @@
       var disp=false; try{ disp=localStorage.getItem('sn_onb_dispensado')==='1'; }catch(e){}
       if(disp){ card.style.display='none'; return; }
       try{ localStorage.setItem('sn_onb_seen','1'); }catch(_e){}
-      var it=r.b.itens;
-      var linhas=[
-        {done:it.perfil, txt:'Complete seu perfil (foto, frase, trilha)', act:'perfil', cta:'completar'},
-        {done:it.publicou, txt:'Publique seu primeiro post ou projeto', act:'feed', cta:'publicar'},
-        {done:it.grupo, txt:'Apresente-se num grupo (ex: whoami)', act:'groups', cta:'ir aos grupos'},
-        {done:it.conexao, txt:'Faça sua primeira conexão', act:'conexao', cta:'ver pessoas'}
-      ];
-      var h='<div class="onb-h"><span>🚀 Primeiros passos</span><span class="onb-prog">'+r.b.feito+' de '+r.b.total+'</span></div>';
-      h+='<div class="onb-bar"><div class="onb-fill" style="width:'+Math.round(r.b.feito/r.b.total*100)+'%"></div></div>';
+      var h='<div class="onb-h"><span>🚀 Primeiros passos</span><span class="onb-prog">'+feito+' de '+total+'</span></div>';
+      h+='<div class="onb-bar"><div class="onb-fill" style="width:'+Math.round(feito/total*100)+'%"></div></div>';
       h+=linhas.map(function(l){ return '<div class="onb-item'+(l.done?' done':'')+'"'+(l.done?'':' data-onb="'+l.act+'"')+'><span class="onb-ck">'+(l.done?'✓':'')+'</span><span class="onb-txt">'+esc(l.txt)+'</span>'+(l.done?'':'<span class="onb-cta">'+esc(l.cta)+' →</span>')+'</div>'; }).join('');
       h+='<div class="onb-foot"><span data-onbdismiss>dispensar</span></div>';
       card.innerHTML=h; card.style.display='';
@@ -2953,12 +2989,13 @@
       else if(a==='groups'){ var g=document.querySelector('.navitem[data-nav="groups"]'); if(g) g.click(); }
       else if(a==='feed'){ var fb=document.querySelector('[data-nav="feed"]'); if(fb) fb.click(); var ta=document.querySelector('#v-feed .composer.user-only .composer-area'); if(ta){ ta.focus(); if(ta.scrollIntoView) ta.scrollIntoView({behavior:'smooth',block:'center'}); } }
       else if(a==='conexao'){ try{ if(window.innerWidth<=900) document.body.classList.add('drawer-right'); }catch(_e){} var sg=document.getElementById('sugBody'); if(sg&&sg.scrollIntoView) sg.scrollIntoView({behavior:'smooth',block:'center'}); }
+      else if(a==='notif'){ if(window.ativarPush){ Promise.resolve(window.ativarPush(true)).then(function(){ if(window.carregarOnboarding) window.carregarOnboarding(); }); } }
       return; }
     var dd=e.target.closest?e.target.closest('[data-onbdismiss]'):null;
     if(dd){ e.preventDefault(); try{ localStorage.setItem('sn_onb_dispensado','1'); }catch(_e){} var c=document.getElementById('onboardCard'); if(c) c.style.display='none'; return; }
   });
   function feedSkeleton(){ var fv=document.getElementById('v-feed'); if(!fv||document.getElementById('feed-real')||document.getElementById('feed-skel')) return; var one='<div class="skel-card"><div class="skel-row"><div class="skel skel-av"></div><div style="flex:1"><div class="skel skel-line" style="width:38%;margin-bottom:.5rem"></div><div class="skel skel-line" style="width:22%;height:9px"></div></div></div><div class="skel skel-line" style="width:92%;margin-bottom:.5rem"></div><div class="skel skel-line" style="width:68%"></div></div>'; var sk=document.createElement('div'); sk.id='feed-skel'; sk.innerHTML=one+one+one; fv.appendChild(sk); }
-  function carregarFeed(){ feedSkeleton(); api('/api/feed').then(function(r){ renderFeed(Array.isArray(r.b)?r.b:[]); atualizarEventosFeed(); }); if(typeof carregarOnboarding==='function') carregarOnboarding(); }
+  function carregarFeed(){ feedSkeleton(); api('/api/feed').then(function(r){ renderFeed(Array.isArray(r.b)?r.b:[]); atualizarEventosFeed(); }); if(typeof carregarOnboarding==='function') carregarOnboarding(); if(typeof agendarPushNudge==='function') agendarPushNudge(); }
   function atualizarEventosFeed(){
     document.querySelectorAll('.post-evento').forEach(function(card){
       var cta=card.querySelector('[data-verevento]'); if(!cta) return;
