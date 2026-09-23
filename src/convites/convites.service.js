@@ -34,14 +34,20 @@ async function resolverGate(pool, codigo, visitanteContaId) {
   const link = rows[0];
   if (visitanteContaId) return { destino: 'login', motivo: 'ja_membro' };
   if (link.slots_disponiveis <= 0) return { destino: 'bloqueio', motivo: 'sem_saldo' };
-  // respeita exposição do convidante (Reservado mostra só o handle)
-  const convidante = link.dono_exposicao === 'aberto'
-    ? { handle: link.dono_handle, nome: link.dono_nome }
-    : { handle: link.dono_handle };
+  // O SERVIDOR decide o que expor (o cliente esconde, o servidor decide).
+  // Fundador (sud0) é SEMPRE anônimo: nunca devolvemos o handle/nome real da
+  // conta dele — só a máscara pública "sud0". Vale pra qualquer link do sud0.
+  const fundador = !!link.dono_sud0;
+  const convidante = fundador
+    ? { handle: 'sud0', nome: 'sud0' }
+    : (link.dono_exposicao === 'aberto'
+        ? { handle: link.dono_handle, nome: link.dono_nome }
+        : { handle: link.dono_handle }); // Reservado mostra só o handle
   return {
     destino: 'onboarding',
     convite_link_id: link.convite_link_id,
     tipo: link.tipo, // 'padrao' | 'genesis'
+    fundador,
     convidante,
     slots_disponiveis: link.slots_disponiveis,
   };

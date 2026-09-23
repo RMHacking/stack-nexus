@@ -318,17 +318,24 @@
   $('#blockRetry').onclick = () => { go('s-code'); };
 
   // tratamento premium quando a entrada é pelo cartão Genesis (Fundador)
-  function aplicarGenesis(){
+  function aplicarGenesis(fundador){
+    // Visual Genesis (raro) para todos; identidade "sud0" SÓ quando o servidor
+    // confirma que o convidante é o Fundador (fundador===true). O nome de quem
+    // convidou vem sempre do servidor (convidante), o cliente nunca inventa.
     document.querySelector('.phone').classList.add('genesis');
     $('#s1-gbadge').style.display=''; $('#s3-gbadge').style.display='';
-    const av=$('#inv-av'); av.classList.add('crown'); av.textContent='♛';
-    $('#inv-nome').textContent='sud0'; $('#inv-handle').textContent='entidade fundadora'; $('#inv-handle').style.display='';
-    $('#s1-title').innerHTML='O Fundador<br>escolheu você.';
-    $('#hardhn').textContent='♛'; $('#hardhl').innerHTML='convite <b style="color:var(--crown)">Genesis</b> · direto do Fundador';
+    const av=$('#inv-av'); av.classList.add('crown');
+    $('#hardhn').textContent='♛'; $('#hardhl').innerHTML='convite <b style="color:var(--crown)">Genesis</b> · a forma mais rara de entrar';
     $('#scarcity').textContent='♛ Genesis — a forma mais rara de entrar.';
-    $('#ob-origem').innerHTML='// o Fundador (sud0) fica registrado como sua origem';
-    const aav=$('#arr-av'); aav.textContent='♛'; aav.style.background='linear-gradient(135deg,var(--crown),var(--genesis))'; aav.style.color='#1a1400';
-    $('#arr-nome').textContent='sud0';
+    if(fundador){
+      av.textContent='♛';
+      $('#inv-nome').textContent='sud0'; $('#inv-handle').textContent='entidade fundadora'; $('#inv-handle').style.display='';
+      $('#s1-title').innerHTML='O Fundador<br>escolheu você.';
+      $('#hardhl').innerHTML='convite <b style="color:var(--crown)">Genesis</b> · direto do Fundador';
+      $('#ob-origem').innerHTML='// o Fundador (sud0) fica registrado como sua origem';
+      const aav=$('#arr-av'); aav.textContent='♛'; aav.style.background='linear-gradient(135deg,var(--crown),var(--genesis))'; aav.style.color='#1a1400';
+      $('#arr-nome').textContent='sud0';
+    }
   }
 
   function bloqueio(motivo){
@@ -357,7 +364,7 @@
       $('#arr-av').textContent = iniciais(c.nome || c.handle);
       $('#arr-nome').textContent = c.nome ? c.nome : ('@'+c.handle);
       $('#arr-origem').innerHTML = '// @'+(c.handle||'')+' registrado como sua origem na árvore da rede';
-      if(body.tipo==='genesis') aplicarGenesis();
+      if(body.tipo==='genesis') aplicarGenesis(body.fundador===true);
       go('s1');
     }catch(e){
       $('#blockMsg').innerHTML = 'Não consegui falar com o servidor em <b>'+API+'</b>.<br>O backend está rodando? (npm start)';
