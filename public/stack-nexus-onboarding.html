@@ -175,7 +175,24 @@
         </div>
         <div class="scarcity" id="scarcity">♛ isto não se compra. se merece.</div>
         <div class="spacer"></div>
-        <button class="btn btn--crown" onclick="go('s2')">Aceitar meu lugar →</button>
+        <button class="btn btn--crown" onclick="go('s-sobre')">Aceitar meu lugar →</button>
+      </section>
+
+      <!-- TELA SOBRE: o que é a comunidade (abre logo após o convite) -->
+      <section class="screen" id="s-sobre">
+        <div class="brand">Stack_<b>n3xus</b></div>
+        <div class="steps"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        <h2 class="t" style="margin-top:1.2rem;">O que é o Stack_n3xus</h2>
+        <p class="sub">Uma rede fechada para quem vive tecnologia e segurança. Aqui não conta o que você diz que sabe — conta o que você constrói.</p>
+        <div style="margin-top:1.3rem;">
+          <div style="display:flex;gap:.7rem;align-items:flex-start;margin-bottom:.75rem;text-align:left;"><span style="font-family:var(--font-mono);color:var(--text-faint);font-size:.95rem;flex:none;width:1.25rem;text-align:center;line-height:1.5;">◆</span><div><div style="font-weight:700;font-size:.9rem;color:var(--text);">Mostre o que você constrói</div><div style="font-size:.8rem;color:var(--text-dim);line-height:1.5;">Projetos, código, achados. Seu perfil é o que você faz — não um currículo bonito.</div></div></div>
+          <div style="display:flex;gap:.7rem;align-items:flex-start;margin-bottom:.75rem;text-align:left;"><span style="font-family:var(--font-mono);color:var(--text-faint);font-size:.95rem;flex:none;width:1.25rem;text-align:center;line-height:1.5;">⌘</span><div><div style="font-weight:700;font-size:.9rem;color:var(--text);">Trilhas e grupos</div><div style="font-size:.8rem;color:var(--text-dim);line-height:1.5;">Tech, cyber e investigação. Gente do seu nível e conversas que valem o tempo.</div></div></div>
+          <div style="display:flex;gap:.7rem;align-items:flex-start;margin-bottom:.75rem;text-align:left;"><span style="font-family:var(--font-mono);color:var(--text-faint);font-size:.95rem;flex:none;width:1.25rem;text-align:center;line-height:1.5;">▲</span><div><div style="font-weight:700;font-size:.9rem;color:var(--text);">Mérito, não hype</div><div style="font-size:.8rem;color:var(--text-dim);line-height:1.5;">A reputação sobe por contribuição. Convites se ganham. Ninguém compra um lugar aqui.</div></div></div>
+          <div style="display:flex;gap:.7rem;align-items:flex-start;margin-bottom:.75rem;text-align:left;"><span style="font-family:var(--font-mono);color:var(--text-faint);font-size:.95rem;flex:none;width:1.25rem;text-align:center;line-height:1.5;">⧉</span><div><div style="font-weight:700;font-size:.9rem;color:var(--text);">Você controla sua exposição</div><div style="font-size:.8rem;color:var(--text-dim);line-height:1.5;">Apareça com nome e rosto, ou só com o seu nick. Você decide o quanto mostra.</div></div></div>
+        </div>
+        <div class="scarcity">From code to kernel. Study, share, secure.</div>
+        <div class="spacer"></div>
+        <button class="btn btn--crown" onclick="go('s2')">Continuar &rarr;</button>
       </section>
 
       <!-- TELA 2: criar acesso -->
@@ -297,7 +314,7 @@
     return { status: r.status, body: await r.json().catch(() => ({})) };
   }
 
-  const screens = ['s-load','s-code','s-block','s1','s2','s3','s4','s-pend'];
+  const screens = ['s-load','s-code','s-block','s1','s-sobre','s2','s3','s4','s-pend'];
   function go(id){ screens.forEach(s => document.getElementById(s).classList.toggle('is-on', s===id)); }
 
   const iniciais = (s) => (s||'?').replace(/[^A-Za-zÀ-ÿ0-9]/g,'').slice(0,2).toUpperCase() || '··';
